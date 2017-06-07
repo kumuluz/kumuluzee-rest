@@ -6,7 +6,7 @@
 
     <groupId>com.kumuluz.ee.rest</groupId>
     <artifactId>kumuluzee-rest</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.2.0-SNAPSHOT</version>
     <modules>
         <module>core</module>
     </modules>
@@ -78,7 +78,7 @@
 
             <dependency>
                 <groupId>com.kumuluz.ee.rest</groupId>
-                <artifactId>kumuluzee-rest</artifactId>
+                <artifactId>kumuluzee-rest-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
