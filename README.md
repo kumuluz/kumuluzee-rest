@@ -1,7 +1,7 @@
 # KumuluzEE REST
 [![Build Status](https://img.shields.io/travis/kumuluz/kumuluzee-rest/master.svg?style=flat)](https://travis-ci.org/kumuluz/kumuluzee-rest)
 
-> KumuluzEE REST exposes your JPA entities to build-in metadata and query support using JAX-RS.
+> KumuluzEE REST exposes your JPA entities to built-in metadata and query support using JAX-RS.
 
 KumuluzEE REST provides automatic query parameter support when retrieving JPA entities using JAX-RS. It provides support for pagination, sorting and filtering of JPA entities, by parsing query parameters from the URI and using these query parameters when builing JPA query and retrieving the entities. 
 
