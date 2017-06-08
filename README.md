@@ -103,8 +103,8 @@ The entities can be filtered by using multiple operations:
 * eqic | Equals ignore case
 * neq | Not equal
 * neqic | Not equal ignoring case
-* like | Patern matching (% replaces characters)
-* likeic | Patern matching ignore case (% replaces characters)
+* like | Pattern matching (% replaces characters)
+* likeic | Pattern matching ignore case (% replaces characters)
 * gt | Greater than
 * gte | Greater than or equal
 * lt | Lower than
@@ -130,7 +130,7 @@ GET v1/customers?filter=age:gt:10 id:in:[1,2,3] lastName:isnotnull
 
 #### Pagination, sorting and filtering
 
-Pagination, sorting and filtering of entities can be combined by seperating them with &.
+Pagination, sorting and filtering of entities can be combined by separating them with &.
 
 ```
 GET /v1/customers?offset=10&limit=5&order=id DESC&filter=age:gt:10 id:in:[1,2,3] lastName:isnotnull
