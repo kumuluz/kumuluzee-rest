@@ -128,6 +128,14 @@ GET v1/customers?filter=lastName:isnotnull
 GET v1/customers?filter=age:gt:10 id:in:[1,2,3] lastName:isnotnull
 ```
 
+#### Pagination, sorting and filtering
+
+Pagination, sorting and filtering of entities can be combined by seperating them with &.
+
+```
+GET /v1/customers?offset=10&limit=5&order=id DESC&filter=age:gt:10 id:in:[1,2,3] lastName:isnotnull
+```
+
 ## Changelog
 
 Recent changes can be viewed on Github on the [Releases Page](https://github.com/kumuluz/kumuluzee-rest/releases)
