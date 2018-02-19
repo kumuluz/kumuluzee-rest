@@ -25,11 +25,20 @@ import com.kumuluz.ee.rest.beans.CriteriaWhereQuery;
 import com.kumuluz.ee.rest.beans.QueryFilter;
 import com.kumuluz.ee.rest.beans.QueryParameters;
 import com.kumuluz.ee.rest.enums.OrderDirection;
-import com.kumuluz.ee.rest.exceptions.NoSuchEntityFieldException;
-import com.kumuluz.ee.rest.exceptions.InvalidFieldValueException;
 import com.kumuluz.ee.rest.exceptions.InvalidEntityFieldException;
+import com.kumuluz.ee.rest.exceptions.InvalidFieldValueException;
+import com.kumuluz.ee.rest.exceptions.NoSuchEntityFieldException;
 import com.kumuluz.ee.rest.interfaces.CriteriaFilter;
 
+import javax.persistence.EntityManager;
+import javax.persistence.Tuple;
+import javax.persistence.TupleElement;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.*;
+import javax.persistence.metamodel.Attribute;
+import javax.persistence.metamodel.EntityType;
+import javax.persistence.metamodel.Metamodel;
+import javax.persistence.metamodel.SingularAttribute;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.time.ZonedDateTime;
@@ -37,13 +46,6 @@ import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import javax.persistence.EntityManager;
-import javax.persistence.Tuple;
-import javax.persistence.TupleElement;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.*;
-import javax.persistence.metamodel.*;
 
 /**
  * @author Tilen Faganel
@@ -572,6 +574,7 @@ public class JPAUtils {
                         containsToMany = true;
                     case ONE_TO_ONE:
                     case MANY_TO_ONE:
+                    case EMBEDDED:
                         from = from.join(field);
                         break;
                 }
