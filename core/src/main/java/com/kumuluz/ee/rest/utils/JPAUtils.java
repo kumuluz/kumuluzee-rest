@@ -41,6 +41,7 @@ import javax.persistence.metamodel.Metamodel;
 import javax.persistence.metamodel.SingularAttribute;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
@@ -351,6 +352,7 @@ public class JPAUtils {
                         break;
                     case GT:
                         if (Date.class.isAssignableFrom(entityField.getJavaType()) ||
+                                Instant.class.isAssignableFrom(entityField.getJavaType()) ||
                                 Number.class.isAssignableFrom(entityField.getJavaType()) ||
                                 String.class.isAssignableFrom(entityField.getJavaType())) {
 
@@ -363,6 +365,7 @@ public class JPAUtils {
                         break;
                     case GTE:
                         if (Date.class.isAssignableFrom(entityField.getJavaType()) ||
+                                Instant.class.isAssignableFrom(entityField.getJavaType()) ||
                                 Number.class.isAssignableFrom(entityField.getJavaType()) ||
                                 String.class.isAssignableFrom(entityField.getJavaType())) {
 
@@ -375,6 +378,7 @@ public class JPAUtils {
                         break;
                     case LT:
                         if (Date.class.isAssignableFrom(entityField.getJavaType()) ||
+                                Instant.class.isAssignableFrom(entityField.getJavaType()) ||
                                 Number.class.isAssignableFrom(entityField.getJavaType()) ||
                                 String.class.isAssignableFrom(entityField.getJavaType())) {
 
@@ -387,6 +391,7 @@ public class JPAUtils {
                         break;
                     case LTE:
                         if (Date.class.isAssignableFrom(entityField.getJavaType()) ||
+                                Instant.class.isAssignableFrom(entityField.getJavaType()) ||
                                 Number.class.isAssignableFrom(entityField.getJavaType()) ||
                                 String.class.isAssignableFrom(entityField.getJavaType())) {
 
@@ -530,6 +535,9 @@ public class JPAUtils {
 
             if (c.equals(Date.class))
                 return Date.from(ZonedDateTime.parse(value).toInstant());
+
+            if (c.equals(Instant.class))
+                return ZonedDateTime.parse(value).toInstant();
 
             if (c.equals(Boolean.class))
                 return Boolean.parseBoolean(value);
