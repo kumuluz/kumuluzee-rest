@@ -73,6 +73,10 @@ public class QueryParameters implements Serializable {
         this.filters = filters;
     }
 
+    public void setFields(List<String> fields) {
+        this.fields = fields;
+    }
+
     public List<QueryOrder> getOrder() {
 
         if (order == null)
