@@ -102,10 +102,6 @@ public class QueryFilter implements Serializable {
         return values;
     }
 
-    public void setValues(List<String> values) {
-        this.values = values;
-    }
-
     public Date getDateValue() {
         return dateValue;
     }
