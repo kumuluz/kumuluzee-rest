@@ -189,7 +189,7 @@ GET v1/customers?filter=age:GT:10 id:IN:[1,2,3] lastName:ISNOTNULL
 
 There are some special cases:
 - If we want to use `LIKE` filter and query values that include a percent sign, it needs to be URL encoded (%25).
-- Dates must be in ISO-8601 format, `+` sign must be URL encoded (%2B). Single quotes for value are required.
+- Dates and instants must be in ISO-8601 format, `+` sign must be URL encoded (%2B). Single quotes for value are required.
 ```
 GET v1/customers?where=firstName:LIKE:'%somestring%25doe'
 GET v1/customers?where=createdAt:GT:'2017-06-12T11:57:00%2B00:00'
