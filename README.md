@@ -1,5 +1,5 @@
 # KumuluzEE REST
-[![Build Status](https://img.shields.io/travis/kumuluz/kumuluzee-rest/master.svg?style=flat)](https://travis-ci.org/kumuluz/kumuluzee-rest)
+[![Build Status](https://travis-ci.org/kumuluz/kumuluzee-rest.svg?branch=master)](https://travis-ci.org/kumuluz/kumuluzee-rest)
 
 > KumuluzEE REST greatly simplifies implementation of common REST patterns, such as paging, sorting and filtering. In conjunction with JPA it supports automated querying and retrieving of entities.
 
