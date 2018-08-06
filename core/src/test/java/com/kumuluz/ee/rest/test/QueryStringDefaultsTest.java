@@ -1,11 +1,15 @@
 package com.kumuluz.ee.rest.test;
 
+import com.kumuluz.ee.rest.beans.QueryFilter;
 import com.kumuluz.ee.rest.beans.QueryParameters;
 import com.kumuluz.ee.rest.enums.FilterOperation;
 import com.kumuluz.ee.rest.enums.OrderDirection;
 import com.kumuluz.ee.rest.utils.QueryStringDefaults;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Tilen Faganel
@@ -229,5 +233,35 @@ public class QueryStringDefaultsTest {
         Assert.assertNotNull(query);
         Assert.assertNotNull(query.getFields());
         Assert.assertEquals(0, query.getFields().size());
+    }
+
+    @Test
+    public void testDefaultFilters() {
+
+        List<QueryFilter> filters = new ArrayList<>();
+        filters.add(new QueryFilter("confirmed", FilterOperation.EQ, "true"));
+
+        QueryParameters query = new QueryStringDefaults().defaultFilters(filters).builder().query("").build();
+
+        Assert.assertNotNull(query);
+        Assert.assertNotNull(query.getOffset());
+        Assert.assertNotNull(query.getFilters());
+        Assert.assertEquals(1, query.getFilters().size());
+        Assert.assertEquals("true", query.getFilters().get(0).getValue());
+    }
+
+    @Test
+    public void testDefaultFiltersOverride() {
+
+        List<QueryFilter> filters = new ArrayList<>();
+        filters.add(new QueryFilter("confirmed", FilterOperation.EQ, "true"));
+
+        QueryParameters query = new QueryStringDefaults().defaultFilters(filters).builder().query("filter=confirmed:eq:false").build();
+
+        Assert.assertNotNull(query);
+        Assert.assertNotNull(query.getOffset());
+        Assert.assertNotNull(query.getFilters());
+        Assert.assertEquals(1, query.getFilters().size());
+        Assert.assertEquals("false", query.getFilters().get(0).getValue());
     }
 }

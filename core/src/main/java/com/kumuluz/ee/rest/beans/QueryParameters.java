@@ -65,24 +65,16 @@ public class QueryParameters implements Serializable {
         this.offset = offset.longValue();
     }
 
-    public void setOrder(List<QueryOrder> order) {
-        this.order = order;
-    }
-
-    public void setFilters(List<QueryFilter> filters) {
-        this.filters = filters;
-    }
-
-    public void setFields(List<String> fields) {
-        this.fields = fields;
-    }
-
     public List<QueryOrder> getOrder() {
 
         if (order == null)
             order = new ArrayList<>();
 
         return order;
+    }
+
+    public void setOrder(List<QueryOrder> order) {
+        this.order = order;
     }
 
     public List<String> getFields() {
@@ -93,12 +85,20 @@ public class QueryParameters implements Serializable {
         return fields;
     }
 
+    public void setFilters(List<QueryFilter> filters) {
+        this.filters = filters;
+    }
+
     public List<QueryFilter> getFilters() {
 
         if (filters == null)
             filters = new ArrayList<>();
 
         return filters;
+    }
+
+    public void setFields(List<String> fields) {
+        this.fields = fields;
     }
 
     // Static methods for creating the query builder

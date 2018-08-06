@@ -71,6 +71,7 @@ public class QueryStringBuilder {
     private Long maxLimit;
     private Long defaultLimit;
     private Long defaultOffset;
+    private List<QueryFilter> defaultFilters;
 
     public QueryStringBuilder uri(URI uri) {
 
@@ -224,6 +225,15 @@ public class QueryStringBuilder {
         return this;
     }
 
+    public QueryStringBuilder defaultFilters(List<QueryFilter> queryFilters) {
+
+        log.finest("Setting default filters");
+
+        defaultFilters = queryFilters;
+
+        return this;
+    }
+
     public QueryParameters build() {
 
         log.finest("Building query string: " + query);
@@ -233,7 +243,12 @@ public class QueryStringBuilder {
         if (paginationEnabled && defaultLimit != null) params.setLimit(defaultLimit);
         if (paginationEnabled && defaultOffset != null) params.setOffset(defaultOffset);
 
-        if (query == null || query.isEmpty()) return params;
+        if (query == null || query.isEmpty()) {
+
+            addDefaultFilters(params);
+
+            return params;
+        }
 
         for (String pair : query.split("&+(?=([^']*'[^']*')*[^']*$)")) {
 
@@ -262,9 +277,19 @@ public class QueryStringBuilder {
 
         if (params == null) return;
 
-        if (key == null || key.isEmpty()) return;
+        if (key == null || key.isEmpty()) {
 
-        if (value == null || value.isEmpty()) return;
+            addDefaultFilters(params);
+
+            return;
+        }
+
+        if (value == null || value.isEmpty()) {
+
+            addDefaultFilters(params);
+
+            return;
+        }
 
         switch (key) {
 
@@ -322,6 +347,8 @@ public class QueryStringBuilder {
 
                 break;
         }
+
+        addDefaultFilters(params);
     }
 
     private Long buildOffset(String key, String value) {
@@ -527,6 +554,21 @@ public class QueryStringBuilder {
                 });
 
         return filterList;
+    }
+
+    private void addDefaultFilters(QueryParameters params) {
+
+        if (defaultFilters == null || defaultFilters.isEmpty()) return;
+
+        params.getFilters().addAll(
+                defaultFilters
+                        .stream()
+                        .filter(df ->
+                                params.getFilters()
+                                        .stream()
+                                        .noneMatch(fl -> fl.getField().equals(df.getField()))
+                        ).collect(Collectors.toList())
+        );
     }
 
     private Date parseDate(String date) {

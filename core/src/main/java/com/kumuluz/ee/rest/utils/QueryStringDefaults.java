@@ -20,6 +20,10 @@
  */
 package com.kumuluz.ee.rest.utils;
 
+import com.kumuluz.ee.rest.beans.QueryFilter;
+
+import java.util.List;
+
 /**
  * @author Tilen Faganel
  */
@@ -33,6 +37,7 @@ public class QueryStringDefaults {
     private Long maxLimit = 100L;
     private Long defaultLimit = 10L;
     private Long defaultOffset = 0L;
+    private List<QueryFilter> defaultFilters = null;
 
     public QueryStringDefaults enablePagination(Boolean enable) {
 
@@ -98,11 +103,19 @@ public class QueryStringDefaults {
         return this;
     }
 
+    public QueryStringDefaults defaultFilters(List<QueryFilter> filters) {
+
+        defaultFilters = filters;
+
+        return this;
+    }
+
     public QueryStringBuilder builder() {
         return new QueryStringBuilder()
                 .maxLimit(maxLimit)
                 .defaultLimit(defaultLimit)
                 .defaultOffset(defaultOffset)
+                .defaultFilters(defaultFilters)
                 .enablePagination(paginationEnabled)
                 .enableFilters(filtersEnabled)
                 .enableOrder(orderEnabled)
