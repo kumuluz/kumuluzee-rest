@@ -20,10 +20,7 @@
  */
 package com.kumuluz.ee.rest.utils;
 
-import com.kumuluz.ee.rest.beans.CriteriaField;
-import com.kumuluz.ee.rest.beans.CriteriaWhereQuery;
-import com.kumuluz.ee.rest.beans.QueryFilter;
-import com.kumuluz.ee.rest.beans.QueryParameters;
+import com.kumuluz.ee.rest.beans.*;
 import com.kumuluz.ee.rest.enums.OrderDirection;
 import com.kumuluz.ee.rest.exceptions.InvalidEntityFieldException;
 import com.kumuluz.ee.rest.exceptions.InvalidFieldValueException;
@@ -63,15 +60,25 @@ public class JPAUtils {
 
     public static <T> List<T> queryEntities(EntityManager em, Class<T> entity, QueryParameters q) {
 
-        return queryEntities(em, entity, q, null);
+        return queryEntities(em, entity, q, null, null, null);
     }
 
     public static <T> List<T> queryEntities(EntityManager em, Class<T> entity, CriteriaFilter<T> customFilter) {
-        return queryEntities(em, entity, new QueryParameters(), customFilter);
+        return queryEntities(em, entity, new QueryParameters(), customFilter, null, null);
+    }
+
+    public static <T> List<T> queryEntities(EntityManager em, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter) {
+        return queryEntities(em, entity, q, customFilter, null, null);
+    }
+
+    public static <T> List<T> queryEntities(EntityManager em, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter,
+                                            List<QueryHintPair> queryHints) {
+        return queryEntities(em, entity, q, customFilter, queryHints, null);
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> List<T> queryEntities(EntityManager em, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter) {
+    public static <T> List<T> queryEntities(EntityManager em, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter,
+                                            List<QueryHintPair> queryHints, String rootAlias) {
 
         if (em == null || entity == null)
             throw new IllegalArgumentException("The entity manager and the entity cannot be null.");
@@ -98,6 +105,9 @@ public class JPAUtils {
         }
 
         Root<T> r = cq.from(entity);
+        if (rootAlias != null) {
+            r.alias(rootAlias);
+        }
 
         Predicate wherePredicate = null;
 
@@ -144,6 +154,12 @@ public class JPAUtils {
         if (q.getOffset() != null && q.getOffset() > -1) {
 
             tq.setFirstResult(q.getOffset().intValue());
+        }
+
+        if (queryHints != null) {
+            queryHints.stream().forEach(i -> {
+                tq.setHint(i.getKey(), i.getValue());
+            });
         }
 
         if (q.getFields().isEmpty()) {
