@@ -262,7 +262,7 @@ public class JPAUtils {
     public static List<Selection<?>> createFieldsSelect(Root<?> r, QueryParameters q, String
             idField) {
 
-        List<Selection<?>> fields = q.getFields().stream().map(f -> {
+        List<Selection<?>> fields = q.getFields().stream().distinct().map(f -> {
 
             try {
                 return r.get(f).alias(f);
@@ -273,7 +273,11 @@ public class JPAUtils {
         }).collect(Collectors.toList());
 
         try {
-            fields.add(r.get(idField).alias(idField));
+            boolean exists = fields.stream().anyMatch(f -> f.getAlias().equals(idField));
+
+            if (!exists) {
+                fields.add(r.get(idField).alias(idField));
+            }
         } catch (IllegalArgumentException e) {
 
             throw new NoSuchEntityFieldException(e.getMessage(), idField, r.getJavaType().getSimpleName());
