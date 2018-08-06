@@ -167,7 +167,7 @@ public class JPAUtils {
             return (List<T>) tq.getResultList();
         } else {
 
-            return createEntityFromTuple((List<Tuple>)tq.getResultList(), entity, getEntityIdField(em, entity));
+            return createEntitiesFromTuples((List<Tuple>)tq.getResultList(), entity, getEntityIdField(em, entity));
         }
     }
 
@@ -485,7 +485,8 @@ public class JPAUtils {
 
     ///// Private helper methods
 
-    private static <T> List<T> createEntityFromTuple(List<Tuple> tuples, Class<T> entity, String idField) {
+    @SuppressWarnings("unchecked")
+    private static <T> List<T> createEntitiesFromTuples(List<Tuple> tuples, Class<T> entity, String idField) {
 
         List<T> entities = new ArrayList<>();
 
@@ -516,22 +517,35 @@ public class JPAUtils {
 
                     try {
                         String[] fName = te.getAlias().split("\\.");
-                        Field f = getFieldFromEntity(entity, fName);
-                        f.setAccessible(true);
 
-                        if (isCollectionField(f)) {
-                            Object c = f.get(el);
-                            if (c == null) {
-                                f.set(el, new ArrayList<>());
-                                c = f.get(el);
+                        if (fName.length == 1) {
+
+                            Field f = getFieldFromEntity(entity, fName[0]);
+                            setEntityFieldValue(el, f, o);
+                        } else {
+                            T el2 = el;
+
+                            Field field = null;
+                            Class entity2 = entity;
+
+                            try {
+
+                                for (int i = 0; i < fName.length; i++) {
+
+                                    field = getFieldFromEntity(entity2, fName[i]);
+                                    entity2 = field.getType();
+
+                                    if (i < fName.length - 1) {
+
+                                        el2 = (T) initializeField(el2, field, entity2);
+                                    }
+                                }
+                            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+
+                                throw new AssertionError();
                             }
 
-                            Method add = Collection.class.getDeclaredMethod("add", Object.class);
-                            add.invoke(c, o);
-                        } else if (isObjectField(f)) {
-                            // TODO
-                        } else {
-                            f.set(el, o);
+                            setEntityFieldValue(el2, field, o);
                         }
                     } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
 
@@ -547,12 +561,55 @@ public class JPAUtils {
     }
 
     @SuppressWarnings("unchecked")
-    private static String getEntityIdField(EntityManager em, Class entity) {
+    private static <T> T initializeField(T entity, Field field, Class<T> entity2Class)
+            throws IllegalAccessException, NoSuchMethodException, InvocationTargetException, InstantiationException {
+        field.setAccessible(true);
+
+        if (isCollectionField(field)) {
+            Object collection = field.get(entity);
+
+            if (collection == null) {
+                field.set(entity, new ArrayList<>());
+            }
+        } else if (isObjectField(field)) {
+            Object object = field.get(entity);
+
+            if (object == null) {
+                field.set(entity, entity2Class.getConstructor().newInstance());
+            }
+        }
+
+        return (T) field.get(entity);
+    }
+
+    private static <T> void setEntityFieldValue(T entity, Field field, Object value)
+            throws IllegalAccessException, NoSuchMethodException, InvocationTargetException
+    {
+        field.setAccessible(true);
+
+        if (isCollectionField(field)) {
+            Object collection = field.get(entity);
+            if (collection == null) {
+                field.set(entity, new ArrayList<>());
+                collection = field.get(entity);
+            }
+
+            Method add = Collection.class.getDeclaredMethod("add", Object.class);
+            add.invoke(collection, value);
+        } else if (isObjectField(field)) {
+            field.set(entity, value);
+        } else {
+            field.set(entity, value);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static String getEntityIdField(EntityManager em, Class entityClass) {
 
         String idProperty = "";
 
         Metamodel metamodel = em.getMetamodel();
-        EntityType e = metamodel.entity(entity);
+        EntityType e = metamodel.entity(entityClass);
         Set<SingularAttribute> singularAttributes = e.getSingularAttributes();
 
         for (SingularAttribute singularAttribute : singularAttributes) {
@@ -567,29 +624,27 @@ public class JPAUtils {
         return idProperty;
     }
 
-    private static Field getFieldFromEntity(Class entity, String fieldName) throws
-            NoSuchFieldException {
+    private static Field getFieldFromEntity(Class entityClass, String fieldName) throws NoSuchFieldException {
 
         try {
-            return entity.getDeclaredField(fieldName);
+            return entityClass.getDeclaredField(fieldName);
         } catch (NoSuchFieldException e) {
 
-            if (entity.getSuperclass() == null) {
+            if (entityClass.getSuperclass() == null) {
                 throw e;
             }
 
-            return getFieldFromEntity(entity.getSuperclass(), fieldName);
+            return getFieldFromEntity(entityClass.getSuperclass(), fieldName);
         }
     }
 
-    private static Field getFieldFromEntity(Class entity, String[] fieldNames) throws
-            NoSuchFieldException {
+    private static Field getFieldFromEntity(Class entityClass, String[] fieldNames) throws NoSuchFieldException {
 
         if (fieldNames.length == 1) {
-            return getFieldFromEntity(entity, fieldNames[0]);
+            return getFieldFromEntity(entityClass, fieldNames[0]);
         }
 
-        Field field = getFieldFromEntity(entity, fieldNames[0]);
+        Field field = getFieldFromEntity(entityClass, fieldNames[0]);
         for (String fieldName : Arrays.stream(fieldNames).skip(1).collect(Collectors.toList())) {
             field.setAccessible(true);
             field = getFieldFromEntity(field.getType(), fieldName);
