@@ -41,6 +41,7 @@ import javax.persistence.metamodel.Metamodel;
 import javax.persistence.metamodel.SingularAttribute;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
@@ -150,7 +151,7 @@ public class JPAUtils {
             return (List<T>) tq.getResultList();
         } else {
 
-            return createEntityFromTuple((List<Tuple>)tq.getResultList(), entity);
+            return createEntityFromTuple((List<Tuple>)tq.getResultList(), entity, getEntityIdField(em, entity));
         }
     }
 
@@ -264,12 +265,23 @@ public class JPAUtils {
 
         List<Selection<?>> fields = q.getFields().stream().distinct().map(f -> {
 
-            try {
-                return r.get(f).alias(f);
-            } catch (IllegalArgumentException e) {
+            String[] fSplit = f.split("\\.");
 
-                throw new NoSuchEntityFieldException(e.getMessage(), f, r.getJavaType().getSimpleName());
+            Path<?> p = null;
+            for (String fS : fSplit) {
+                try {
+                    p = p == null ? r.get(fS) : p.get(fS);
+                } catch (IllegalArgumentException e) {
+
+                    throw new NoSuchEntityFieldException(e.getMessage(), f, r.getJavaType().getSimpleName());
+                }
             }
+
+            if (p == null) {
+                throw new NoSuchEntityFieldException("", f, r.getJavaType().getSimpleName());
+            }
+
+            return p.alias(f);
         }).collect(Collectors.toList());
 
         try {
@@ -457,11 +469,13 @@ public class JPAUtils {
 
     ///// Private helper methods
 
-    private static <T> List<T> createEntityFromTuple(List<Tuple> tuples, Class<T> entity) {
+    private static <T> List<T> createEntityFromTuple(List<Tuple> tuples, Class<T> entity, String idField) {
 
         List<T> entities = new ArrayList<>();
 
-        for (Tuple t : tuples) {
+        Map<Object, List<Tuple>> tuplesGrouping = getTuplesGroupingById(tuples, idField);
+
+        for (Map.Entry<Object, List<Tuple>> tuplesGroup : tuplesGrouping.entrySet()) {
 
             T el;
 
@@ -473,17 +487,35 @@ public class JPAUtils {
                 throw new AssertionError();
             }
 
-            for (TupleElement<?> te : t.getElements()) {
+            for (Tuple t : tuplesGroup.getValue()) {
 
-                Object o = t.get(te);
+                for (TupleElement<?> te : t.getElements()) {
 
-                try {
-                    Field f = getFieldFromEntity(entity, te.getAlias());
-                    f.setAccessible(true);
-                    f.set(el, o);
-                } catch (NoSuchFieldException | IllegalAccessException e1) {
+                    Object o = t.get(te);
 
-                    throw new NoSuchEntityFieldException(e1.getMessage(), te.getAlias(), entity.getSimpleName());
+                    try {
+                        String[] fName = te.getAlias().split("\\.");
+                        Field f = getFieldFromEntity(entity, fName);
+                        f.setAccessible(true);
+
+                        if (isCollectionField(f)) {
+                            Object c = f.get(el);
+                            if (c == null) {
+                                f.set(el, new ArrayList<>());
+                                c = f.get(el);
+                            }
+
+                            Method add = Collection.class.getDeclaredMethod("add", Object.class);
+                            add.invoke(c, o);
+                        } else if (isObjectField(f)) {
+                            // TODO
+                        } else {
+                            f.set(el, o);
+                        }
+                    } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+
+                        throw new NoSuchEntityFieldException(e.getMessage(), te.getAlias(), entity.getSimpleName());
+                    }
                 }
             }
 
@@ -527,6 +559,21 @@ public class JPAUtils {
 
             return getFieldFromEntity(entity.getSuperclass(), fieldName);
         }
+    }
+
+    private static Field getFieldFromEntity(Class entity, String[] fieldNames) throws
+            NoSuchFieldException {
+
+        if (fieldNames.length == 1) {
+            return getFieldFromEntity(entity, fieldNames[0]);
+        }
+
+        Field field = getFieldFromEntity(entity, fieldNames[0]);
+        for (String fieldName : Arrays.stream(fieldNames).skip(1).collect(Collectors.toList())) {
+            field = getFieldFromEntity(field.getType(), fieldName);
+        }
+
+        return field;
     }
 
     private static Object getValueForPath(Path path, String value) {
@@ -594,5 +641,35 @@ public class JPAUtils {
         }
 
         return new CriteriaField(path, containsToMany);
+    }
+
+
+    private static Map<Object, List<Tuple>> getTuplesGroupingById(List<Tuple> tuples, String idField) {
+        Map<Object, List<Tuple>> tupleGrouping = new HashMap<>();
+
+        for (Tuple tuple : tuples) {
+            Object id = tuple.get(idField);
+
+            tupleGrouping.computeIfPresent(id, (key, value) -> {
+                value.add(tuple);
+                return value;
+            });
+
+            tupleGrouping.computeIfAbsent(id, (key) -> {
+                List<Tuple> value = new ArrayList<>();
+                value.add(tuple);
+                return value;
+            });
+        }
+
+        return tupleGrouping;
+    }
+
+    private static boolean isCollectionField(Field f) {
+        return Collection.class.isAssignableFrom(f.getType());
+    }
+
+    private static boolean isObjectField(Field f) {
+        return !f.getType().isPrimitive();
     }
 }
