@@ -475,6 +475,11 @@ public class QueryStringBuilder {
                 .map(f -> f.split("[:]+(?=([^']*'[^']*')*[^']*$)"))
                 .collect(Collectors.toList());
 
+        // Validate too many arguments
+        if (filters.stream().anyMatch(f -> f.length > 3)) {
+            throw new QueryFormatException("One of the filters has too many arguments.", "filter", QueryFormatError.MALFORMED);
+        }
+
         filters.stream().filter(f -> f.length == 2).forEach(f -> {
 
             QueryFilter qf = new QueryFilter();
