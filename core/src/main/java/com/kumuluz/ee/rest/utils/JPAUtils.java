@@ -489,7 +489,12 @@ public class JPAUtils {
 
             for (Tuple t : tuplesGroup.getValue()) {
 
-                for (TupleElement<?> te : t.getElements()) {
+                List<TupleElement<?>> tes = t.getElements()
+                        .stream()
+                        .sorted(Comparator.comparing(TupleElement::getAlias))
+                        .collect(Collectors.toList());
+
+                for (TupleElement<?> te : tes) {
 
                     Object o = t.get(te);
 
@@ -570,6 +575,7 @@ public class JPAUtils {
 
         Field field = getFieldFromEntity(entity, fieldNames[0]);
         for (String fieldName : Arrays.stream(fieldNames).skip(1).collect(Collectors.toList())) {
+            field.setAccessible(true);
             field = getFieldFromEntity(field.getType(), fieldName);
         }
 
@@ -670,6 +676,6 @@ public class JPAUtils {
     }
 
     private static boolean isObjectField(Field f) {
-        return !f.getType().isPrimitive();
+        return !f.getType().isPrimitive() && !f.getType().isAssignableFrom(String.class);
     }
 }
