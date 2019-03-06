@@ -57,6 +57,29 @@ public class JPAUtils {
 
     private static final Logger log = Logger.getLogger(JPAUtils.class.getSimpleName());
 
+    public static <T> Stream<T> queryEntityStream(EntityManager em, Class<T> entity) {
+
+        return queryEntityStream(em, entity, new QueryParameters());
+    }
+
+    public static <T> Stream<T> queryEntityStream(EntityManager em, Class<T> entity, QueryParameters q) {
+
+        return queryEntities(em, entity, q, null, null, null);
+    }
+
+    public static <T> Stream<T> queryEntityStream(EntityManager em, Class<T> entity, CriteriaFilter<T> customFilter) {
+        return queryEntities(em, entity, new QueryParameters(), customFilter, null, null);
+    }
+
+    public static <T> Stream<T> queryEntityStream(EntityManager em, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter) {
+        return queryEntities(em, entity, q, customFilter, null, null);
+    }
+
+    public static <T> Stream<T> queryEntityStream(EntityManager em, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter,
+                                                  List<QueryHintPair> queryHints) {
+        return queryEntities(em, entity, q, customFilter, queryHints, null);
+    }
+
     public static <T> List<T> queryEntities(EntityManager em, Class<T> entity) {
 
         return queryEntities(em, entity, new QueryParameters());
@@ -64,25 +87,25 @@ public class JPAUtils {
 
     public static <T> List<T> queryEntities(EntityManager em, Class<T> entity, QueryParameters q) {
 
-        return queryEntities(em, entity, q, null, null, null);
+        return queryEntities(em, entity, q, null, null, null).collect(Collectors.toList());
     }
 
     public static <T> List<T> queryEntities(EntityManager em, Class<T> entity, CriteriaFilter<T> customFilter) {
-        return queryEntities(em, entity, new QueryParameters(), customFilter, null, null);
+        return queryEntities(em, entity, new QueryParameters(), customFilter, null, null).collect(Collectors.toList());
     }
 
     public static <T> List<T> queryEntities(EntityManager em, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter) {
-        return queryEntities(em, entity, q, customFilter, null, null);
+        return queryEntities(em, entity, q, customFilter, null, null).collect(Collectors.toList());
     }
 
     public static <T> List<T> queryEntities(EntityManager em, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter,
                                             List<QueryHintPair> queryHints) {
-        return queryEntities(em, entity, q, customFilter, queryHints, null);
+        return queryEntities(em, entity, q, customFilter, queryHints, null).collect(Collectors.toList());
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> List<T> queryEntities(EntityManager em, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter,
-                                            List<QueryHintPair> queryHints, String rootAlias) {
+    public static <T> Stream<T> queryEntities(EntityManager em, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter,
+                                              List<QueryHintPair> queryHints, String rootAlias) {
 
         if (em == null || entity == null)
             throw new IllegalArgumentException("The entity manager and the entity cannot be null.");
@@ -168,10 +191,10 @@ public class JPAUtils {
 
         if (q.getFields().isEmpty()) {
 
-            return (List<T>) tq.getResultList();
+            return (Stream<T>) tq.getResultStream();
         } else {
 
-            return createEntitiesFromTuples((List<Tuple>) tq.getResultList(), entity, getEntityIdField(em, entity));
+            return createEntitiesFromTuples((List<Tuple>) tq.getResultList(), entity, getEntityIdField(em, entity)).stream();
         }
     }
 
