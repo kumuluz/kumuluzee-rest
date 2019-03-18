@@ -231,7 +231,7 @@ List<Customer> allCustomers = JPAUtils.queryEntities(em, Customer.class,
 Where:
 - `p` is existing Predicate
 - `cb` is CriteriaBuilder and
-- `c` is Root 
+- `r` is Root 
 
 With this, programmer has the full power of Criteria API to further manipulate the query.
 
