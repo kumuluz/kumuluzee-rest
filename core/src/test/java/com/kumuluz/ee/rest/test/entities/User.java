@@ -4,8 +4,13 @@ import com.kumuluz.ee.rest.annotations.RestIgnore;
 import com.kumuluz.ee.rest.annotations.RestMapping;
 
 import javax.persistence.*;
+import com.kumuluz.ee.rest.test.utils.UUIDConverter;
+import org.eclipse.persistence.annotations.Converter;
+
 import java.util.Date;
 import java.util.List;
+
+import java.util.UUID;
 
 /**
  * @author Tilen Faganel
@@ -13,6 +18,7 @@ import java.util.List;
 @Entity
 @RestIgnore("userIgnoredField")
 @Table(name = "users")
+@Converter(name = "uuid", converterClass = UUIDConverter.class)
 public class User {
 
     @Id
@@ -21,6 +27,10 @@ public class User {
 
     @RestMapping("firstnameChanged")
     @RestMapping("firstnameAndLastname")
+    @Column(columnDefinition = "uuid")
+    @Convert(converter = UUIDConverter.class)
+    private UUID uuid;
+
     private String firstname;
 
     @RestMapping("firstnameAndLastname")
@@ -54,6 +64,14 @@ public class User {
 
     public void setId(Integer id) {
         this.id = id;
+    }
+
+    public UUID getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
     }
 
     public String getFirstname() {

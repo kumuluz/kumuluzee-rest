@@ -140,7 +140,7 @@ public class JPAUtils {
 
         if (!q.getFilters().isEmpty()) {
 
-            CriteriaWhereQuery criteriaWhereQuery = createWhereQueryInternal(cb, r, q);
+            CriteriaWhereQuery criteriaWhereQuery = createWhereQueryInternal(em, cb, r, q);
 
             requiresDistinct = criteriaWhereQuery.containsToMany();
             wherePredicate = criteriaWhereQuery.getPredicate();
@@ -237,7 +237,7 @@ public class JPAUtils {
 
         if (!q.getFilters().isEmpty()) {
 
-            CriteriaWhereQuery criteriaWhereQuery = createWhereQueryInternal(cb, r, q);
+            CriteriaWhereQuery criteriaWhereQuery = createWhereQueryInternal(em, cb, r, q);
 
             requiresDistinct = criteriaWhereQuery.containsToMany();
             wherePredicate = criteriaWhereQuery.getPredicate();
@@ -305,8 +305,8 @@ public class JPAUtils {
         return orders;
     }
 
-    public static Predicate createWhereQuery(CriteriaBuilder cb, Root<?> r, QueryParameters q) {
-        return createWhereQueryInternal(cb, r, q).getPredicate();
+    public static Predicate createWhereQuery(EntityManager em, CriteriaBuilder cb, Root<?> r, QueryParameters q) {
+        return createWhereQueryInternal(em, cb, r, q).getPredicate();
     }
 
     public static List<Selection<?>> createFieldsSelect(Root<?> r, QueryParameters q, String
@@ -356,7 +356,7 @@ public class JPAUtils {
 
     // Temporary methods to not break the public API
 
-    private static CriteriaWhereQuery createWhereQueryInternal(CriteriaBuilder cb, Root<?> r, QueryParameters q) {
+    private static CriteriaWhereQuery createWhereQueryInternal(EntityManager em, CriteriaBuilder cb, Root<?> r, QueryParameters q) {
 
         Predicate predicate = cb.conjunction();
         Boolean containsToMany = false;
@@ -419,6 +419,13 @@ public class JPAUtils {
                     case LIKE:
                         if (entityField.getJavaType().equals(String.class) && f.getValue() != null) {
                             np = cb.like(stringField, f.getValue());
+                        } else if (entityField.getJavaType().equals(UUID.class) && f.getValue() != null) {
+                            String driver = (String) em.getProperties().get("javax.persistence.jdbc.driver");
+                            if ("org.postgresql.Driver".equalsIgnoreCase(driver)) {
+                                np = cb.like(cb.function("text", String.class, r.get(f.getField()).as(String.class)), f.getValue());
+                            } else {
+                                np = cb.like(r.get(f.getField()).as(String.class), f.getValue());
+                            }
                         }
                         break;
                     case LIKEIC:
