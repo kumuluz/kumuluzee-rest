@@ -55,7 +55,10 @@ import java.util.stream.Stream;
  */
 public class JPAUtils {
 
-    private static final Logger log = Logger.getLogger(JPAUtils.class.getSimpleName());
+    private static final Logger LOG = Logger.getLogger(JPAUtils.class.getSimpleName());
+
+    private static final String PROP_PERSISTENCE_JDBC_DRIVER = "javax.persistence.jdbc.driver";
+    private static final String POSTGRES_SQL_DRIVER = "org.postgresql.Driver";
 
     public static <T> Stream<T> queryEntityStream(EntityManager em, Class<T> entity) {
 
@@ -115,7 +118,7 @@ public class JPAUtils {
                     "If you don't have any parameters either pass a empty object or " +
                     "use the queryEntities(EntityManager, Class<T>) method.");
 
-        log.finest("Querying entity: '" + entity.getSimpleName() + "' with parameters: " + q);
+        LOG.finest("Querying entity: '" + entity.getSimpleName() + "' with parameters: " + q);
 
         Boolean requiresDistinct = false;
 
@@ -223,7 +226,7 @@ public class JPAUtils {
                     "If you don't have any parameters either pass a empty object or " +
                     "use the queryEntitiesCount(EntityManager, Class<T>) method.");
 
-        log.finest("Querying entity count: '" + entity.getSimpleName() + "' with parameters: " + q);
+        LOG.finest("Querying entity count: '" + entity.getSimpleName() + "' with parameters: " + q);
 
         Boolean requiresDistinct = false;
 
@@ -303,6 +306,11 @@ public class JPAUtils {
         }
 
         return orders;
+    }
+
+    @Deprecated
+    public static Predicate createWhereQuery(CriteriaBuilder cb, Root<?> r, QueryParameters q) {
+        return createWhereQueryInternal(null, cb, r, q).getPredicate();
     }
 
     public static Predicate createWhereQuery(EntityManager em, CriteriaBuilder cb, Root<?> r, QueryParameters q) {
@@ -420,8 +428,8 @@ public class JPAUtils {
                         if (entityField.getJavaType().equals(String.class) && f.getValue() != null) {
                             np = cb.like(stringField, f.getValue());
                         } else if (entityField.getJavaType().equals(UUID.class) && f.getValue() != null) {
-                            String driver = (String) em.getProperties().get("javax.persistence.jdbc.driver");
-                            if ("org.postgresql.Driver".equalsIgnoreCase(driver)) {
+                            String driver = (null == em ? null : (String) em.getProperties().get(PROP_PERSISTENCE_JDBC_DRIVER));
+                            if (POSTGRES_SQL_DRIVER.equalsIgnoreCase(driver)) {
                                 np = cb.like(cb.function("text", String.class, r.get(f.getField()).as(String.class)), f.getValue());
                             } else {
                                 np = cb.like(r.get(f.getField()).as(String.class), f.getValue());
