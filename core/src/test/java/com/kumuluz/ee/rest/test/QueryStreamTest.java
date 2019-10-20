@@ -10,6 +10,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
@@ -68,6 +69,24 @@ public class QueryStreamTest {
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, size);
+
+    }
+
+    @Test
+    public void testMultipleQuieries() {
+        QueryParameters q = new QueryParameters();
+
+        em.getTransaction().begin();
+
+        Stream<User> users = JPAUtils.getEntityStream(em, User.class, q);
+        Long totalCount = JPAUtils.queryEntitiesCount(em, User.class, q);
+
+
+        int size = users.collect(Collectors.toList()).size();
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(100, size);
+        Assert.assertEquals(totalCount.intValue(), size);
 
     }
 
