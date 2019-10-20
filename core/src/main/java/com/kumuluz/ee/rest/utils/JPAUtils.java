@@ -60,27 +60,50 @@ public class JPAUtils {
     private static final String PROP_PERSISTENCE_JDBC_DRIVER = "javax.persistence.jdbc.driver";
     private static final String POSTGRES_SQL_DRIVER = "org.postgresql.Driver";
 
-    public static <T> Stream<T> queryEntityStream(EntityManager em, Class<T> entity) {
+    public static <T> Stream<T> getEntityStream(EntityManager em, Class<T> entity) {
 
-        return queryEntityStream(em, entity, new QueryParameters());
+        return getEntityStream(em, entity, new QueryParameters());
     }
 
-    public static <T> Stream<T> queryEntityStream(EntityManager em, Class<T> entity, QueryParameters q) {
+    public static <T> Stream<T> getEntityStream(EntityManager em, Class<T> entity, QueryParameters q) {
 
-        return queryEntities(em, entity, q, null, null, null);
+        return getEntityStream(em, entity, q, null, null, null);
     }
 
-    public static <T> Stream<T> queryEntityStream(EntityManager em, Class<T> entity, CriteriaFilter<T> customFilter) {
-        return queryEntities(em, entity, new QueryParameters(), customFilter, null, null);
+    public static <T> Stream<T> getEntityStream(EntityManager em, Class<T> entity, CriteriaFilter<T> customFilter) {
+        return getEntityStream(em, entity, new QueryParameters(), customFilter, null, null);
     }
 
-    public static <T> Stream<T> queryEntityStream(EntityManager em, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter) {
-        return queryEntities(em, entity, q, customFilter, null, null);
+    public static <T> Stream<T> getEntityStream(EntityManager em, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter) {
+        return getEntityStream(em, entity, q, customFilter, null, null);
     }
 
-    public static <T> Stream<T> queryEntityStream(EntityManager em, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter,
-                                                  List<QueryHintPair> queryHints) {
-        return queryEntities(em, entity, q, customFilter, queryHints, null);
+    public static <T> Stream<T> getEntityStream(EntityManager em, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter,
+                                                List<QueryHintPair> queryHints) {
+        return getEntityStream(em, entity, q, customFilter, queryHints, null);
+    }
+
+    public static <T> Queried<T> getQueried(EntityManager em, Class<T> entity) {
+
+        return getQueried(em, entity, new QueryParameters());
+    }
+
+    public static <T> Queried<T> getQueried(EntityManager em, Class<T> entity, QueryParameters q) {
+
+        return getQueried(em, entity, q, null, null, null);
+    }
+
+    public static <T> Queried<T> getQueried(EntityManager em, Class<T> entity, CriteriaFilter<T> customFilter) {
+        return getQueried(em, entity, new QueryParameters(), customFilter, null, null);
+    }
+
+    public static <T> Queried<T> getQueried(EntityManager em, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter) {
+        return getQueried(em, entity, q, customFilter, null, null);
+    }
+
+    public static <T> Queried<T> getQueried(EntityManager em, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter,
+                                            List<QueryHintPair> queryHints) {
+        return getQueried(em, entity, q, customFilter, queryHints, null);
     }
 
     public static <T> List<T> queryEntities(EntityManager em, Class<T> entity) {
@@ -90,26 +113,62 @@ public class JPAUtils {
 
     public static <T> List<T> queryEntities(EntityManager em, Class<T> entity, QueryParameters q) {
 
-        return queryEntities(em, entity, q, null, null, null).collect(Collectors.toList());
+        return queryEntities(em, entity, q, null, null, null);
     }
 
     public static <T> List<T> queryEntities(EntityManager em, Class<T> entity, CriteriaFilter<T> customFilter) {
-        return queryEntities(em, entity, new QueryParameters(), customFilter, null, null).collect(Collectors.toList());
+        return queryEntities(em, entity, new QueryParameters(), customFilter, null, null);
     }
 
     public static <T> List<T> queryEntities(EntityManager em, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter) {
-        return queryEntities(em, entity, q, customFilter, null, null).collect(Collectors.toList());
+        return queryEntities(em, entity, q, customFilter, null, null);
     }
 
     public static <T> List<T> queryEntities(EntityManager em, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter,
                                             List<QueryHintPair> queryHints) {
-        return queryEntities(em, entity, q, customFilter, queryHints, null).collect(Collectors.toList());
+        return queryEntities(em, entity, q, customFilter, queryHints, null);
+    }
+
+    public static <T> Queried<T> getQueried(EntityManager em, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter,
+                                            List<QueryHintPair> queryHints, String rootAlias) {
+
+        Long totalCount = queryEntitiesCount(em, entity, q, customFilter);
+        Stream<T> entityStream = getEntityStream(em, entity, q, customFilter, queryHints, rootAlias);
+
+        return Queried.result(totalCount, entityStream);
+    }
+
+    public static <T> Stream<T> getEntityStream(EntityManager em, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter,
+                                                List<QueryHintPair> queryHints, String rootAlias) {
+
+        TypedQuery<?> tq = buildQuery(em, entity, q, customFilter, queryHints, rootAlias);
+
+        if (q.getFields().isEmpty()) {
+
+            return (Stream<T>) tq.getResultStream();
+        } else {
+
+            return createEntitiesFromTuples((List<Tuple>) tq.getResultList(), entity, getEntityIdField(em, entity));
+        }
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> Stream<T> queryEntities(EntityManager em, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter,
-                                              List<QueryHintPair> queryHints, String rootAlias) {
+    public static <T> List<T> queryEntities(EntityManager em, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter,
+                                            List<QueryHintPair> queryHints, String rootAlias) {
 
+        TypedQuery<?> tq = buildQuery(em, entity, q, customFilter, queryHints, rootAlias);
+
+        if (q.getFields().isEmpty()) {
+
+            return (List<T>) tq.getResultList();
+        } else {
+
+            return createEntitiesFromTuples((List<Tuple>) tq.getResultList(), entity, getEntityIdField(em, entity)).collect(Collectors.toList());
+        }
+    }
+
+    private static <T> TypedQuery<?> buildQuery(EntityManager em, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter,
+                                                List<QueryHintPair> queryHints, String rootAlias) {
         if (em == null || entity == null)
             throw new IllegalArgumentException("The entity manager and the entity cannot be null.");
 
@@ -192,13 +251,7 @@ public class JPAUtils {
             );
         }
 
-        if (q.getFields().isEmpty()) {
-
-            return (Stream<T>) tq.getResultStream();
-        } else {
-
-            return createEntitiesFromTuples((List<Tuple>) tq.getResultList(), entity, getEntityIdField(em, entity)).stream();
-        }
+        return tq;
     }
 
     public static <T> Long queryEntitiesCount(EntityManager em, Class<T> entity) {
@@ -545,13 +598,11 @@ public class JPAUtils {
     ///// Private helper methods
 
     @SuppressWarnings("unchecked")
-    private static <T> List<T> createEntitiesFromTuples(List<Tuple> tuples, Class<T> entity, String idField) {
-
-        List<T> entities = new ArrayList<>();
+    private static <T> Stream<T> createEntitiesFromTuples(List<Tuple> tuples, Class<T> entity, String idField) {
 
         Map<Object, List<Tuple>> tuplesGrouping = getTuplesGroupingById(tuples, idField);
 
-        for (Map.Entry<Object, List<Tuple>> tuplesGroup : tuplesGrouping.entrySet()) {
+        return tuplesGrouping.entrySet().stream().map(tuplesGroup -> {
 
             T el;
 
@@ -618,10 +669,8 @@ public class JPAUtils {
                 }
             }
 
-            entities.add(el);
-        }
-
-        return entities;
+            return el;
+        });
     }
 
     @SuppressWarnings("unchecked")

@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * @author gpor89
+ * @author gpor0
  */
 @RunWith(Parameterized.class)
 public class QueryStreamTest {
@@ -40,7 +40,7 @@ public class QueryStreamTest {
     public void testStreamCount() {
         QueryParameters q = new QueryParameters();
 
-        Stream<User> users = JPAUtils.queryEntityStream(em, User.class, q);
+        Stream<User> users = JPAUtils.getEntityStream(em, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100L, users.count());
@@ -50,7 +50,7 @@ public class QueryStreamTest {
     public void testStreamsObject() {
         QueryParameters q = new QueryParameters();
 
-        Stream<User> users = JPAUtils.queryEntityStream(em, User.class, q);
+        Stream<User> users = JPAUtils.getEntityStream(em, User.class, q);
 
         Assert.assertNotNull(users);
         Optional<User> first = users.findFirst();
@@ -62,7 +62,7 @@ public class QueryStreamTest {
     public void testStreamCollect() {
         QueryParameters q = new QueryParameters();
 
-        Stream<User> users = JPAUtils.queryEntityStream(em, User.class, q);
+        Stream<User> users = JPAUtils.getEntityStream(em, User.class, q);
 
         int size = users.collect(Collectors.toList()).size();
 
@@ -75,7 +75,7 @@ public class QueryStreamTest {
     public void testStreamsCannotBeRestarted() {
         QueryParameters q = new QueryParameters();
 
-        Stream<User> users = JPAUtils.queryEntityStream(em, User.class, q);
+        Stream<User> users = JPAUtils.getEntityStream(em, User.class, q);
 
         int collectedCount = users.collect(Collectors.toList()).size();
 
