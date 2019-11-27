@@ -118,7 +118,7 @@ insert into projects (id, name, description, status, user_id) values (16, 'Yello
 insert into projects (id, name, description, status, user_id) values (17, 'Red', 'Pellentesque at nulla. Suspendisse potenti. Cras in purus eu magna vulputate luctus.', 1, 4);
 insert into projects (id, name, description, status, user_id) values (18, 'Maroon', 'Integer ac neque. Duis bibendum.', 0, 86);
 insert into projects (id, name, description, status, user_id) values (19, 'Goldenrod', 'Suspendisse ornare consequat lectus. In est risus, auctor sed, tristique in, tempus sit amet, sem.', 0, 23);
-insert into projects (id, name, description, status, user_id) values (20, 'Teal', 'Sed vel enim sit amet nunc viverra dapibus. Nulla suscipit ligula in lacus.', 1, 15);
+insert into projects (id, name, description, status, user_id) values (20, 'Teal', 'Sed vel enim sit amet nunc viverra dapibus. Nulla suscipit ligula in lacus.', 1, 23);
 insert into projects (id, name, description, status, user_id) values (21, 'Red', 'Suspendisse potenti.', 1, 28);
 insert into projects (id, name, description, status, user_id) values (22, 'Crimson', 'Nulla tempus. Vivamus in felis eu sapien cursus vestibulum. Proin eu mi. ', 1, 56);
 insert into projects (id, name, description, status, user_id) values (23, 'Fuscia', 'Morbi quis tortor id nulla ultrices aliquet. Maecenas leo odio, condimentum id, luctus nec, molestie sed, justo.', 1, 48);
@@ -199,3 +199,5 @@ insert into projects (id, name, description, status, user_id) values (97, 'Orang
 insert into projects (id, name, description, status, user_id) values (98, 'Mauv', 'In hac habitasse platea dictumst. Etiam faucibus cursus urna. Ut tellus.', 1, 80);
 insert into projects (id, name, description, status, user_id) values (99, 'Teal', 'Duis aliquam convallis nunc. Proin at turpis a pede posuere nonummy. Integer non velit.', 0, 41);
 insert into projects (id, name, description, status, user_id) values (100, 'Maroon', null, 0, 83);
+
+insert into user_careers (id, years, current_position, user_id) values (1, 5, 'Developer', 4);

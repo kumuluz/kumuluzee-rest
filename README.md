@@ -221,6 +221,28 @@ GET /v1/customers?offset=10&limit=5&order=id DESC&filter=age:GT:10 id:IN:[1,2,3]
 ```
 Filters are chained together with `AND` operator. `OR WHERE` clause is not supported at this time. 
 
+#### Custom field mapping
+Library supports custom property mappings set on entity properties in order to detach API schema from database model. This functionality turns out to be useful when persistence changes are needed and API needs to stay backwards compatible.
+```java
+@RestMapping("experience")
+private Integer years;
+```
+In this case both of the following queries will return same result:
+```
+GET /v1/customers?filter=years:EQ:5
+GET /v1/customers?filter=experience:EQ:5
+```
+Library supports combination of properties with child properties using OneToOne mapping:
+```java
+@RestMapping("emailAndCurrentPosition")
+private String email;
+
+@RestMapping(value = "emailAndCurrentPosition", toChildField = "currentPosition")
+@OneToOne(mappedBy = "user")
+private UserCareer career;
+```
+where result will return only email and current position within career relation.
+
 #### Additional criteria query manipulation
 Predicate constructed from query parameters can be further changed. For example:
 

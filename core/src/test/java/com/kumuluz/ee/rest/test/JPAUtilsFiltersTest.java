@@ -3,25 +3,23 @@ package com.kumuluz.ee.rest.test;
 import com.kumuluz.ee.rest.beans.QueryFilter;
 import com.kumuluz.ee.rest.beans.QueryParameters;
 import com.kumuluz.ee.rest.enums.FilterOperation;
-import com.kumuluz.ee.rest.exceptions.NoSuchEntityFieldException;
 import com.kumuluz.ee.rest.exceptions.InvalidFieldValueException;
+import com.kumuluz.ee.rest.exceptions.NoSuchEntityFieldException;
 import com.kumuluz.ee.rest.test.entities.Project;
 import com.kumuluz.ee.rest.test.entities.User;
 import com.kumuluz.ee.rest.test.utils.JpaUtil;
 import com.kumuluz.ee.rest.utils.JPAUtils;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import javax.persistence.EntityManager;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-
-import javax.persistence.EntityManager;
 
 /**
  * @author Tilen Faganel
@@ -60,6 +58,67 @@ public class JPAUtilsFiltersTest {
         Assert.assertEquals(1, users.size());
         Assert.assertNotNull(users.get(0).getFirstname());
         Assert.assertEquals("Sandra", users.get(0).getFirstname());
+    }
+
+    @Test
+    public void testSingleFilterWithMultipleRestMapping() {
+
+        QueryFilter qf = new QueryFilter();
+        qf.setField("firstnameAndLastname");
+        qf.setOperation(FilterOperation.EQ);
+        qf.setValue("Sandra");
+
+        QueryParameters q = new QueryParameters();
+        q.getFilters().add(qf);
+
+        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(1, users.size());
+        Assert.assertNotNull(users.get(0).getFirstname());
+        Assert.assertEquals("Sandra", users.get(0).getFirstname());
+    }
+
+    @Test
+    public void testSingleFilterWithRestMapping() {
+
+        QueryFilter qf = new QueryFilter();
+        qf.setField("firstnameChanged");
+        qf.setOperation(FilterOperation.EQ);
+        qf.setValue("Sandra");
+
+        QueryParameters q = new QueryParameters();
+        q.getFilters().add(qf);
+
+        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(1, users.size());
+        Assert.assertNotNull(users.get(0).getFirstname());
+        Assert.assertEquals("Sandra", users.get(0).getFirstname());
+    }
+
+    @Test
+    public void testChildSingleFilterWithRestMapping() {
+
+        QueryFilter qf = new QueryFilter();
+        qf.setField("career.experience");
+        qf.setOperation(FilterOperation.EQ);
+        qf.setValue("5");
+
+        QueryParameters q = new QueryParameters();
+        q.getFilters().add(qf);
+
+        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(1, users.size());
+        Assert.assertNotNull(users.get(0).getFirstname());
+        Assert.assertEquals("Jean", users.get(0).getFirstname());
+        Assert.assertNotNull(users.get(0).getLastname());
+        Assert.assertEquals("Torres", users.get(0).getLastname());
+        Assert.assertNotNull(users.get(0).getCareer());
+        Assert.assertEquals(5, users.get(0).getCareer().getYears().intValue());
     }
 
     @Test
@@ -195,7 +254,7 @@ public class JPAUtilsFiltersTest {
             Assert.fail("No exception was thrown");
         } catch (NoSuchEntityFieldException e) {
 
-            Assert.assertEquals(null, e.getField());
+            Assert.assertNull(e.getField());
         }
     }
 
@@ -518,7 +577,7 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<Project> projects  = JPAUtils.queryEntities(em, Project.class, q);
+        List<Project> projects = JPAUtils.queryEntities(em, Project.class, q);
 
         Assert.assertNotNull(projects);
         Assert.assertEquals(100, projects.size());
