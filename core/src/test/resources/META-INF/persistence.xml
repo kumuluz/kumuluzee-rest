@@ -11,7 +11,7 @@
 
         <class>com.kumuluz.ee.rest.test.entities.User</class>
         <class>com.kumuluz.ee.rest.test.entities.Project</class>
-        <class>si.petrol.digital.rest.test.entities.UserCareer</class>
+        <class>com.kumuluz.ee.rest.test.entities.UserCareer</class>
 
         <properties>
             <property name="javax.persistence.jdbc.driver" value="org.h2.Driver"/>
@@ -37,7 +37,7 @@
 
         <class>com.kumuluz.ee.rest.test.entities.User</class>
         <class>com.kumuluz.ee.rest.test.entities.Project</class>
-        <class>si.petrol.digital.rest.test.entities.UserCareer</class>
+        <class>com.kumuluz.ee.rest.test.entities.UserCareer</class>
 
         <properties>
             <property name="javax.persistence.jdbc.driver" value="org.h2.Driver"/>

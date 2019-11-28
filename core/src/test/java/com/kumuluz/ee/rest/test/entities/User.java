@@ -1,7 +1,6 @@
 package com.kumuluz.ee.rest.test.entities;
 
 import com.kumuluz.ee.rest.annotations.RestMapping;
-import si.petrol.digital.rest.test.entities.UserCareer;
 
 import javax.persistence.*;
 import java.util.Date;

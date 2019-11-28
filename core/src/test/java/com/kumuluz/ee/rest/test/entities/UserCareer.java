@@ -1,7 +1,6 @@
-package si.petrol.digital.rest.test.entities;
+package com.kumuluz.ee.rest.test.entities;
 
 import com.kumuluz.ee.rest.annotations.RestMapping;
-import com.kumuluz.ee.rest.test.entities.User;
 
 import javax.persistence.*;
 
