@@ -1,9 +1,10 @@
 package com.kumuluz.ee.rest.test.entities;
 
-import java.util.Date;
-import java.util.List;
+import com.kumuluz.ee.rest.annotations.RestMapping;
 
 import javax.persistence.*;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author Tilen Faganel
@@ -16,10 +17,14 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @RestMapping("firstnameChanged")
+    @RestMapping("firstnameAndLastname")
     private String firstname;
 
+    @RestMapping("firstnameAndLastname")
     private String lastname;
 
+    @RestMapping("emailAndCurrentPosition")
     private String email;
 
     private String country;
@@ -35,6 +40,11 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private List<Project> projects;
+
+    @RestMapping(value = "career.experience", toChildField = "years")
+    @RestMapping(value = "emailAndCurrentPosition", toChildField = "currentPosition")
+    @OneToOne(mappedBy = "user")
+    private UserCareer career;
 
     public Integer getId() {
         return id;
@@ -114,5 +124,13 @@ public class User {
 
     public void setProjects(List<Project> projects) {
         this.projects = projects;
+    }
+
+    public UserCareer getCareer() {
+        return career;
+    }
+
+    public void setCareer(UserCareer career) {
+        this.career = career;
     }
 }

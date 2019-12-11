@@ -3,25 +3,23 @@ package com.kumuluz.ee.rest.test;
 import com.kumuluz.ee.rest.beans.QueryOrder;
 import com.kumuluz.ee.rest.beans.QueryParameters;
 import com.kumuluz.ee.rest.enums.OrderDirection;
-import com.kumuluz.ee.rest.exceptions.NoSuchEntityFieldException;
 import com.kumuluz.ee.rest.exceptions.InvalidEntityFieldException;
+import com.kumuluz.ee.rest.exceptions.NoSuchEntityFieldException;
 import com.kumuluz.ee.rest.test.entities.Project;
 import com.kumuluz.ee.rest.test.entities.User;
 import com.kumuluz.ee.rest.test.utils.JpaUtil;
 import com.kumuluz.ee.rest.utils.JPAUtils;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import javax.persistence.EntityManager;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import javax.persistence.EntityManager;
 
 /**
  * @author Tilen Faganel
@@ -48,6 +46,26 @@ public class JPAUtilsOrderTest {
 
         QueryOrder qo = new QueryOrder();
         qo.setField("firstname");
+        qo.setOrder(OrderDirection.ASC);
+
+        QueryParameters q = new QueryParameters();
+        q.getOrder().add(qo);
+
+        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(100, users.size());
+        Assert.assertNotNull(users.get(0).getFirstname());
+        Assert.assertEquals("Amanda", users.get(0).getFirstname());
+        Assert.assertNotNull(users.get(99).getFirstname());
+        Assert.assertEquals("Victor", users.get(99).getFirstname());
+    }
+
+    @Test
+    public void testSingleOrderWithRestMapping() {
+
+        QueryOrder qo = new QueryOrder();
+        qo.setField("firstnameChanged");
         qo.setOrder(OrderDirection.ASC);
 
         QueryParameters q = new QueryParameters();

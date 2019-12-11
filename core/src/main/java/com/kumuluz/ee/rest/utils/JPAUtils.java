@@ -20,6 +20,7 @@
  */
 package com.kumuluz.ee.rest.utils;
 
+import com.kumuluz.ee.rest.annotations.RestMapping;
 import com.kumuluz.ee.rest.beans.*;
 import com.kumuluz.ee.rest.enums.OrderDirection;
 import com.kumuluz.ee.rest.exceptions.InvalidEntityFieldException;
@@ -43,8 +44,10 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Tilen Faganel
@@ -157,9 +160,9 @@ public class JPAUtils {
         }
 
         if (queryHints != null) {
-            queryHints.stream().forEach(i -> {
-                tq.setHint(i.getKey(), i.getValue());
-            });
+            queryHints.stream().forEach(i ->
+                tq.setHint(i.getKey(), i.getValue())
+            );
         }
 
         if (q.getFields().isEmpty()) {
@@ -167,7 +170,7 @@ public class JPAUtils {
             return (List<T>) tq.getResultList();
         } else {
 
-            return createEntitiesFromTuples((List<Tuple>)tq.getResultList(), entity, getEntityIdField(em, entity));
+            return createEntitiesFromTuples((List<Tuple>) tq.getResultList(), entity, getEntityIdField(em, entity));
         }
     }
 
@@ -279,7 +282,8 @@ public class JPAUtils {
     public static List<Selection<?>> createFieldsSelect(Root<?> r, QueryParameters q, String
             idField) {
 
-        List<Selection<?>> fields = q.getFields().stream().distinct().map(f -> {
+        List<Selection<?>> fields = q.getFields().stream().distinct().map(restField ->
+        getRestFieldMappings(r, restField).map( f -> {
 
             String[] fSplit = f.split("\\.");
 
@@ -298,7 +302,7 @@ public class JPAUtils {
             }
 
             return p.alias(f);
-        }).collect(Collectors.toList());
+        })).flatMap(Function.identity()).collect(Collectors.toList());
 
         try {
             boolean exists = fields.stream().anyMatch(f -> f.getAlias().equals(idField));
@@ -583,8 +587,7 @@ public class JPAUtils {
     }
 
     private static <T> void setEntityFieldValue(T entity, Field field, Object value)
-            throws IllegalAccessException, NoSuchMethodException, InvocationTargetException
-    {
+            throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         field.setAccessible(true);
 
         if (isCollectionField(field)) {
@@ -695,13 +698,16 @@ public class JPAUtils {
 
         for (String field : fields) {
 
-            path = from.get(field);
+            //only first since multiple field operations is not supported
+            final String mappedField = getRestFieldMappings(from, field).findFirst().orElse(null);
+
+            path = from.get(mappedField);
 
             if (path.getModel() == null &&
                     (path.getJavaType().equals(List.class) || path.getJavaType().equals(Set.class))) {
 
                 containsToMany = true;
-                from = from.join(field);
+                from = from.join(mappedField);
             } else {
 
                 switch (((Attribute) path.getModel()).getPersistentAttributeType()) {
@@ -711,7 +717,7 @@ public class JPAUtils {
                     case ONE_TO_ONE:
                     case MANY_TO_ONE:
                     case EMBEDDED:
-                        from = from.join(field);
+                        from = from.join(mappedField);
                         break;
                 }
             }
@@ -720,6 +726,26 @@ public class JPAUtils {
         return new CriteriaField(path, containsToMany);
     }
 
+    private static Stream<String> getRestFieldMappings(final Path path, final String restField) {
+
+        if (null == restField) {
+            return Stream.empty();
+        }
+
+        List<String> mappingList = Stream.of(path.getJavaType().getDeclaredFields())
+                .map(entityField -> Stream.of(entityField.getAnnotationsByType(RestMapping.class))
+                        .map(annotation -> {
+                                    String restFieldName = annotation.value();
+                                    String jpaFieldPath = annotation.toChildField().isEmpty() ? entityField.getName() : entityField.getName() + "." + annotation.toChildField();
+                                    return new AbstractMap.SimpleEntry<>(restFieldName, jpaFieldPath);
+                                }
+                        )
+                        .filter(e -> restField.equals(e.getKey())).map(AbstractMap.SimpleEntry::getValue)
+                )
+                .flatMap(Function.identity()).collect(Collectors.toList());
+
+        return mappingList.isEmpty() ? Stream.of(restField) : mappingList.stream();
+    }
 
     private static Map<Object, List<Tuple>> getTuplesGroupingById(List<Tuple> tuples, String idField) {
         Map<Object, List<Tuple>> tupleGrouping = new HashMap<>();

@@ -26,6 +26,7 @@ public class Project {
     private ProjectStatus status;
 
     @ManyToOne
+    @JoinColumn(name = "user_id")
     private User user;
 
     public Integer getId() {
