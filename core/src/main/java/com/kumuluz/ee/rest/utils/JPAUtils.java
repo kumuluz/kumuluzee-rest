@@ -20,6 +20,7 @@
  */
 package com.kumuluz.ee.rest.utils;
 
+import com.kumuluz.ee.rest.annotations.RestIgnore;
 import com.kumuluz.ee.rest.annotations.RestMapping;
 import com.kumuluz.ee.rest.beans.*;
 import com.kumuluz.ee.rest.enums.OrderDirection;
@@ -161,7 +162,7 @@ public class JPAUtils {
 
         if (queryHints != null) {
             queryHints.stream().forEach(i ->
-                tq.setHint(i.getKey(), i.getValue())
+                    tq.setHint(i.getKey(), i.getValue())
             );
         }
 
@@ -248,18 +249,21 @@ public class JPAUtils {
 
                 CriteriaField field = getCriteriaField(qo.getField(), r);
 
-                if (field.containsToMany()) {
-                    throw new InvalidEntityFieldException(
-                            "OneToMany and ManyToMany relations are not supported by the order query",
-                            qo.getField(), r.getJavaType().getSimpleName());
-                }
+                if (null != field) {
 
-                if (qo.getOrder() == OrderDirection.DESC) {
+                    if (field.containsToMany()) {
+                        throw new InvalidEntityFieldException(
+                                "OneToMany and ManyToMany relations are not supported by the order query",
+                                qo.getField(), r.getJavaType().getSimpleName());
+                    }
 
-                    orders.add(cb.desc(field.getPath()));
-                } else {
+                    if (qo.getOrder() == OrderDirection.DESC) {
 
-                    orders.add(cb.asc(field.getPath()));
+                        orders.add(cb.desc(field.getPath()));
+                    } else {
+
+                        orders.add(cb.asc(field.getPath()));
+                    }
                 }
             } catch (IllegalArgumentException e) {
 
@@ -269,7 +273,10 @@ public class JPAUtils {
 
         //Add sort by id for correct pagination when field has same values
         if (id != null) {
-            orders.add(cb.asc(getCriteriaField(id, r).getPath()));
+            CriteriaField criteriaField = getCriteriaField(id, r);
+            if (null != criteriaField) {
+                orders.add(cb.asc(criteriaField.getPath()));
+            }
         }
 
         return orders;
@@ -282,27 +289,33 @@ public class JPAUtils {
     public static List<Selection<?>> createFieldsSelect(Root<?> r, QueryParameters q, String
             idField) {
 
-        List<Selection<?>> fields = q.getFields().stream().distinct().map(restField ->
-        getRestFieldMappings(r, restField).map( f -> {
+        final List<Selection<?>> fields = q.getFields().stream().distinct().map(restField ->
+                getRestFieldMappings(r, restField).map(f -> {
 
-            String[] fSplit = f.split("\\.");
+                    String[] fSplit = f.split("\\.");
 
-            Path<?> p = null;
-            for (String fS : fSplit) {
-                try {
-                    p = p == null ? r.get(fS) : p.get(fS);
-                } catch (IllegalArgumentException e) {
+                    Path<?> p = null;
+                    for (String fS : fSplit) {
+                        try {
 
-                    throw new NoSuchEntityFieldException(e.getMessage(), f, r.getJavaType().getSimpleName());
-                }
-            }
+                            if (isRestIgnored(null == p ? r.getJavaType() : p.getJavaType(), fS)) {
+                                Optional<Selection<?>> empty = Optional.empty();
+                                return empty;
+                            }
 
-            if (p == null) {
-                throw new NoSuchEntityFieldException("", f, r.getJavaType().getSimpleName());
-            }
+                            p = p == null ? r.get(fS) : p.get(fS);
+                        } catch (IllegalArgumentException e) {
+                            throw new NoSuchEntityFieldException(e.getMessage(), f, r.getJavaType().getSimpleName());
+                        }
+                    }
 
-            return p.alias(f);
-        })).flatMap(Function.identity()).collect(Collectors.toList());
+                    if (p == null) {
+                        throw new NoSuchEntityFieldException("", f, r.getJavaType().getSimpleName());
+                    }
+
+                    return Optional.of(p.alias(f));
+                }).filter(Optional::isPresent).map(Optional::get)
+        ).flatMap(Function.identity()).collect(Collectors.toList());
 
         try {
             boolean exists = fields.stream().anyMatch(f -> f.getAlias().equals(idField));
@@ -331,6 +344,10 @@ public class JPAUtils {
 
             try {
                 CriteriaField criteriaField = getCriteriaField(f.getField(), r);
+
+                if (null == criteriaField) {
+                    continue;
+                }
 
                 if (criteriaField.containsToMany()) {
                     containsToMany = true;
@@ -525,7 +542,9 @@ public class JPAUtils {
                         if (fName.length == 1) {
 
                             Field f = getFieldFromEntity(entity, fName[0]);
-                            setEntityFieldValue(el, f, o);
+                            if (null != f) {
+                                setEntityFieldValue(el, f, o);
+                            }
                         } else {
                             T el2 = el;
 
@@ -537,6 +556,9 @@ public class JPAUtils {
                                 for (int i = 0; i < fName.length; i++) {
 
                                     field = getFieldFromEntity(entity2, fName[i]);
+                                    if (null == field) {
+                                        continue;
+                                    }
                                     entity2 = field.getType();
 
                                     if (i < fName.length - 1) {
@@ -630,6 +652,9 @@ public class JPAUtils {
     private static Field getFieldFromEntity(Class entityClass, String fieldName) throws NoSuchFieldException {
 
         try {
+            if (isRestIgnored(entityClass, fieldName)) {
+                return null;
+            }
             return entityClass.getDeclaredField(fieldName);
         } catch (NoSuchFieldException e) {
 
@@ -639,21 +664,6 @@ public class JPAUtils {
 
             return getFieldFromEntity(entityClass.getSuperclass(), fieldName);
         }
-    }
-
-    private static Field getFieldFromEntity(Class entityClass, String[] fieldNames) throws NoSuchFieldException {
-
-        if (fieldNames.length == 1) {
-            return getFieldFromEntity(entityClass, fieldNames[0]);
-        }
-
-        Field field = getFieldFromEntity(entityClass, fieldNames[0]);
-        for (String fieldName : Arrays.stream(fieldNames).skip(1).collect(Collectors.toList())) {
-            field.setAccessible(true);
-            field = getFieldFromEntity(field.getType(), fieldName);
-        }
-
-        return field;
     }
 
     private static Object getValueForPath(Path path, String value) {
@@ -696,10 +706,21 @@ public class JPAUtils {
         Path path = r;
         Boolean containsToMany = false;
 
+        final Set<Join> joins = new HashSet<>();
         for (String field : fields) {
 
-            //only first since multiple field operations is not supported
-            final String mappedField = getRestFieldMappings(from, field).findFirst().orElse(null);
+            //only first since multiple field operations are not supported
+            final Optional<String> mappedFieldOptional = getRestFieldMappings(from, field).findFirst();
+
+            //ignored
+            if (!mappedFieldOptional.isPresent()) {
+                r.getJoins().removeIf(o -> {
+                    //remove joins for ignored field
+                    return joins.contains(o);
+                });
+                return null;
+            }
+            String mappedField = mappedFieldOptional.get();
 
             path = from.get(mappedField);
 
@@ -707,7 +728,9 @@ public class JPAUtils {
                     (path.getJavaType().equals(List.class) || path.getJavaType().equals(Set.class))) {
 
                 containsToMany = true;
-                from = from.join(mappedField);
+                Join join = from.join(mappedField);
+                from = join;
+                joins.add(join);
             } else {
 
                 switch (((Attribute) path.getModel()).getPersistentAttributeType()) {
@@ -717,7 +740,9 @@ public class JPAUtils {
                     case ONE_TO_ONE:
                     case MANY_TO_ONE:
                     case EMBEDDED:
-                        from = from.join(mappedField);
+                        Join join = from.join(mappedField);
+                        from = join;
+                        joins.add(join);
                         break;
                 }
             }
@@ -728,7 +753,7 @@ public class JPAUtils {
 
     private static Stream<String> getRestFieldMappings(final Path path, final String restField) {
 
-        if (null == restField) {
+        if (null == restField || isRestIgnored(path.getJavaType(), restField)) {
             return Stream.empty();
         }
 
@@ -770,6 +795,18 @@ public class JPAUtils {
 
     private static boolean isCollectionField(Field f) {
         return Collection.class.isAssignableFrom(f.getType());
+    }
+
+    private static boolean isRestIgnored(final Class entityClass, final String restField) {
+        final RestIgnore restIgnore = (RestIgnore) entityClass.getAnnotation(RestIgnore.class);
+
+        if (restIgnore != null) {
+            if (Stream.of(restIgnore.value()).filter(f -> restField.equalsIgnoreCase(f)).findFirst().isPresent()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static boolean isObjectField(Field f) {

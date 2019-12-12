@@ -1,5 +1,6 @@
 package com.kumuluz.ee.rest.test.entities;
 
+import com.kumuluz.ee.rest.annotations.RestIgnore;
 import com.kumuluz.ee.rest.test.entities.enums.ProjectStatus;
 
 import javax.persistence.*;
@@ -9,6 +10,7 @@ import java.util.UUID;
  * @author Tilen Faganel
  */
 @Entity
+@RestIgnore({"projectIgnoreField"})
 @Table(name = "projects")
 public class Project {
 

@@ -1,5 +1,6 @@
 package com.kumuluz.ee.rest.test.entities;
 
+import com.kumuluz.ee.rest.annotations.RestIgnore;
 import com.kumuluz.ee.rest.annotations.RestMapping;
 
 import javax.persistence.*;
@@ -10,6 +11,7 @@ import java.util.List;
  * @author Tilen Faganel
  */
 @Entity
+@RestIgnore("userIgnoredField")
 @Table(name = "users")
 public class User {
 

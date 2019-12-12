@@ -1,5 +1,6 @@
 package com.kumuluz.ee.rest.test.entities;
 
+import com.kumuluz.ee.rest.annotations.RestIgnore;
 import com.kumuluz.ee.rest.annotations.RestMapping;
 
 import javax.persistence.*;
@@ -8,6 +9,7 @@ import javax.persistence.*;
  * @author Gregor Porocnik
  */
 @Entity
+@RestIgnore("careerIgnoreField")
 @Table(name = "user_careers")
 public class UserCareer {
 

@@ -276,4 +276,56 @@ public class JPAUtilsOrderTest {
         JPAUtils.queryEntities(em, User.class, q);
         Assert.fail("No exception was thrown");
     }
+
+
+    @Test
+    public void ignoredFieldShouldReturnUnchangedResult() {
+
+        String ignoredFieldName = "userIgnoredField";
+
+        QueryParameters q = new QueryParameters();
+
+        QueryOrder o = new QueryOrder();
+        o.setField(ignoredFieldName);
+        o.setOrder(OrderDirection.ASC);
+        q.getOrder().add(o);
+
+        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(100, users.size());
+    }
+
+    @Test
+    public void ignoredFieldOnOneToOneShouldReturnUnchangedResult() {
+
+        String ignoredFieldName = "career.careerIgnoreField";
+
+        QueryParameters q = new QueryParameters();
+
+        QueryOrder o = new QueryOrder();
+        o.setField(ignoredFieldName);
+        o.setOrder(OrderDirection.ASC);
+        q.getOrder().add(o);
+
+        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(100, users.size());
+    }
+
+    @Test(expected = NoSuchEntityFieldException.class)
+    public void unknownOrderFieldShouldReturnException() {
+
+        String ignoredFieldName = "customIgnoredField2";
+
+        QueryParameters q = new QueryParameters();
+
+        QueryOrder o = new QueryOrder();
+        o.setField(ignoredFieldName);
+        o.setOrder(OrderDirection.ASC);
+        q.getOrder().add(o);
+
+        JPAUtils.queryEntities(em, User.class, q);
+    }
 }
