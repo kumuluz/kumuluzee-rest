@@ -43,7 +43,7 @@ public class Queried<R> {
 
     public static <T> Queried<T> result(Long totalCount, List<T> result) {
 
-        return new Queried(totalCount, Stream.of(result));
+        return new Queried(totalCount, result.stream());
     }
 
     public static <T> Queried<T> result(Long totalCount, T... result) {
