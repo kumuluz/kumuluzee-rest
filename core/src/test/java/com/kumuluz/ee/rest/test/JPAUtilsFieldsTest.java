@@ -53,6 +53,63 @@ public class JPAUtilsFieldsTest {
     }
 
     @Test
+    public void ignoredFieldShouldReturnUnchangedResult() {
+
+        String ignoredFieldName = "userIgnoredField";
+
+        QueryParameters q = new QueryParameters();
+
+        q.getFields().add(ignoredFieldName);
+
+        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(100, users.size());
+    }
+
+    // @Test unsupported yet operation
+    public void ignoredFieldOnOneToManyShouldReturnUnchangedResult() {
+
+        String ignoredFieldName = "projects.projectIgnoreField";
+
+        QueryParameters q = new QueryParameters();
+
+        q.getFields().add(ignoredFieldName);
+
+        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(100, users.size());
+    }
+
+    @Test
+    public void ignoredFieldOnOneToOneShouldReturnUnchangedResult() {
+
+        String ignoredFieldName = "career.careerIgnoreField";
+
+        QueryParameters q = new QueryParameters();
+
+        q.getFields().add(ignoredFieldName);
+
+        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(100, users.size());
+    }
+
+    @Test(expected = NoSuchEntityFieldException.class)
+    public void unknownSelectionFieldShouldReturnException() {
+
+        String ignoredFieldName = "customIgnoredField2";
+
+        QueryParameters q = new QueryParameters();
+
+        q.getFields().add(ignoredFieldName);
+
+        JPAUtils.queryEntities(em, User.class, q);
+    }
+
+    @Test
     public void testSingleFieldWithRestMapping() {
 
         QueryParameters q = new QueryParameters();

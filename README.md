@@ -243,6 +243,18 @@ private UserCareer career;
 ```
 where result will return only email and current position within career relation.
 
+#### Ignoring REST fields
+By default, REST library returns field not found exception for non-existing entity fields. For some cases we may want to omit field check with annotation:
+ ```java
+@Entity
+@RestIgnore("userIgnoredField")
+@Table(name = "users")
+public class User {
+    ...
+}
+ ```
+
+
 #### Additional criteria query manipulation
 Predicate constructed from query parameters can be further changed. For example:
 

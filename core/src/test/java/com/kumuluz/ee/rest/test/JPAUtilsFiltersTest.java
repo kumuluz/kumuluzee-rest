@@ -867,4 +867,66 @@ public class JPAUtilsFiltersTest {
         Assert.assertNotNull(projects);
         Assert.assertEquals(99, projects.size());
     }
+
+
+    @Test
+    public void ignoredFieldShouldReturnUnchangedResult() {
+
+        String ignoredFieldName = "userIgnoredField";
+
+        QueryParameters q = new QueryParameters();
+
+        q.getFilters().add(new QueryFilter(ignoredFieldName, FilterOperation.EQ, "customValue"));
+
+        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(100, users.size());
+    }
+
+    @Test
+    public void ignoredFieldOnOneToOneShouldReturnUnchangedResult() {
+
+        String ignoredFieldName = "career.careerIgnoreField";
+
+        QueryParameters q = new QueryParameters();
+
+        q.getFilters().add(new QueryFilter(ignoredFieldName, FilterOperation.EQ, "customValue"));
+
+        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(100, users.size());
+    }
+
+    @Test
+    public void includeIgnoreOnMultipleFieldsOnOneToOneShouldReturnUnchangedResult() {
+
+        String ignoredFieldName = "career.careerIgnoreField";
+
+        QueryParameters q = new QueryParameters();
+
+        //joins on other than ignored fields must be preserved
+        q.getFilters().add(new QueryFilter("projects.name", FilterOperation.EQ, "Goldenrod"));
+        q.getFilters().add(new QueryFilter("career.years", FilterOperation.EQ, "5"));
+        q.getFilters().add(new QueryFilter(ignoredFieldName, FilterOperation.EQ, "customValue"));
+
+        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(1, users.size());
+    }
+
+    @Test(expected = NoSuchEntityFieldException.class)
+    public void unknownFilterFieldShouldReturnException() {
+
+        String ignoredFieldName = "customIgnoredField2";
+
+        QueryParameters q = new QueryParameters();
+
+        q.getFilters().add(new QueryFilter(ignoredFieldName, FilterOperation.EQ, "customValue"));
+
+        JPAUtils.queryEntities(em, User.class, q);
+    }
+
 }
