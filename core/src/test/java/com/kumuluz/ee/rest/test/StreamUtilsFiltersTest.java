@@ -734,6 +734,27 @@ public class StreamUtilsFiltersTest {
     }*/
 
     @Test
+    public void testFilterMultipleLevel() {
+
+        QueryFilter qf = new QueryFilter();
+        qf.setField("projects.user.id");
+        qf.setOperation(FilterOperation.EQ);
+        qf.setValue("0");
+
+        QueryParameters q = new QueryParameters();
+        q.getFilters().add(qf);
+
+        List<User> users = new ArrayList<>();
+        users = em.createNamedQuery("User.getAll").getResultList();
+
+        users = StreamUtils.queryEntities(users, User.class, q);
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(0, users.size());
+    }
+
+
+    @Test
     public void testEnumFilter() {
 
         QueryFilter qf = new QueryFilter();

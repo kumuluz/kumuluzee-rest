@@ -371,7 +371,9 @@ public class StreamUtils {
 
                         clazzTarget = field.getType();
 
-                        newFieldName = newFieldName.substring(fieldNames[0].length());
+                        if(fieldNames.length > 1)
+                            newFieldName = newFieldName.substring(fieldNames[0].length() + 1);
+
                     } while (newFieldName.contains("."));
                 }
 
