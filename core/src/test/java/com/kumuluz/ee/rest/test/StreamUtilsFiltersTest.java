@@ -9,6 +9,7 @@ import com.kumuluz.ee.rest.test.entities.Project;
 import com.kumuluz.ee.rest.test.entities.User;
 import com.kumuluz.ee.rest.test.utils.JpaUtil;
 import com.kumuluz.ee.rest.utils.JPAUtils;
+import com.kumuluz.ee.rest.utils.StreamUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,16 +17,13 @@ import org.junit.runners.Parameterized;
 
 import javax.persistence.EntityManager;
 import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
- * @author Tilen Faganel
+ * @author Zvone Gazvoda
  */
 @RunWith(Parameterized.class)
-public class JPAUtilsFiltersTest {
+public class StreamUtilsFiltersTest {
 
     @Parameterized.Parameter
     public EntityManager em;
@@ -52,7 +50,9 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+        List<User> users = new ArrayList<>();
+        users = em.createNamedQuery("User.getAll").getResultList();
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(1, users.size());
@@ -71,7 +71,9 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+        List<User> users = new ArrayList<>();
+        users = em.createNamedQuery("User.getAll").getResultList();
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(1, users.size());
@@ -90,7 +92,9 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+        List<User> users = new ArrayList<>();
+        users = em.createNamedQuery("User.getAll").getResultList();
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(1, users.size());
@@ -109,7 +113,9 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+        List<User> users = new ArrayList<>();
+        users = em.createNamedQuery("User.getAll").getResultList();
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(1, users.size());
@@ -132,7 +138,9 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+        List<User> users = new ArrayList<>();
+        users = em.createNamedQuery("User.getAll").getResultList();
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(47, users.size());
@@ -152,7 +160,9 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+        List<User> users = new ArrayList<>();
+        users = em.createNamedQuery("User.getAll").getResultList();
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(39, users.size());
@@ -178,7 +188,10 @@ public class JPAUtilsFiltersTest {
         qf.setValue("%ina");
         q.getFilters().add(qf);
 
-        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+        List<User> users = new ArrayList<>();
+        users = em.createNamedQuery("User.getAll").getResultList();
+
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(2, users.size());
@@ -197,7 +210,10 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+        List<User> users = new ArrayList<>();
+        users = em.createNamedQuery("User.getAll").getResultList();
+
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, users.size());
@@ -215,7 +231,9 @@ public class JPAUtilsFiltersTest {
         q.getFilters().add(qf);
 
         try {
-            JPAUtils.queryEntities(em, User.class, q);
+            List<User> users = new ArrayList<>();
+            users = em.createNamedQuery("User.getAll").getResultList();
+            users = StreamUtils.queryEntities(users, User.class, q);
             Assert.fail("No exception was thrown");
         } catch (NoSuchEntityFieldException e) {
 
@@ -233,7 +251,9 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+        List<User> users = new ArrayList<>();
+        users = em.createNamedQuery("User.getAll").getResultList();
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, users.size());
@@ -250,7 +270,9 @@ public class JPAUtilsFiltersTest {
         q.getFilters().add(qf);
 
         try {
-            JPAUtils.queryEntities(em, User.class, q);
+            List<User> users = new ArrayList<>();
+            users = em.createNamedQuery("User.getAll").getResultList();
+            users = StreamUtils.queryEntities(users, User.class, q);
             Assert.fail("No exception was thrown");
         } catch (NoSuchEntityFieldException e) {
 
@@ -272,7 +294,10 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+        List<User> users = new ArrayList<>();
+        users = em.createNamedQuery("User.getAll").getResultList();
+
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(9, users.size());
@@ -292,7 +317,10 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+        List<User> users = new ArrayList<>();
+        users = em.createNamedQuery("User.getAll").getResultList();
+
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(91, users.size());
@@ -309,7 +337,10 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+        List<User> users = new ArrayList<>();
+        users = em.createNamedQuery("User.getAll").getResultList();
+
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(97, users.size());
@@ -326,7 +357,10 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+        List<User> users = new ArrayList<>();
+        users = em.createNamedQuery("User.getAll").getResultList();
+
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(47, users.size());
@@ -341,7 +375,8 @@ public class JPAUtilsFiltersTest {
         q = new QueryParameters();
         q.getFilters().add(qf);
 
-        users = JPAUtils.queryEntities(em, User.class, q);
+        users = em.createNamedQuery("User.getAll").getResultList();
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(40, users.size());
@@ -358,7 +393,10 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+        List<User> users = new ArrayList<>();
+        users = em.createNamedQuery("User.getAll").getResultList();
+
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(53, users.size());
@@ -373,7 +411,8 @@ public class JPAUtilsFiltersTest {
         q = new QueryParameters();
         q.getFilters().add(qf);
 
-        users = JPAUtils.queryEntities(em, User.class, q);
+        users = em.createNamedQuery("User.getAll").getResultList();
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(60, users.size());
@@ -390,7 +429,9 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+        List<User> users = new ArrayList<>();
+        users = em.createNamedQuery("User.getAll").getResultList();
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(53, users.size());
@@ -405,7 +446,8 @@ public class JPAUtilsFiltersTest {
         q = new QueryParameters();
         q.getFilters().add(qf);
 
-        users = JPAUtils.queryEntities(em, User.class, q);
+        users = em.createNamedQuery("User.getAll").getResultList();
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(61, users.size());
@@ -422,7 +464,9 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+        List<User> users = new ArrayList<>();
+        users = em.createNamedQuery("User.getAll").getResultList();
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(2, users.size());
@@ -439,7 +483,9 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+        List<User> users = new ArrayList<>();
+        users = em.createNamedQuery("User.getAll").getResultList();
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(98, users.size());
@@ -456,7 +502,9 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+        List<User> users = new ArrayList<>();
+        users = em.createNamedQuery("User.getAll").getResultList();
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(5, users.size());
@@ -473,7 +521,9 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+        List<User> users = new ArrayList<>();
+        users = em.createNamedQuery("User.getAll").getResultList();
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(53, users.size());
@@ -490,7 +540,9 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+        List<User> users = new ArrayList<>();
+        users = em.createNamedQuery("User.getAll").getResultList();
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(1, users.size());
@@ -509,7 +561,9 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+        List<User> users = new ArrayList<>();
+        users = em.createNamedQuery("User.getAll").getResultList();
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(4, users.size());
@@ -528,7 +582,9 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+        List<User> users = new ArrayList<>();
+        users = em.createNamedQuery("User.getAll").getResultList();
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(96, users.size());
@@ -545,7 +601,9 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<Project> projects = JPAUtils.queryEntities(em, Project.class, q);
+        List<Project> projects = new ArrayList<>();
+        projects = em.createNamedQuery("Project.getAll").getResultList();
+        projects = StreamUtils.queryEntities(projects, Project.class, q);
 
         Assert.assertNotNull(projects);
         Assert.assertEquals(5, projects.size());
@@ -560,13 +618,14 @@ public class JPAUtilsFiltersTest {
         q = new QueryParameters();
         q.getFilters().add(qf);
 
-        projects = JPAUtils.queryEntities(em, Project.class, q);
+        projects = em.createNamedQuery("Project.getAll").getResultList();
+        projects = StreamUtils.queryEntities(projects, Project.class, q);
 
         Assert.assertNotNull(projects);
         Assert.assertEquals(8, projects.size());
     }
 
-    @Test
+/*    @Test
     public void testManyToOneRelationOnlyField() {
 
         QueryFilter qf = new QueryFilter();
@@ -577,11 +636,13 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<Project> projects = JPAUtils.queryEntities(em, Project.class, q);
+        List<Project> projects = new ArrayList<>();
+        projects = em.createNamedQuery("Project.getAll").getResultList();
+        projects = StreamUtils.queryEntities(projects, Project.class, q);
 
         Assert.assertNotNull(projects);
         Assert.assertEquals(100, projects.size());
-    }
+    }*/
 
     @Test
     public void testOneToManyRelation() {
@@ -594,7 +655,9 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+        List<User> users = new ArrayList<>();
+        users = em.createNamedQuery("User.getAll").getResultList();
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(1, users.size());
@@ -608,7 +671,8 @@ public class JPAUtilsFiltersTest {
         q = new QueryParameters();
         q.getFilters().add(qf);
 
-        users = JPAUtils.queryEntities(em, User.class, q);
+        users = em.createNamedQuery("User.getAll").getResultList();
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(55, users.size());
@@ -625,7 +689,10 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+        List<User> users = new ArrayList<>();
+        users = em.createNamedQuery("User.getAll").getResultList();
+
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(3, users.size());
@@ -639,16 +706,14 @@ public class JPAUtilsFiltersTest {
         q = new QueryParameters();
         q.getFilters().add(qf);
 
-        users = JPAUtils.queryEntities(em, User.class, q);
+        users = em.createNamedQuery("User.getAll").getResultList();
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(9, users.size());
     }
 
-    /*
-    Nonsense!!
-     */
-    @Test
+/*    @Test
     public void testOneToManyRelationOnlyFieldInteger() {
 
         QueryFilter qf = new QueryFilter();
@@ -659,11 +724,14 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+        List<User> users = new ArrayList<>();
+        users = em.createNamedQuery("User.getAll").getResultList();
+
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(60, users.size());
-    }
+    }*/
 
     @Test
     public void testEnumFilter() {
@@ -676,7 +744,10 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<Project> projects = JPAUtils.queryEntities(em, Project.class, q);
+        List<Project> projects = new ArrayList<>();
+        projects = em.createNamedQuery("Project.getAll").getResultList();
+
+        projects = StreamUtils.queryEntities(projects, Project.class, q);
 
         Assert.assertNotNull(projects);
         Assert.assertEquals(50, projects.size());
@@ -693,7 +764,10 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<Project> projects = JPAUtils.queryEntities(em, Project.class, q);
+        List<Project> projects = new ArrayList<>();
+        projects = em.createNamedQuery("Project.getAll").getResultList();
+
+        projects = StreamUtils.queryEntities(projects, Project.class, q);
 
         Assert.assertNotNull(projects);
         Assert.assertEquals(50, projects.size());
@@ -711,7 +785,10 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<Project> projects = JPAUtils.queryEntities(em, Project.class, q);
+        List<Project> projects = new ArrayList<>();
+        projects = em.createNamedQuery("Project.getAll").getResultList();
+
+        projects = StreamUtils.queryEntities(projects, Project.class, q);
 
         Assert.assertNotNull(projects);
         Assert.assertEquals(0, projects.size());
@@ -728,7 +805,10 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+        List<User> users = new ArrayList<>();
+        users = em.createNamedQuery("User.getAll").getResultList();
+
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(55, users.size());
@@ -745,7 +825,10 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+        List<User> users = new ArrayList<>();
+        users = em.createNamedQuery("User.getAll").getResultList();
+
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(45, users.size());
@@ -763,7 +846,10 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+        List<User> users = new ArrayList<>();
+        users = em.createNamedQuery("User.getAll").getResultList();
+
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(0, users.size());
@@ -780,7 +866,10 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<Project> projects = JPAUtils.queryEntities(em, Project.class, q);
+        List<Project> projects = new ArrayList<>();
+        projects = em.createNamedQuery("Project.getAll").getResultList();
+
+        projects = StreamUtils.queryEntities(projects, Project.class, q);
 
         Assert.assertNotNull(projects);
         Assert.assertEquals(0, projects.size());
@@ -798,7 +887,9 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<Project> projects = JPAUtils.queryEntities(em, Project.class, q);
+        List<Project> projects = new ArrayList<>();
+        projects = em.createNamedQuery("Project.getAll").getResultList();
+        projects = StreamUtils.queryEntities(projects, Project.class, q);
 
         Assert.assertNotNull(projects);
         Assert.assertEquals(0, projects.size());
@@ -816,7 +907,9 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<Project> projects = JPAUtils.queryEntities(em, Project.class, q);
+        List<Project> projects = new ArrayList<>();
+        projects = em.createNamedQuery("Project.getAll").getResultList();
+        projects = StreamUtils.queryEntities(projects, Project.class, q);
 
         Assert.assertNotNull(projects);
         Assert.assertEquals(0, projects.size());
@@ -833,7 +926,11 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        JPAUtils.queryEntities(em, Project.class, q);
+        List<Project> projects = new ArrayList<>();
+        projects = em.createNamedQuery("Project.getAll").getResultList();
+
+        projects = StreamUtils.queryEntities(projects, Project.class, q);
+
         Assert.fail("No exception was thrown");
     }
 
@@ -848,7 +945,9 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<Project> projects = JPAUtils.queryEntities(em, Project.class, q);
+        List<Project> projects = new ArrayList<>();
+        projects = em.createNamedQuery("Project.getAll").getResultList();
+        projects = StreamUtils.queryEntities(projects, Project.class, q);
 
         Assert.assertNotNull(projects);
         Assert.assertEquals(1, projects.size());
@@ -865,7 +964,10 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<Project> projects = JPAUtils.queryEntities(em, Project.class, q);
+        List<Project> projects = new ArrayList<>();
+        projects = em.createNamedQuery("Project.getAll").getResultList();
+
+        projects = StreamUtils.queryEntities(projects, Project.class, q);
 
         Assert.assertNotNull(projects);
         Assert.assertEquals(99, projects.size());
@@ -881,7 +983,10 @@ public class JPAUtilsFiltersTest {
 
         q.getFilters().add(new QueryFilter(ignoredFieldName, FilterOperation.EQ, "customValue"));
 
-        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+        List<User> users = new ArrayList<>();
+        users = em.createNamedQuery("User.getAll").getResultList();
+
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, users.size());
@@ -896,7 +1001,10 @@ public class JPAUtilsFiltersTest {
 
         q.getFilters().add(new QueryFilter(ignoredFieldName, FilterOperation.EQ, "customValue"));
 
-        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+        List<User> users = new ArrayList<>();
+        users = em.createNamedQuery("User.getAll").getResultList();
+
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, users.size());
@@ -914,7 +1022,10 @@ public class JPAUtilsFiltersTest {
         q.getFilters().add(new QueryFilter("career.years", FilterOperation.EQ, "5"));
         q.getFilters().add(new QueryFilter(ignoredFieldName, FilterOperation.EQ, "customValue"));
 
-        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+        List<User> users = new ArrayList<>();
+        users = em.createNamedQuery("User.getAll").getResultList();
+
+        users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(1, users.size());
@@ -929,7 +1040,10 @@ public class JPAUtilsFiltersTest {
 
         q.getFilters().add(new QueryFilter(ignoredFieldName, FilterOperation.EQ, "customValue"));
 
-        JPAUtils.queryEntities(em, User.class, q);
+        List<User> users = new ArrayList<>();
+
+        users = em.createNamedQuery("User.getAll").getResultList();
+        StreamUtils.queryEntities(users, User.class, q);
     }
 
 }

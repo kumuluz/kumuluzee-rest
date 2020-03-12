@@ -11,6 +11,7 @@ import javax.persistence.*;
 @Entity
 @RestIgnore("careerIgnoreField")
 @Table(name = "user_careers")
+@NamedQueries({@NamedQuery(name = "UserCareer.getAll", query = "SELECT uc FROM UserCareer uc")})
 public class UserCareer {
 
     @Id

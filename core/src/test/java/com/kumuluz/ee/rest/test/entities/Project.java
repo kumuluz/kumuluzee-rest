@@ -12,6 +12,7 @@ import java.util.UUID;
 @Entity
 @RestIgnore({"projectIgnoreField"})
 @Table(name = "projects")
+@NamedQueries({@NamedQuery(name = "Project.getAll", query = "SELECT p FROM Project p")})
 public class Project {
 
     @Id

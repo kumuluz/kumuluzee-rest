@@ -13,7 +13,8 @@ import java.util.List;
 @Entity
 @RestIgnore("userIgnoredField")
 @Table(name = "users")
-public class User {
+@NamedQueries({@NamedQuery(name = "User.getAll", query = "SELECT u FROM User u")})
+public class User implements Comparable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -134,5 +135,10 @@ public class User {
 
     public void setCareer(UserCareer career) {
         this.career = career;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        return id.compareTo(((User) o).getId());
     }
 }
