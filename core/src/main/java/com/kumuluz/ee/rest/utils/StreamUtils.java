@@ -241,7 +241,7 @@ public class StreamUtils {
                         }
                     }
                 }
-            } catch (IllegalArgumentException | NoSuchFieldException e) {
+            } catch (IllegalArgumentException e) {
 
                 throw new NoSuchEntityFieldException(e.getMessage(), qo.getField(), clazz.getSimpleName());
             }
@@ -249,19 +249,15 @@ public class StreamUtils {
 
         //Add sort by id for correct pagination when field has same values
         if (id != null) {
-            try {
-                StreamCriteriaField criteriaField = getStreamCriteriaField(clazz, id);
-                if (null != criteriaField) {
-                    Comparator c = comparator(clazz, criteriaField.getPath());
+            StreamCriteriaField criteriaField = getStreamCriteriaField(clazz, id);
+            if (null != criteriaField) {
+                Comparator c = comparator(clazz, criteriaField.getPath());
 
-                    if (comparator[0] == null) {
-                        comparator[0] = c;
-                    } else {
-                        comparator[0] = comparator[0].thenComparing(c);
-                    }
+                if (comparator[0] == null) {
+                    comparator[0] = c;
+                } else {
+                    comparator[0] = comparator[0].thenComparing(c);
                 }
-            } catch (NoSuchFieldException e) {
-                throw new NoSuchEntityFieldException(e.getMessage(), id, clazz.getSimpleName());
             }
         }
 
@@ -537,7 +533,7 @@ public class StreamUtils {
         return value;
     }
 
-    private static StreamCriteriaField getStreamCriteriaField(Class<?> clazz, String fieldName) throws NoSuchFieldException {
+    private static StreamCriteriaField getStreamCriteriaField(Class<?> clazz, String fieldName) {
 
         if (fieldName == null) throw new NoSuchEntityFieldException("No such entity field", fieldName, clazz.getSimpleName());
 
@@ -584,7 +580,7 @@ public class StreamUtils {
                 }
 
             } catch (NoSuchFieldException e) {
-                throw e;
+                throw new NoSuchEntityFieldException(e.getMessage(), mappedField, clazz.getSimpleName());
             }
         }
 
