@@ -654,7 +654,7 @@ public class StreamUtils {
                     } else if (value instanceof Date) {
                         return (((Date) value).toInstant()).equals(((Date) fieldValue).toInstant());
                     } else if (value instanceof Enum) {
-                        return Objects.equals(value, fieldValue);
+                        return value.equals(getValueForField(field, fieldValue.toString()));
                     } else if (Collection.class.isAssignableFrom(value.getClass())) {
 
                         Predicate newPredicate = filter(getGenericType(field), fieldName.substring(fieldNames[0].length() + 1),
@@ -708,7 +708,7 @@ public class StreamUtils {
                     } else if (value instanceof Date) {
                         return !(((Date) value).toInstant()).equals(((Date) fieldValue).toInstant());
                     } else if (value instanceof Enum) {
-                        return !Objects.equals(value, fieldValue);
+                        return !value.equals(getValueForField(field, fieldValue.toString()));
                     } else if (Collection.class.isAssignableFrom(value.getClass())) {
 
                         Predicate newPredicate = filter(getGenericType(field), fieldName.substring(fieldNames[0].length() + 1),

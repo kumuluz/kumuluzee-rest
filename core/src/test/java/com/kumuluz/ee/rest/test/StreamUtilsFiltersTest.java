@@ -7,6 +7,7 @@ import com.kumuluz.ee.rest.exceptions.InvalidFieldValueException;
 import com.kumuluz.ee.rest.exceptions.NoSuchEntityFieldException;
 import com.kumuluz.ee.rest.test.entities.Project;
 import com.kumuluz.ee.rest.test.entities.User;
+import com.kumuluz.ee.rest.test.entities.enums.UserStatus;
 import com.kumuluz.ee.rest.test.utils.JpaUtil;
 import com.kumuluz.ee.rest.utils.JPAUtils;
 import com.kumuluz.ee.rest.utils.StreamUtils;
@@ -766,7 +767,6 @@ public class StreamUtilsFiltersTest {
 
         List<User> users = new ArrayList<>();
         users = em.createNamedQuery("User.getAll").getResultList();
-
         users = StreamUtils.queryEntities(users, User.class, q);
 
         Assert.assertNotNull(users);

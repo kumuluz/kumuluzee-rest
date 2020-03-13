@@ -146,7 +146,7 @@ public class User implements Comparable {
     }
 
     public UserStatus getStatus() {
-        return UserStatus.ACTIVE;
+        return status;
     }
 
     public void setStatus(UserStatus status) {
