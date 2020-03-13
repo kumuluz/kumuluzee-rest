@@ -2,6 +2,7 @@ package com.kumuluz.ee.rest.test.entities;
 
 import com.kumuluz.ee.rest.annotations.RestIgnore;
 import com.kumuluz.ee.rest.annotations.RestMapping;
+import com.kumuluz.ee.rest.test.entities.enums.UserStatus;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -43,6 +44,8 @@ public class User implements Comparable {
 
     @OneToMany(mappedBy = "user")
     private List<Project> projects;
+
+    private UserStatus status;
 
     @RestMapping(value = "career.experience", toChildField = "years")
     @RestMapping(value = "emailAndCurrentPosition", toChildField = "currentPosition")
@@ -140,5 +143,13 @@ public class User implements Comparable {
     @Override
     public int compareTo(Object o) {
         return id.compareTo(((User) o).getId());
+    }
+
+    public UserStatus getStatus() {
+        return UserStatus.ACTIVE;
+    }
+
+    public void setStatus(UserStatus status) {
+        this.status = status;
     }
 }

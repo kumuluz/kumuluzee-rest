@@ -371,7 +371,7 @@ public class StreamUtils {
 
                         clazzTarget = field.getType();
 
-                        if(fieldNames.length > 1)
+                        if (fieldNames.length > 1)
                             newFieldName = newFieldName.substring(fieldNames[0].length() + 1);
 
                     } while (newFieldName.contains("."));
@@ -1045,6 +1045,7 @@ public class StreamUtils {
                 }
 
             } catch (NoSuchFieldException | IllegalAccessException e) {
+                throw new NoSuchEntityFieldException(e.getMessage(), fieldName, clazz.getSimpleName());
             }
             return false;
         };
@@ -1115,9 +1116,8 @@ public class StreamUtils {
                 return result;
 
             } catch (NoSuchFieldException | IllegalAccessException e) {
+                throw new NoSuchEntityFieldException(e.getMessage(), fieldName, clazz.getSimpleName());
             }
-
-            return -1;
         };
     }
 }
