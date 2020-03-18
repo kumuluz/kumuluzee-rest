@@ -25,12 +25,12 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @RestMapping("firstnameChanged")
-    @RestMapping("firstnameAndLastname")
     @Column(columnDefinition = "uuid")
     @Convert(converter = UUIDConverter.class)
     private UUID uuid;
 
+    @RestMapping("firstnameChanged")
+    @RestMapping("firstnameAndLastname")
     private String firstname;
 
     @RestMapping("firstnameAndLastname")
