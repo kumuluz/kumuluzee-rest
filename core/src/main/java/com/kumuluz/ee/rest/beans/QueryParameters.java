@@ -85,6 +85,12 @@ public class QueryParameters implements Serializable {
         return fields;
     }
 
+    public void addFilter(QueryFilter filter) {
+        if(filter != null) {
+            getFilters().add(filter);
+        }
+    }
+
     public void setFilters(List<QueryFilter> filters) {
         this.filters = filters;
     }
