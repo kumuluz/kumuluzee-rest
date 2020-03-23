@@ -38,6 +38,7 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
@@ -100,15 +101,6 @@ public class StreamUtils {
             wherePredicate = criteriaWhereQuery.getPredicate();
         }
 
-        /*if (customFilter != null) {
-
-            wherePredicate = customFilter.createPredicate(
-                    wherePredicate == null ? cb.conjunction() : wherePredicate, cb, r);
-        }
-
-        if (wherePredicate != null) {
-            cq.where(wherePredicate);
-        }*/
         Stream<T> stream = (Stream<T>) collection.stream();
 
         if (wherePredicate != null) {
@@ -124,10 +116,9 @@ public class StreamUtils {
             }
         }
 
-        /*if (q.getFields().isEmpty()) {
-
-            cq.select((Selection) r).distinct(requiresDistinct);
-        } else {
+        if (!q.getFields().isEmpty()) {
+            stream = stream.map(createFieldsSelect(entity, q));
+        }/* else {
 
             cq.multiselect(createFieldsSelect(r, q, getEntityIdField(em, entity))).distinct(requiresDistinct);
         }
@@ -141,19 +132,6 @@ public class StreamUtils {
         if (q.getLimit() != null && q.getLimit() > -1) {
             stream = stream.limit(q.getLimit().intValue());
         }
-
-        /*if (queryHints != null) {
-            queryHints.stream().forEach(i ->
-                    tq.setHint(i.getKey(), i.getValue())
-            );
-        }
-        if (q.getFields().isEmpty()) {
-
-            return (List<T>) tq.getResultList();
-        } else {
-
-            return createEntitiesFromTuples((List<Tuple>) tq.getResultList(), entity, getEntityIdField(em, entity));
-        }*/
 
         return stream.collect(Collectors.toList());
     }
@@ -264,14 +242,10 @@ public class StreamUtils {
         return comparator[0];
     }
 
-    /*public static Predicate createWhereQuery(CriteriaBuilder cb, Root<?> r, QueryParameters q) {
-        return createWhereQueryInternal(cb, r, q).getPredicate();
-    }
+    public static <T, R> Function<T, R> createFieldsSelect(Class<?> r, QueryParameters q) {
+        HashMap<String, HashSet<String>> fieldsMap = new HashMap<>();
 
-    public static List<Selection<?>> createFieldsSelect(Class<?> r, QueryParameters q, String
-            idField) {
-
-        final List<Selection<?>> fields = q.getFields().stream().distinct().map(restField ->
+        final List<String> fields = q.getFields().stream().distinct().map(restField ->
                 getRestFieldMappings(r, restField).map(f -> {
 
                     String[] fSplit = f.split("\\.");
@@ -280,14 +254,11 @@ public class StreamUtils {
                     for (String fS : fSplit) {
                         try {
                             if (isRestIgnored(null == p ? r : p, fS)) {
-                                Optional<Selection<?>> empty = Optional.empty();
-                                return empty;
+                                return Optional.<String>empty();
                             }
 
-                            p = p == null ? r.getDeclaredField(fS).getDeclaringClass() : p.getDeclaredField(fS).getDeclaringClass();
-                        } catch (IllegalArgumentException e) {
-                            throw new NoSuchEntityFieldException(e.getMessage(), f, r.getSimpleName());
-                        } catch (NoSuchFieldException e) {
+                            p = p == null ? r.getDeclaredField(fS).getType() : p.getDeclaredField(fS).getType();
+                        } catch (IllegalArgumentException | NoSuchFieldException e) {
                             throw new NoSuchEntityFieldException(e.getMessage(), f, r.getSimpleName());
                         }
                     }
@@ -296,23 +267,34 @@ public class StreamUtils {
                         throw new NoSuchEntityFieldException("", f, r.getSimpleName());
                     }
 
-                    return Optional.of(p.alias(f));
+                    return Optional.<String>of(f);
+
                 }).filter(Optional::isPresent).map(Optional::get)
         ).flatMap(Function.identity()).collect(Collectors.toList());
 
-        try {
-            boolean exists = fields.stream().anyMatch(f -> f.getAlias().equals(idField));
+        fields.add("id");
 
-            if (!exists) {
-                fields.add(r.get(idField).alias(idField));
+        for (String finalField : fields) {
+            String[] fSplit = finalField.split("\\.");
+
+            while (fSplit.length >= 1) {
+                String[] fSplitNew = Arrays.copyOfRange(fSplit, 0, fSplit.length - 1);
+                String key = String.join(".", fSplitNew);
+
+                if (fieldsMap.containsKey(key)) {
+                    fieldsMap.get(key).add(fSplit[fSplit.length - 1]);
+                } else {
+                    HashSet<String> values = new HashSet<>();
+                    values.add(fSplit[fSplit.length - 1]);
+                    fieldsMap.putIfAbsent(key, values);
+                }
+
+                fSplit = fSplitNew;
             }
-        } catch (IllegalArgumentException e) {
-
-            throw new NoSuchEntityFieldException(e.getMessage(), idField, r.getJavaType().getSimpleName());
         }
 
-        return fields.stream().distinct().collect(Collectors.toList());
-    }*/
+        return (Function<T, R>) nullify(r, fieldsMap);
+    }
 
     // Temporary methods to not break the public API
 
@@ -818,8 +800,7 @@ public class StreamUtils {
                 } else if (operation.equals(FilterOperation.GTE)) {
                     if (value == null) {
                         return false;
-                    }
-                    if (value instanceof Integer) {
+                    } else if (value instanceof Integer) {
                         return ((Integer) value).compareTo(Integer.parseInt((String) fieldValue)) >= 0;
                     } else if (value instanceof Double) {
                         return ((Double) value).compareTo(Double.parseDouble((String) fieldValue)) >= 0;
@@ -1114,6 +1095,66 @@ public class StreamUtils {
             } catch (NoSuchFieldException | IllegalAccessException e) {
                 throw new NoSuchEntityFieldException(e.getMessage(), fieldName, clazz.getSimpleName());
             }
+        };
+    }
+
+    private static <T, R> Function<T, T> nullify(Class<T> clazz, HashMap<String, HashSet<String>> fieldNames) {
+        return (T instance) -> {
+
+            fieldNames.forEach((key, values) -> {
+                try {
+                    String fn = (String) key;
+
+                    Class clazzTarget = clazz;
+                    Object value1 = instance;
+
+                    if (fn != "") {
+
+                        String[] fieldNameParts = fn.split("\\.");
+
+                        Field f = clazzTarget.getDeclaredField(fieldNameParts[0]);
+                        f.setAccessible(true);
+
+                        if (Collection.class.isAssignableFrom(f.getType())) {
+                            throw new InvalidEntityFieldException("Unable to sort one to many relations", f.getName(),
+                                    f.getType().getSimpleName());
+                        }
+
+                        value1 = f.get(instance);
+                        clazzTarget = f.getType();
+
+                        int i = 1;
+                        while (i < fieldNameParts.length) {
+
+                            clazzTarget = f.getType();
+
+                            f = clazzTarget.getDeclaredField(fieldNameParts[i]);
+                            f.setAccessible(true);
+
+                            if (Collection.class.isAssignableFrom(f.getType())) {
+                                throw new InvalidEntityFieldException("Unable to sort one to many relations", f.getName(),
+                                        f.getType().getSimpleName());
+                            }
+
+                            value1 = f.get(value1);
+
+                            i++;
+                        }
+                    }
+
+                    for (Field fi : clazzTarget.getDeclaredFields()) {
+                        if (!values.contains(fi.getName())) {
+                            fi.setAccessible(true);
+                            fi.set(value1, null);
+                        }
+                    }
+
+                } catch (NoSuchFieldException | IllegalAccessException e) {
+                    throw new NoSuchEntityFieldException(e.getMessage(), (String) key, clazz.getSimpleName());
+                }
+            });
+
+            return instance;
         };
     }
 }
