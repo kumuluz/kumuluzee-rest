@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * @author Tilen Faganel
+ * @author Zvone Gazvoda
  */
 @RunWith(Parameterized.class)
 public class StreamUtilsFieldsTest {

@@ -20,7 +20,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * @author Tilen Faganel
+ * @author Zvone Gazvoda
  */
 @RunWith(Parameterized.class)
 public class StreamUtilsOrderTest {
