@@ -1108,7 +1108,7 @@ public class StreamUtils {
                     Class clazzTarget = clazz;
                     Object value1 = instance;
 
-                    if (fn != "") {
+                    if (!"".equals(fn)) {
 
                         String[] fieldNameParts = fn.split("\\.");
 
