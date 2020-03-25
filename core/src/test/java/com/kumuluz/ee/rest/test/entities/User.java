@@ -5,6 +5,9 @@ import com.kumuluz.ee.rest.annotations.RestMapping;
 import com.kumuluz.ee.rest.test.entities.enums.UserStatus;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -51,6 +54,15 @@ public class User implements Comparable {
     @RestMapping(value = "emailAndCurrentPosition", toChildField = "currentPosition")
     @OneToOne(mappedBy = "user")
     private UserCareer career;
+
+    @Column(name = "score", scale = 2, precision = 10)
+    private BigDecimal score;
+
+    @Column(name = "birth_date")
+    private LocalDate birthDate;
+
+    @Column(name = "registration_date")
+    private LocalDateTime registrationDate;
 
     public Integer getId() {
         return id;
@@ -112,10 +124,6 @@ public class User implements Comparable {
         return confirmed;
     }
 
-    public void setConfirmed(Boolean confirmed) {
-        this.confirmed = confirmed;
-    }
-
     public Date getCreatedAt() {
         return createdAt;
     }
@@ -151,5 +159,37 @@ public class User implements Comparable {
 
     public void setStatus(UserStatus status) {
         this.status = status;
+    }
+
+    public Boolean getConfirmed() {
+        return confirmed;
+    }
+
+    public void setConfirmed(Boolean confirmed) {
+        this.confirmed = confirmed;
+    }
+
+    public BigDecimal getScore() {
+        return score;
+    }
+
+    public void setScore(BigDecimal score) {
+        this.score = score;
+    }
+
+    public LocalDate getBirthDate() {
+        return birthDate;
+    }
+
+    public void setBirthDate(LocalDate birthDate) {
+        this.birthDate = birthDate;
+    }
+
+    public LocalDateTime getRegistrationDate() {
+        return registrationDate;
+    }
+
+    public void setRegistrationDate(LocalDateTime registrationDate) {
+        this.registrationDate = registrationDate;
     }
 }

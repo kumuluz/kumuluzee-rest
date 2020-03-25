@@ -34,7 +34,10 @@ import com.kumuluz.ee.rest.interfaces.CriteriaFilter;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
@@ -244,7 +247,7 @@ public class StreamUtils {
     public static <T, R> Function<T, R> createFieldsSelect(Class<?> r, QueryParameters q) {
         HashMap<String, HashSet<String>> fieldsMap = new HashMap<>();
 
-        final List<String> fields = q.getFields().stream().distinct().map(restField ->
+        final List<String> fields = q.getFields().stream().distinct().flatMap(restField ->
                 getRestFieldMappings(r, restField).map(f -> {
 
                     String[] fSplit = f.split("\\.");
@@ -269,7 +272,7 @@ public class StreamUtils {
                     return Optional.<String>of(f);
 
                 }).filter(Optional::isPresent).map(Optional::get)
-        ).flatMap(Function.identity()).collect(Collectors.toList());
+        ).collect(Collectors.toList());
 
         fields.add("id");
 
@@ -620,6 +623,12 @@ public class StreamUtils {
                         return value.equals(Integer.parseInt((String) fieldValue));
                     } else if (value instanceof String) {
                         return value.equals(fieldValue);
+                    } else if (value instanceof BigDecimal) {
+                        return value.equals(new BigDecimal((String) fieldValue));
+                    } else if (value instanceof LocalDate) {
+                        return value.equals(LocalDate.parse((String) fieldValue));
+                    } else if (value instanceof LocalDateTime) {
+                        return value.equals(LocalDateTime.parse((String) fieldValue));
                     } else if (value instanceof Double) {
                         return value.equals(Double.parseDouble((String) fieldValue));
                     } else if (value instanceof Float) {

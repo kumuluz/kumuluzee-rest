@@ -40,7 +40,7 @@ public class StreamUtilsOrderTest {
     }
 
     @Test
-    public void testSingleOrder() {
+    public void testSingleStringOrder() {
 
         QueryOrder qo = new QueryOrder();
         qo.setField("firstname");
@@ -60,6 +60,77 @@ public class StreamUtilsOrderTest {
         Assert.assertEquals("Amanda", users.get(0).getFirstname());
         Assert.assertNotNull(users.get(99).getFirstname());
         Assert.assertEquals("Victor", users.get(99).getFirstname());
+    }
+
+    @Test
+    public void testSingleLocalDateOrder() {
+
+        QueryOrder qo = new QueryOrder();
+        qo.setField("birthDate");
+        qo.setOrder(OrderDirection.ASC);
+
+        QueryParameters q = new QueryParameters();
+        q.getOrder().add(qo);
+
+        List<User> users = new ArrayList<>();
+        users = em.createNamedQuery("User.getAll").getResultList();
+
+        users = StreamUtils.queryEntities(users, User.class, q);
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(100, users.size());
+        Assert.assertNotNull(users.get(0).getFirstname());
+        Assert.assertEquals("Bonnie", users.get(0).getFirstname());
+        Assert.assertNotNull(users.get(99).getFirstname());
+        Assert.assertEquals("Karen", users.get(1).getFirstname());
+    }
+
+    @Test
+    public void testSingleLocalDateTimeOrder() {
+
+        QueryOrder qo = new QueryOrder();
+        qo.setField("registrationDate");
+        qo.setOrder(OrderDirection.ASC);
+
+        QueryParameters q = new QueryParameters();
+        q.getOrder().add(qo);
+
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+
+        users = StreamUtils.queryEntities(users, User.class, q);
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(100, users.size());
+        Assert.assertNotNull(users.get(97).getFirstname());
+        Assert.assertEquals("Pamela", users.get(97).getFirstname());
+        Assert.assertNotNull(users.get(98).getFirstname());
+        Assert.assertEquals("Susan", users.get(98).getFirstname());
+        Assert.assertNotNull(users.get(99).getFirstname());
+        Assert.assertEquals("John", users.get(99).getFirstname());
+    }
+
+    @Test
+    public void testSingleBigDecimalOrder() {
+
+        QueryOrder qo = new QueryOrder();
+        qo.setField("score");
+        qo.setOrder(OrderDirection.ASC);
+
+        QueryParameters q = new QueryParameters();
+        q.getOrder().add(qo);
+
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+
+        users = StreamUtils.queryEntities(users, User.class, q);
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(100, users.size());
+        Assert.assertNotNull(users.get(0).getFirstname());
+        Assert.assertEquals("Kathy", users.get(0).getFirstname());
+        Assert.assertNotNull(users.get(1).getFirstname());
+        Assert.assertEquals("Helen", users.get(1).getFirstname());
+        Assert.assertNotNull(users.get(2).getFirstname());
+        Assert.assertEquals("Debra", users.get(2).getFirstname());
     }
 
     @Test
