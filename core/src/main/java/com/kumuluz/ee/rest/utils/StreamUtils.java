@@ -38,7 +38,6 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
@@ -104,7 +103,7 @@ public class StreamUtils {
         Stream<T> stream = (Stream<T>) collection.stream();
 
         if (wherePredicate != null) {
-            stream = collection.parallelStream().filter(wherePredicate);
+            stream = collection.stream().filter(wherePredicate);
         }
 
         if (!q.getOrder().isEmpty()) {
