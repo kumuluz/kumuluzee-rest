@@ -21,6 +21,7 @@
 package com.kumuluz.ee.rest.beans;
 
 import com.kumuluz.ee.rest.enums.OrderDirection;
+import com.kumuluz.ee.rest.enums.OrderNulls;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -35,6 +36,7 @@ public class QueryOrder implements Serializable {
     private String field;
 
     private OrderDirection order;
+    private OrderNulls nulls;
 
     @Override
     public boolean equals(Object o) {
@@ -63,5 +65,13 @@ public class QueryOrder implements Serializable {
 
     public void setOrder(OrderDirection order) {
         this.order = order;
+    }
+
+    public OrderNulls getNulls() {
+        return nulls;
+    }
+
+    public void setNulls(OrderNulls nulls) {
+        this.nulls = nulls;
     }
 }

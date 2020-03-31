@@ -28,6 +28,9 @@ public class Project {
 
     private ProjectStatus status;
 
+    @OneToOne(mappedBy = "project")
+    private ProjectLocation projectLocation;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
@@ -78,5 +81,22 @@ public class Project {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public ProjectLocation getProjectLocation() {
+        return projectLocation;
+    }
+
+    public void setProjectLocation(ProjectLocation projectLocation) {
+        this.projectLocation = projectLocation;
+    }
+
+    @Override
+    public String toString() {
+        return "Project{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", projectLocation=" + projectLocation +
+                '}';
     }
 }

@@ -22,9 +22,13 @@ package com.kumuluz.ee.rest.utils;
 
 import com.kumuluz.ee.rest.annotations.RestIgnore;
 import com.kumuluz.ee.rest.annotations.RestMapping;
-import com.kumuluz.ee.rest.beans.*;
+import com.kumuluz.ee.rest.beans.QueryFilter;
+import com.kumuluz.ee.rest.beans.QueryParameters;
+import com.kumuluz.ee.rest.beans.StreamCriteriaField;
+import com.kumuluz.ee.rest.beans.StreamCriteriaWhereQuery;
 import com.kumuluz.ee.rest.enums.FilterOperation;
 import com.kumuluz.ee.rest.enums.OrderDirection;
+import com.kumuluz.ee.rest.enums.OrderNulls;
 import com.kumuluz.ee.rest.exceptions.InvalidEntityFieldException;
 import com.kumuluz.ee.rest.exceptions.InvalidFieldValueException;
 import com.kumuluz.ee.rest.exceptions.NoGenericTypeException;
@@ -43,55 +47,63 @@ import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * @author Tilen Faganel
+ * @author Zvone
+ * @author gpor0
  */
 public class StreamUtils {
 
     private static final Logger log = Logger.getLogger(StreamUtils.class.getSimpleName());
 
-    public static <T> List<T> queryEntities(Collection<T> collection, Class<T> entity) {
+    public static <T> Stream<T> queryEntities(Stream<T> stream, Class<T> entity, QueryParameters q) {
 
-        return queryEntities(collection, entity, new QueryParameters());
+        return queryEntities(stream, entity, q, null);
     }
 
-    public static <T> List<T> queryEntities(Collection<T> collection, Class<T> entity, QueryParameters q) {
+    public static <T> List<T> queryEntities(Collection<T> collection) {
 
-        return queryEntities(collection, entity, q, null, null, null);
+        return queryEntities(collection, new QueryParameters(), null);
     }
 
-    public static <T> List<T> queryEntities(Collection<T> collection, Class<T> entity, CriteriaFilter<T> customFilter) {
-        return queryEntities(collection, entity, new QueryParameters(), customFilter, null, null);
+    public static <T> List<T> queryEntities(Collection<T> collection, QueryParameters q) {
+
+        return queryEntities(collection, q, null);
     }
 
-    public static <T> List<T> queryEntities(Collection<T> collection, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter) {
-        return queryEntities(collection, entity, q, customFilter, null, null);
+    public static <T> List<T> queryEntities(Collection<T> collection, CriteriaFilter<T> customFilter) {
+        return queryEntities(collection, new QueryParameters(), customFilter);
     }
 
-    public static <T> List<T> queryEntities(Collection<T> collection, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter,
-                                            List<QueryHintPair> queryHints) {
-        return queryEntities(collection, entity, q, customFilter, queryHints, null);
+    public static <T> List<T> queryEntities(Collection<T> collection, QueryParameters q, CriteriaFilter<T> customFilter) {
+        if (null == collection || collection.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        Class<T> entity = (Class<T>) collection.iterator().next().getClass();
+
+        return queryEntities(collection.stream(), entity, q, customFilter).collect(Collectors.toList());
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> List<T> queryEntities(Collection<?> collection, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter,
-                                            List<QueryHintPair> queryHints, String rootAlias) {
+    public static <T> Stream<T> queryEntities(Stream<T> stream, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter) {
 
-        if (entity == null)
-            throw new IllegalArgumentException("The entity cannot be null.");
+        if (null == stream) {
+            return Stream.empty();
+        }
 
         if (q == null)
             throw new IllegalArgumentException("Query parameters can't be null. " +
                     "If you don't have any parameters either pass a empty object or " +
                     "use the queryEntities(Class<T>) method.");
 
-        log.finest("Querying entity: '" + entity.getSimpleName() + "' with parameters: " + q);
-
-        Boolean requiresDistinct = false;
+        if (log.isLoggable(Level.FINEST)) {
+            log.finest("Querying entity: '" + entity.getSimpleName() + "' with parameters: " + q);
+        }
 
         Predicate wherePredicate = null;
 
@@ -99,14 +111,11 @@ public class StreamUtils {
 
             StreamCriteriaWhereQuery criteriaWhereQuery = createWhereQueryInternal(entity, q);
 
-            requiresDistinct = criteriaWhereQuery.containsToMany();
             wherePredicate = criteriaWhereQuery.getPredicate();
         }
 
-        Stream<T> stream = (Stream<T>) collection.stream();
-
         if (wherePredicate != null) {
-            stream = collection.stream().filter(wherePredicate);
+            stream = stream.filter(wherePredicate);
         }
 
         if (!q.getOrder().isEmpty()) {
@@ -120,12 +129,7 @@ public class StreamUtils {
 
         if (!q.getFields().isEmpty()) {
             stream = stream.map(createFieldsSelect(entity, q));
-        }/* else {
-
-            cq.multiselect(createFieldsSelect(r, q, getEntityIdField(em, entity))).distinct(requiresDistinct);
         }
-
-        TypedQuery<?> tq = em.createQuery(cq);*/
 
         if (q.getOffset() != null && q.getOffset() > -1) {
             stream = stream.skip(q.getOffset().intValue());
@@ -135,25 +139,34 @@ public class StreamUtils {
             stream = stream.limit(q.getLimit().intValue());
         }
 
-        return stream.collect(Collectors.toList());
+        return stream;
     }
 
-    public static <T> Long queryEntitiesCount(Collection<T> collection, Class<T> entity) {
+    public static <T> Long queryEntitiesCount(Collection<T> collection) {
 
-        return queryEntitiesCount(collection, entity, new QueryParameters());
+        return queryEntitiesCount(collection, new QueryParameters(), null);
     }
 
-    public static <T> Long queryEntitiesCount(Collection<T> collection, Class<T> entity, QueryParameters q) {
+    public static <T> Long queryEntitiesCount(Collection<T> collection, QueryParameters q) {
 
-        return queryEntitiesCount(collection, entity, q, null);
+        return queryEntitiesCount(collection, q, null);
     }
 
-    public static <T> Long queryEntitiesCount(Collection<T> collection, Class<T> entity, CriteriaFilter<T> customFilter) {
-
-        return queryEntitiesCount(collection, entity, new QueryParameters(), customFilter);
+    public static <T> Long queryEntitiesCount(Collection<T> collection, CriteriaFilter<T> customFilter) {
+        return queryEntitiesCount(collection, new QueryParameters(), customFilter);
     }
 
-    public static <T> Long queryEntitiesCount(Collection<T> collection, Class<T> entity, QueryParameters q,
+    public static <T> Long queryEntitiesCount(Collection<T> collection, QueryParameters q, CriteriaFilter<T> customFilter) {
+        if (null == collection || collection.isEmpty()) {
+            return 0L;
+        }
+
+        Class<T> entity = (Class<T>) collection.iterator().next().getClass();
+
+        return queryEntitiesCount(collection.parallelStream(), entity, q, customFilter);
+    }
+
+    public static <T> Long queryEntitiesCount(Stream<T> stream, Class<T> entity, QueryParameters q,
                                               CriteriaFilter<T> customFilter) {
 
         if (entity == null)
@@ -166,22 +179,17 @@ public class StreamUtils {
 
         log.finest("Querying entity count: '" + entity.getSimpleName() + "' with parameters: " + q);
 
-        Boolean requiresDistinct = false;
-
         Predicate wherePredicate = null;
 
         if (!q.getFilters().isEmpty()) {
 
             StreamCriteriaWhereQuery criteriaWhereQuery = createWhereQueryInternal(entity, q);
 
-            requiresDistinct = criteriaWhereQuery.containsToMany();
             wherePredicate = criteriaWhereQuery.getPredicate();
         }
 
-        Stream stream = (Stream<T>) collection.stream();
-
         if (wherePredicate != null) {
-            stream = collection.parallelStream().filter(wherePredicate);
+            return stream.filter(wherePredicate).count();
         }
 
         return stream.count();
@@ -202,23 +210,12 @@ public class StreamUtils {
                 StreamCriteriaField field = getStreamCriteriaField(clazz, qo.getField());
 
                 if (null != field) {
+                    Comparator c = comparator(clazz, field.getPath(), qo.getOrder(), qo.getNulls());
 
-                    if (qo.getOrder() == OrderDirection.DESC) {
-                        Comparator c = comparator(clazz, field.getPath()).reversed();
-
-                        if (comparator[0] == null) {
-                            comparator[0] = c;
-                        } else {
-                            comparator[0] = comparator[0].thenComparing(c);
-                        }
+                    if (comparator[0] == null) {
+                        comparator[0] = c;
                     } else {
-                        Comparator c = comparator(clazz, field.getPath());
-
-                        if (comparator[0] == null) {
-                            comparator[0] = c;
-                        } else {
-                            comparator[0] = comparator[0].thenComparing(c);
-                        }
+                        comparator[0] = comparator[0].thenComparing(c);
                     }
                 }
             } catch (IllegalArgumentException e) {
@@ -231,7 +228,7 @@ public class StreamUtils {
         if (id != null) {
             StreamCriteriaField criteriaField = getStreamCriteriaField(clazz, id);
             if (null != criteriaField) {
-                Comparator c = comparator(clazz, criteriaField.getPath());
+                Comparator c = comparator(clazz, criteriaField.getPath(), OrderDirection.ASC, OrderNulls.LAST);
 
                 if (comparator[0] == null) {
                     comparator[0] = c;
@@ -331,17 +328,7 @@ public class StreamUtils {
                     do {
 
                         if (Collection.class.isAssignableFrom(clazzTarget)) {
-
-                            ParameterizedType pt = (ParameterizedType) field.getGenericType();
-
-                            Type[] fieldArgTypes = pt.getActualTypeArguments();
-
-                            if (fieldArgTypes.length > 0) {
-                                clazzTarget = (Class) fieldArgTypes[0];
-
-                            } else {
-                                // TODO
-                            }
+                            clazzTarget = getGenericType(field);
                         }
 
                         fieldNames = newFieldName.split("\\.");
@@ -550,15 +537,7 @@ public class StreamUtils {
                 if (Collection.class.isAssignableFrom(from.getDeclaredField(mappedField).getType())) {
                     isCollectionField = true;
 
-                    ParameterizedType pt = (ParameterizedType) from.getDeclaredField(mappedField).getGenericType();
-
-                    Type[] fieldArgTypes = pt.getActualTypeArguments();
-
-                    if (fieldArgTypes.length > 0) {
-                        from = (Class) fieldArgTypes[0];
-                    } else {
-                        // TODO
-                    }
+                    from = getGenericType(from.getDeclaredField(mappedField));
                 } else {
                     from = from.getDeclaredField(mappedField).getType();
                 }
@@ -578,7 +557,7 @@ public class StreamUtils {
         }
 
         List<String> mappingList = Stream.of(clazz.getDeclaredFields())
-                .map(entityField -> Stream.of(entityField.getAnnotationsByType(RestMapping.class))
+                .flatMap(entityField -> Stream.of(entityField.getAnnotationsByType(RestMapping.class))
                         .map(annotation -> {
                                     String restFieldName = annotation.value();
                                     String entityFieldPath = annotation.toChildField().isEmpty() ? entityField.getName() :
@@ -587,8 +566,7 @@ public class StreamUtils {
                                 }
                         )
                         .filter(e -> restField.equals(e.getKey())).map(AbstractMap.SimpleEntry::getValue)
-                )
-                .flatMap(Function.identity()).collect(Collectors.toList());
+                ).collect(Collectors.toList());
 
         return mappingList.isEmpty() ? Stream.of(restField) : mappingList.stream();
     }
@@ -1050,75 +1028,107 @@ public class StreamUtils {
 
     }
 
-    private static <T> Comparator<T> comparator(Class<T> clazz, String fieldName) {
-        return (T instance1, T instance2) -> {
-            try {
-                String[] fieldNames = fieldName.split("\\.");
-
-                Class clazzTarget = clazz;
-
-                Field f = clazzTarget.getDeclaredField(fieldNames[0]);
-                f.setAccessible(true);
-
-                if (Collection.class.isAssignableFrom(f.getType())) {
-                    throw new InvalidEntityFieldException("Unable to sort one to many relations", f.getName(),
-                            f.getType().getSimpleName());
-                }
-
-                Object value1 = f.get(instance1);
-                Object value2 = f.get(instance2);
-
-                int i = 1;
-                while (i < fieldNames.length) {
-
-                    clazzTarget = f.getType();
-
-                    f = clazzTarget.getDeclaredField(fieldNames[i]);
-                    f.setAccessible(true);
-
-                    if (Collection.class.isAssignableFrom(f.getType())) {
-                        throw new InvalidEntityFieldException("Unable to sort one to many relations", f.getName(),
-                                f.getType().getSimpleName());
-                    }
-
-                    value1 = f.get(value1);
-                    value2 = f.get(value2);
-
-                    i++;
-                }
-
-                int result = -1;
-
-                if (value1 instanceof Comparable) {
-                    result = ((Comparable<T>) value1).compareTo((T) value2);
-                } else {
-                    try {
-                        result = ((Comparable<T>) value1).compareTo((T) value2);
-                    } catch (ClassCastException e) {
-                    }
-                }
-
-                return result;
-
-            } catch (NoSuchFieldException | IllegalAccessException e) {
-                throw new NoSuchEntityFieldException(e.getMessage(), fieldName, clazz.getSimpleName());
-            }
-        };
+    private static <T> Comparator<T> comparator(Class<T> clazz, String fieldName, OrderDirection orderDirection, OrderNulls orderNulls) {
+        //optimization for sorting by children value
+        Map<Collection, Object> minCollectionValCache = new HashMap<>();
+        return (T instance1, T instance2) -> compareInstanceFields(clazz, fieldName, instance1, instance2, orderDirection, orderNulls, minCollectionValCache);
     }
 
-    private static <T, R> Function<T, T> nullify(Class<T> clazz, HashMap<String, HashSet<String>> fieldNames) {
+    private static <T> int compareInstanceFields(Class<T> clazz, String fieldName, T instance1, T instance2, OrderDirection orderDirection,
+                                                 OrderNulls orderNulls, Map<Collection, Object> minCollectionValCache) {
+
+        try {
+            String[] fieldNames = fieldName.split("\\.");
+
+            Class clazzTarget = clazz;
+
+            Field f = clazzTarget.getDeclaredField(fieldNames[0]);
+            f.setAccessible(true);
+            Class fieldClass = f.getType();
+
+            Object value1 = instance1 == null ? null : f.get(instance1);
+            Object value2 = instance2 == null ? null : f.get(instance2);
+
+            if (Collection.class.isAssignableFrom(fieldClass)) {
+                Collection c1 = (Collection) value1;
+                Collection c2 = (Collection) value2;
+                if (c1 == null || c1.isEmpty() || c2 == null || c2.isEmpty()) {
+                    return compare(c1 == null || c1.isEmpty() ? null : c1.size(), c2 == null || c2.isEmpty() ? null : c2.size(), orderDirection,
+                            orderNulls);
+                }
+                if (fieldNames.length > 1) {
+
+                    //get from cache
+                    value1 = minCollectionValCache.get(c1);
+                    value2 = minCollectionValCache.get(c2);
+
+                    if (value1 == null || value2 == null) {
+                        String nextLevelFieldName = String.join(".", Arrays.copyOfRange(fieldNames, 1, fieldNames.length));
+                        Comparator comparator = comparator(getGenericType(f), nextLevelFieldName, orderDirection, orderNulls);
+                        if (value1 == null) {
+                            value1 = c1.stream().min(comparator).orElse(null);
+                            minCollectionValCache.put(c1, value1);
+                        }
+                        if (value2 == null) {
+                            value2 = c2.stream().min(comparator).orElse(null);
+                            minCollectionValCache.put(c2, value2);
+                        }
+                    }
+
+                } else {
+                    throw new InvalidEntityFieldException("OneToMany and ManyToMany relations are not supported by the order query",
+                            fieldNames[0], f.getType().getSimpleName());
+                }
+
+                fieldClass = getGenericType(f);
+            }
+
+            if (fieldNames.length > 1) {
+                String nextLevelFieldName = String.join(".", Arrays.copyOfRange(fieldNames, 1, fieldNames.length));
+                return compareInstanceFields(fieldClass, nextLevelFieldName, value1, value2, orderDirection, orderNulls, minCollectionValCache);
+            }
+
+            return compare(value1, value2, orderDirection, orderNulls);
+
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new NoSuchEntityFieldException(e.getMessage(), fieldName, clazz.getSimpleName());
+        }
+    }
+
+    protected static <T> int compare(T value1, T value2, OrderDirection orderDirection, OrderNulls orderNulls) {
+
+        int returnVal;
+        try {
+            if (value1 == null) {
+                returnVal = (value2 == null) ? 0 : (orderNulls == OrderNulls.FIRST ? -1 : 1);
+            } else if (value2 == null) {
+                returnVal = orderNulls == OrderNulls.FIRST ? 1 : -1;
+            } else {
+                returnVal = ((Comparable<T>) value1).compareTo(value2);
+                if (OrderDirection.DESC == orderDirection) {
+                    returnVal *= -1;
+                }
+            }
+        } catch (ClassCastException e) {
+            //both instances cannot be cast since of same type therefore result should be same
+            returnVal = 0;
+        }
+
+        return returnVal;
+    }
+
+    private static <T> Function<T, T> nullify(Class<T> clazz, HashMap<String, HashSet<String>> fieldNames) {
         return (T instance) -> {
 
             fieldNames.forEach((key, values) -> {
                 try {
-                    String fn = (String) key;
 
                     Class clazzTarget = clazz;
                     Object value1 = instance;
 
-                    if (!"".equals(fn)) {
+                    if (!"".equals(key)) {
 
-                        String[] fieldNameParts = fn.split("\\.");
+                        String[] fieldNameParts = key.split("\\.");
 
                         Field f = clazzTarget.getDeclaredField(fieldNameParts[0]);
                         f.setAccessible(true);
@@ -1158,7 +1168,7 @@ public class StreamUtils {
                     }
 
                 } catch (NoSuchFieldException | IllegalAccessException e) {
-                    throw new NoSuchEntityFieldException(e.getMessage(), (String) key, clazz.getSimpleName());
+                    throw new NoSuchEntityFieldException(e.getMessage(), key, clazz.getSimpleName());
                 }
             });
 

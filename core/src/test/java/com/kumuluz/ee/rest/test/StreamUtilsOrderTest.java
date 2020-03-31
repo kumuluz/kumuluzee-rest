@@ -3,10 +3,13 @@ package com.kumuluz.ee.rest.test;
 import com.kumuluz.ee.rest.beans.QueryOrder;
 import com.kumuluz.ee.rest.beans.QueryParameters;
 import com.kumuluz.ee.rest.enums.OrderDirection;
+import com.kumuluz.ee.rest.enums.OrderNulls;
 import com.kumuluz.ee.rest.exceptions.InvalidEntityFieldException;
 import com.kumuluz.ee.rest.exceptions.NoSuchEntityFieldException;
 import com.kumuluz.ee.rest.test.entities.Project;
+import com.kumuluz.ee.rest.test.entities.ProjectLocation;
 import com.kumuluz.ee.rest.test.entities.User;
+import com.kumuluz.ee.rest.test.entities.enums.ProjectStatus;
 import com.kumuluz.ee.rest.test.utils.JpaUtil;
 import com.kumuluz.ee.rest.utils.JPAUtils;
 import com.kumuluz.ee.rest.utils.StreamUtils;
@@ -18,6 +21,7 @@ import org.junit.runners.Parameterized;
 import javax.persistence.EntityManager;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * @author Zvone Gazvoda
@@ -49,10 +53,9 @@ public class StreamUtilsOrderTest {
         QueryParameters q = new QueryParameters();
         q.getOrder().add(qo);
 
-        List<User> users = new ArrayList<>();
-        users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, users.size());
@@ -72,10 +75,9 @@ public class StreamUtilsOrderTest {
         QueryParameters q = new QueryParameters();
         q.getOrder().add(qo);
 
-        List<User> users = new ArrayList<>();
-        users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, users.size());
@@ -97,7 +99,7 @@ public class StreamUtilsOrderTest {
 
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, users.size());
@@ -121,7 +123,7 @@ public class StreamUtilsOrderTest {
 
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, users.size());
@@ -143,10 +145,9 @@ public class StreamUtilsOrderTest {
         QueryParameters q = new QueryParameters();
         q.getOrder().add(qo);
 
-        List<User> users = new ArrayList<>();
-        users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, users.size());
@@ -166,10 +167,9 @@ public class StreamUtilsOrderTest {
         QueryParameters q = new QueryParameters();
         q.getOrder().add(qo);
 
-        List<User> users = new ArrayList<>();
-        users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, users.size());
@@ -199,10 +199,9 @@ public class StreamUtilsOrderTest {
         qo.setOrder(OrderDirection.DESC);
         q.getOrder().add(qo);
 
-        List<User> users = new ArrayList<>();
-        users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, users.size());
@@ -225,10 +224,9 @@ public class StreamUtilsOrderTest {
         QueryParameters q = new QueryParameters();
         q.getOrder().add(qo);
 
-        List<User> users = new ArrayList<>();
-        users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, users.size());
@@ -269,9 +267,8 @@ public class StreamUtilsOrderTest {
 
         try {
 
-            List<User> users = new ArrayList<>();
-            users = em.createNamedQuery("User.getAll").getResultList();
-            users = StreamUtils.queryEntities(users, User.class, q);
+            List<User> users = em.createNamedQuery("User.getAll").getResultList();
+            users = StreamUtils.queryEntities(users, q);
 
             Assert.fail("No exception was thrown");
         } catch (NoSuchEntityFieldException e) {
@@ -292,9 +289,8 @@ public class StreamUtilsOrderTest {
 
         try {
 
-            List<User> users = new ArrayList<>();
-            users = em.createNamedQuery("User.getAll").getResultList();
-            users = StreamUtils.queryEntities(users, User.class, q);
+            List<User> users = em.createNamedQuery("User.getAll").getResultList();
+            users = StreamUtils.queryEntities(users, q);
 
             Assert.fail("No exception was thrown");
         } catch (NoSuchEntityFieldException e) {
@@ -312,9 +308,8 @@ public class StreamUtilsOrderTest {
         QueryParameters q = new QueryParameters();
         q.getOrder().add(qo);
 
-        List<Project> projects = new ArrayList<>();
-        projects = em.createNamedQuery("Project.getAll").getResultList();
-        projects = StreamUtils.queryEntities(projects, Project.class, q);
+        List<Project> projects = em.createNamedQuery("Project.getAll").getResultList();
+        projects = StreamUtils.queryEntities(projects, q);
 
         Assert.assertNotNull(projects);
         Assert.assertEquals(100, projects.size());
@@ -333,9 +328,8 @@ public class StreamUtilsOrderTest {
         QueryParameters q = new QueryParameters();
         q.getOrder().add(qo);
 
-        List<Project> projects = new ArrayList<>();
-        projects = em.createNamedQuery("Project.getAll").getResultList();
-        projects = StreamUtils.queryEntities(projects, Project.class, q);
+        List<Project> projects = em.createNamedQuery("Project.getAll").getResultList();
+        projects = StreamUtils.queryEntities(projects, q);
 
         Assert.assertNotNull(projects);
         Assert.assertEquals(100, projects.size());
@@ -343,22 +337,6 @@ public class StreamUtilsOrderTest {
         Assert.assertEquals("Goldenrod", projects.get(0).getName());
         Assert.assertNotNull(projects.get(99).getName());
         Assert.assertEquals("Yellow", projects.get(99).getName());
-    }
-
-    @Test(expected = InvalidEntityFieldException.class)
-    public void testOneToMany() {
-
-        QueryOrder qo = new QueryOrder();
-        qo.setField("projects.name");
-
-        QueryParameters q = new QueryParameters();
-        q.getOrder().add(qo);
-
-        List<User> users = new ArrayList<>();
-        users = em.createNamedQuery("User.getAll").getResultList();
-        users = StreamUtils.queryEntities(users, User.class, q);
-
-        Assert.fail("No exception was thrown");
     }
 
     @Test(expected = InvalidEntityFieldException.class)
@@ -370,9 +348,8 @@ public class StreamUtilsOrderTest {
         QueryParameters q = new QueryParameters();
         q.getOrder().add(qo);
 
-        List<User> users = new ArrayList<>();
-        users = em.createNamedQuery("User.getAll").getResultList();
-        users = StreamUtils.queryEntities(users, User.class, q);
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        StreamUtils.queryEntities(users, q);
 
         Assert.fail("No exception was thrown");
     }
@@ -390,9 +367,8 @@ public class StreamUtilsOrderTest {
         o.setOrder(OrderDirection.ASC);
         q.getOrder().add(o);
 
-        List<User> users = new ArrayList<>();
-        users = em.createNamedQuery("User.getAll").getResultList();
-        users = StreamUtils.queryEntities(users, User.class, q);
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, users.size());
@@ -410,9 +386,8 @@ public class StreamUtilsOrderTest {
         o.setOrder(OrderDirection.ASC);
         q.getOrder().add(o);
 
-        List<User> users = new ArrayList<>();
-        users = em.createNamedQuery("User.getAll").getResultList();
-        users = StreamUtils.queryEntities(users, User.class, q);
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, users.size());
@@ -432,4 +407,109 @@ public class StreamUtilsOrderTest {
 
         JPAUtils.queryEntities(em, User.class, q);
     }
+
+    @Test
+    public void shouldReturnAscNullsLastOrderedByOneToOneOnOneToManyRelation() {
+
+        QueryOrder qo = new QueryOrder();
+        qo.setField("projects.projectLocation.locationName");
+        qo.setOrder(OrderDirection.ASC);
+
+        QueryParameters q = new QueryParameters();
+        q.getOrder().add(qo);
+
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+
+        users = StreamUtils.queryEntities(users, q);
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(100, users.size());
+        Assert.assertNotNull(users.get(0).getLastname());
+        Assert.assertEquals("Holmes", users.get(0).getLastname());
+        Assert.assertEquals("Celje", users.get(0).getProjects().get(0).getProjectLocation().getLocationName());
+        Assert.assertNotNull(users.get(1).getLastname());
+        Assert.assertEquals("Mitchell", users.get(1).getLastname());
+        Assert.assertEquals("Ljubljana", users.get(1).getProjects().get(0).getProjectLocation().getLocationName());
+        Assert.assertNotNull(users.get(2).getLastname());
+        Assert.assertEquals("Fox", users.get(2).getLastname());
+        Assert.assertEquals("Maribor", users.get(2).getProjects().get(0).getProjectLocation().getLocationName());
+    }
+
+    @Test
+    public void shouldReturnDescNullsLastOrderedByOneToOneOnOneToManyRelation() {
+
+        QueryOrder qo = new QueryOrder();
+        qo.setField("projects.projectLocation.locationName");
+        qo.setOrder(OrderDirection.DESC);
+
+        QueryParameters q = new QueryParameters();
+        q.getOrder().add(qo);
+
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        users = StreamUtils.queryEntities(users, q);
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(100, users.size());
+        Assert.assertNotNull(users.get(0).getLastname());
+        Assert.assertEquals("Fox", users.get(0).getLastname());
+        Assert.assertEquals("Maribor", users.get(0).getProjects().get(0).getProjectLocation().getLocationName());
+        Assert.assertNotNull(users.get(1).getLastname());
+        Assert.assertEquals("Mitchell", users.get(1).getLastname());
+        Assert.assertEquals("Ljubljana", users.get(1).getProjects().get(0).getProjectLocation().getLocationName());
+        Assert.assertNotNull(users.get(2).getLastname());
+        Assert.assertEquals("Holmes", users.get(2).getLastname());
+        Assert.assertEquals("Celje", users.get(2).getProjects().get(0).getProjectLocation().getLocationName());
+    }
+
+    @Test
+    public void shouldReturnAscNullsFirstOrderedByOneToOneOnOneToManyRelation() {
+
+        QueryOrder qo = new QueryOrder();
+        qo.setField("projects.projectLocation.locationName");
+        qo.setOrder(OrderDirection.ASC);
+        qo.setNulls(OrderNulls.FIRST);
+
+        QueryParameters q = new QueryParameters();
+        q.getOrder().add(qo);
+
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+
+        users = StreamUtils.queryEntities(users, q);
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(100, users.size());
+        //fox is not last since it contains projectLocation with locationName = NULL
+        Assert.assertNotNull(users.get(98).getLastname());
+        Assert.assertEquals("Holmes", users.get(98).getLastname());
+        Assert.assertEquals("Celje", users.get(98).getProjects().get(0).getProjectLocation().getLocationName());
+        Assert.assertNotNull(users.get(99).getLastname());
+        Assert.assertEquals("Mitchell", users.get(99).getLastname());
+        Assert.assertEquals("Ljubljana", users.get(99).getProjects().get(0).getProjectLocation().getLocationName());
+    }
+
+    @Test
+    public void shouldReturnDescNullsFirstOrderedByOneToOneOnOneToManyRelation() {
+
+        QueryOrder qo = new QueryOrder();
+        qo.setField("projects.projectLocation.locationName");
+        qo.setOrder(OrderDirection.DESC);
+        qo.setNulls(OrderNulls.FIRST);
+
+        QueryParameters q = new QueryParameters();
+        q.getOrder().add(qo);
+
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        users = StreamUtils.queryEntities(users, q);
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(100, users.size());
+        //fox is not last since it contains projectLocation with locationName = NULL
+        Assert.assertNotNull(users.get(98).getLastname());
+        Assert.assertEquals("Mitchell", users.get(98).getLastname());
+        Assert.assertEquals("Ljubljana", users.get(98).getProjects().get(0).getProjectLocation().getLocationName());
+        Assert.assertNotNull(users.get(99).getLastname());
+        Assert.assertEquals("Holmes", users.get(99).getLastname());
+        Assert.assertEquals("Celje", users.get(99).getProjects().get(0).getProjectLocation().getLocationName());
+    }
+
 }

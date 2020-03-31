@@ -40,9 +40,8 @@ public class StreamUtilsPagingTest {
 
     @Test
     public void testEmptyQuery() {
-        List<User> users = new ArrayList<>();
-        users = em.createNamedQuery("User.getAll").getResultList();
-        users = StreamUtils.queryEntities(users, User.class, new QueryParameters());
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        users = StreamUtils.queryEntities(users, new QueryParameters());
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, users.size());
@@ -51,9 +50,8 @@ public class StreamUtilsPagingTest {
     @Test
     public void testNullQuery() {
 
-        List<User> users = new ArrayList<>();
-        users = em.createNamedQuery("User.getAll").getResultList();
-        users = StreamUtils.queryEntities(users, User.class);
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        users = StreamUtils.queryEntities(users);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, users.size());
@@ -65,9 +63,8 @@ public class StreamUtilsPagingTest {
         QueryParameters q = new QueryParameters();
         q.setLimit(10);
 
-        List<User> users = new ArrayList<>();
-        users = em.createNamedQuery("User.getAll").getResultList();
-        users = StreamUtils.queryEntities(users, User.class, q);
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(10, users.size());
@@ -83,9 +80,8 @@ public class StreamUtilsPagingTest {
         QueryParameters q = new QueryParameters();
         q.setOffset(30);
 
-        List<User> users = new ArrayList<>();
-        users = em.createNamedQuery("User.getAll").getResultList();
-        users = StreamUtils.queryEntities(users, User.class, q);
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(70, users.size());
@@ -107,19 +103,17 @@ public class StreamUtilsPagingTest {
         q.setOffset(0);
         q.getOrder().add(qo);
 
-        List<User> users = new ArrayList<>();
-        users = em.createNamedQuery("User.getAll").getResultList();
-        users = StreamUtils.queryEntities(users, User.class, q);
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(25, users.size());
 
         q.setOffset(24);
 
-        users = new ArrayList<>();
         users = em.createNamedQuery("User.getAll").getResultList();
 
-        List<User> usersOffseted = StreamUtils.queryEntities(users, User.class, q);
+        List<User> usersOffseted = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(usersOffseted);
         Assert.assertEquals(25, usersOffseted.size());
@@ -136,10 +130,9 @@ public class StreamUtilsPagingTest {
         QueryParameters q = new QueryParameters();
         q.setLimit(300);
 
-        List<User> users = new ArrayList<>();
-        users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, users.size());
@@ -151,10 +144,9 @@ public class StreamUtilsPagingTest {
         QueryParameters q = new QueryParameters();
         q.setOffset(200);
 
-        List<User> users = new ArrayList<>();
-        users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(0, users.size());

@@ -41,13 +41,12 @@ public class StreamUtilsCountTest {
     @Test
     public void testEmptyQueryCount() {
 
-        List<User> users = new ArrayList<>();
-        users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
 
-        Long count = StreamUtils.queryEntitiesCount(users, User.class);
+        Long count = StreamUtils.queryEntitiesCount(users);
 
         Assert.assertNotNull(count);
-        Assert.assertEquals((long) 100, count.longValue());
+        Assert.assertEquals(100L, count.longValue());
     }
 
     @Test
@@ -70,12 +69,11 @@ public class StreamUtilsCountTest {
         qf.setValue("%ina");
         q.getFilters().add(qf);
 
-        List<User> users = new ArrayList<>();
-        users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
 
-        Long count = StreamUtils.queryEntitiesCount(users, User.class, q);
+        Long count = StreamUtils.queryEntitiesCount(users, q);
 
         Assert.assertNotNull(count);
-        Assert.assertEquals((long) 2, count.longValue());
+        Assert.assertEquals( 2L, count.longValue());
     }
 }

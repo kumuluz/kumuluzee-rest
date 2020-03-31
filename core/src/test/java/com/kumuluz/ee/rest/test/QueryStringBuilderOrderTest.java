@@ -2,9 +2,9 @@ package com.kumuluz.ee.rest.test;
 
 import com.kumuluz.ee.rest.beans.QueryParameters;
 import com.kumuluz.ee.rest.enums.OrderDirection;
+import com.kumuluz.ee.rest.enums.OrderNulls;
 import com.kumuluz.ee.rest.enums.QueryFormatError;
 import com.kumuluz.ee.rest.exceptions.QueryFormatException;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -33,12 +33,13 @@ public class QueryStringBuilderOrderTest {
         Assert.assertEquals("username", query.getOrder().get(0).getField());
         Assert.assertNotNull(query.getOrder().get(0).getOrder());
         Assert.assertEquals(OrderDirection.DESC, query.getOrder().get(0).getOrder());
+        Assert.assertNull(query.getOrder().get(0).getNulls());
     }
 
     @Test
     public void testSingleOrderWithPlus() {
 
-        QueryParameters query = QueryParameters.query("order=username+DESC").build();
+        QueryParameters query = QueryParameters.query("order=username+DESC+NULLS+FIRST").build();
 
         Assert.assertNotNull(query);
         Assert.assertNotNull(query.getOrder());
@@ -46,6 +47,7 @@ public class QueryStringBuilderOrderTest {
         Assert.assertEquals("username", query.getOrder().get(0).getField());
         Assert.assertNotNull(query.getOrder().get(0).getOrder());
         Assert.assertEquals(OrderDirection.DESC, query.getOrder().get(0).getOrder());
+        Assert.assertEquals(OrderNulls.FIRST, query.getOrder().get(0).getNulls());
     }
 
     @Test
@@ -102,7 +104,7 @@ public class QueryStringBuilderOrderTest {
     @Test
     public void testMultipleOrders() {
 
-        QueryParameters query = QueryParameters.query("order=username ASC,lastname DESC").build();
+        QueryParameters query = QueryParameters.query("order=username ASC NULLS FIRST,lastname DESC NULLS LAST").build();
 
         Assert.assertNotNull(query);
         Assert.assertNotNull(query.getOrder());
@@ -111,10 +113,12 @@ public class QueryStringBuilderOrderTest {
         Assert.assertEquals("username", query.getOrder().get(0).getField());
         Assert.assertNotNull(query.getOrder().get(0).getOrder());
         Assert.assertEquals(OrderDirection.ASC, query.getOrder().get(0).getOrder());
+        Assert.assertEquals(OrderNulls.FIRST, query.getOrder().get(0).getNulls());
 
         Assert.assertEquals("lastname", query.getOrder().get(1).getField());
         Assert.assertNotNull(query.getOrder().get(1).getOrder());
         Assert.assertEquals(OrderDirection.DESC, query.getOrder().get(1).getOrder());
+        Assert.assertEquals(OrderNulls.LAST, query.getOrder().get(1).getNulls());
     }
 
     @Test

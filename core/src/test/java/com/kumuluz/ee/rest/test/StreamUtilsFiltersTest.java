@@ -53,7 +53,7 @@ public class StreamUtilsFiltersTest {
         q.getFilters().add(qf);
 
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(1, users.size());
@@ -75,7 +75,7 @@ public class StreamUtilsFiltersTest {
 
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(1, users.size());
@@ -96,7 +96,7 @@ public class StreamUtilsFiltersTest {
 
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(1, users.size());
@@ -117,7 +117,7 @@ public class StreamUtilsFiltersTest {
 
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(1, users.size());
@@ -137,7 +137,7 @@ public class StreamUtilsFiltersTest {
         q.getFilters().add(qf);
 
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(1, users.size());
@@ -157,7 +157,7 @@ public class StreamUtilsFiltersTest {
         q.getFilters().add(qf);
 
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(1, users.size());
@@ -177,7 +177,7 @@ public class StreamUtilsFiltersTest {
         q.getFilters().add(qf);
 
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(1, users.size());
@@ -201,7 +201,7 @@ public class StreamUtilsFiltersTest {
         q.getFilters().add(qf);
 
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(47, users.size());
@@ -222,7 +222,7 @@ public class StreamUtilsFiltersTest {
         q.getFilters().add(qf);
 
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(39, users.size());
@@ -250,7 +250,7 @@ public class StreamUtilsFiltersTest {
 
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(2, users.size());
@@ -271,7 +271,7 @@ public class StreamUtilsFiltersTest {
 
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, users.size());
@@ -290,7 +290,7 @@ public class StreamUtilsFiltersTest {
 
         try {
             List<User> users = em.createNamedQuery("User.getAll").getResultList();
-            users = StreamUtils.queryEntities(users, User.class, q);
+            StreamUtils.queryEntities(users, q);
             Assert.fail("No exception was thrown");
         } catch (NoSuchEntityFieldException e) {
 
@@ -309,7 +309,7 @@ public class StreamUtilsFiltersTest {
         q.getFilters().add(qf);
 
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, users.size());
@@ -327,7 +327,7 @@ public class StreamUtilsFiltersTest {
 
         try {
             List<User> users = em.createNamedQuery("User.getAll").getResultList();
-            users = StreamUtils.queryEntities(users, User.class, q);
+            StreamUtils.queryEntities(users, q);
             Assert.fail("No exception was thrown");
         } catch (NoSuchEntityFieldException e) {
 
@@ -351,7 +351,7 @@ public class StreamUtilsFiltersTest {
 
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(9, users.size());
@@ -373,7 +373,7 @@ public class StreamUtilsFiltersTest {
 
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(91, users.size());
@@ -392,7 +392,7 @@ public class StreamUtilsFiltersTest {
 
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(97, users.size());
@@ -411,7 +411,7 @@ public class StreamUtilsFiltersTest {
 
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(47, users.size());
@@ -427,7 +427,7 @@ public class StreamUtilsFiltersTest {
         q.getFilters().add(qf);
 
         users = em.createNamedQuery("User.getAll").getResultList();
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(40, users.size());
@@ -446,7 +446,7 @@ public class StreamUtilsFiltersTest {
 
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(53, users.size());
@@ -462,7 +462,7 @@ public class StreamUtilsFiltersTest {
         q.getFilters().add(qf);
 
         users = em.createNamedQuery("User.getAll").getResultList();
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(60, users.size());
@@ -480,7 +480,7 @@ public class StreamUtilsFiltersTest {
         q.getFilters().add(qf);
 
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(53, users.size());
@@ -496,7 +496,7 @@ public class StreamUtilsFiltersTest {
         q.getFilters().add(qf);
 
         users = em.createNamedQuery("User.getAll").getResultList();
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(61, users.size());
@@ -514,7 +514,7 @@ public class StreamUtilsFiltersTest {
         q.getFilters().add(qf);
 
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(2, users.size());
@@ -532,7 +532,7 @@ public class StreamUtilsFiltersTest {
         q.getFilters().add(qf);
 
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(98, users.size());
@@ -550,7 +550,7 @@ public class StreamUtilsFiltersTest {
         q.getFilters().add(qf);
 
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(5, users.size());
@@ -568,7 +568,7 @@ public class StreamUtilsFiltersTest {
         q.getFilters().add(qf);
 
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(53, users.size());
@@ -586,7 +586,7 @@ public class StreamUtilsFiltersTest {
         q.getFilters().add(qf);
 
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(1, users.size());
@@ -606,7 +606,7 @@ public class StreamUtilsFiltersTest {
         q.getFilters().add(qf);
 
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(4, users.size());
@@ -626,7 +626,7 @@ public class StreamUtilsFiltersTest {
         q.getFilters().add(qf);
 
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(96, users.size());
@@ -644,7 +644,7 @@ public class StreamUtilsFiltersTest {
         q.getFilters().add(qf);
 
         List<Project> projects = em.createNamedQuery("Project.getAll").getResultList();
-        projects = StreamUtils.queryEntities(projects, Project.class, q);
+        projects = StreamUtils.queryEntities(projects, q);
 
         Assert.assertNotNull(projects);
         Assert.assertEquals(5, projects.size());
@@ -660,7 +660,7 @@ public class StreamUtilsFiltersTest {
         q.getFilters().add(qf);
 
         projects = em.createNamedQuery("Project.getAll").getResultList();
-        projects = StreamUtils.queryEntities(projects, Project.class, q);
+        projects = StreamUtils.queryEntities(projects, q);
 
         Assert.assertNotNull(projects);
         Assert.assertEquals(8, projects.size());
@@ -679,7 +679,7 @@ public class StreamUtilsFiltersTest {
 
         List<Project> projects = new ArrayList<>();
         projects = em.createNamedQuery("Project.getAll").getResultList();
-        projects = StreamUtils.queryEntities(projects, Project.class, q);
+        projects = StreamUtils.queryEntities(projects, q);
 
         Assert.assertNotNull(projects);
         Assert.assertEquals(100, projects.size());
@@ -697,7 +697,7 @@ public class StreamUtilsFiltersTest {
         q.getFilters().add(qf);
 
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(1, users.size());
@@ -712,7 +712,7 @@ public class StreamUtilsFiltersTest {
         q.getFilters().add(qf);
 
         users = em.createNamedQuery("User.getAll").getResultList();
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(55, users.size());
@@ -731,7 +731,7 @@ public class StreamUtilsFiltersTest {
 
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(3, users.size());
@@ -746,7 +746,7 @@ public class StreamUtilsFiltersTest {
         q.getFilters().add(qf);
 
         users = em.createNamedQuery("User.getAll").getResultList();
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(9, users.size());
@@ -766,7 +766,7 @@ public class StreamUtilsFiltersTest {
         List<User> users = new ArrayList<>();
         users = em.createNamedQuery("User.getAll").getResultList();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(60, users.size());
@@ -785,7 +785,7 @@ public class StreamUtilsFiltersTest {
 
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(0, users.size());
@@ -803,7 +803,7 @@ public class StreamUtilsFiltersTest {
         q.getFilters().add(qf);
 
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(0, users.size());
@@ -822,7 +822,7 @@ public class StreamUtilsFiltersTest {
 
         List<Project> projects = em.createNamedQuery("Project.getAll").getResultList();
 
-        projects = StreamUtils.queryEntities(projects, Project.class, q);
+        projects = StreamUtils.queryEntities(projects, q);
 
         Assert.assertNotNull(projects);
         Assert.assertEquals(50, projects.size());
@@ -841,7 +841,7 @@ public class StreamUtilsFiltersTest {
 
         List<Project> projects = em.createNamedQuery("Project.getAll").getResultList();
 
-        projects = StreamUtils.queryEntities(projects, Project.class, q);
+        projects = StreamUtils.queryEntities(projects, q);
 
         Assert.assertNotNull(projects);
         Assert.assertEquals(50, projects.size());
@@ -861,7 +861,7 @@ public class StreamUtilsFiltersTest {
 
         List<Project> projects = em.createNamedQuery("Project.getAll").getResultList();
 
-        projects = StreamUtils.queryEntities(projects, Project.class, q);
+        projects = StreamUtils.queryEntities(projects, q);
 
         Assert.assertNotNull(projects);
         Assert.assertEquals(0, projects.size());
@@ -880,7 +880,7 @@ public class StreamUtilsFiltersTest {
 
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(55, users.size());
@@ -899,7 +899,7 @@ public class StreamUtilsFiltersTest {
 
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(45, users.size());
@@ -919,7 +919,7 @@ public class StreamUtilsFiltersTest {
 
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(0, users.size());
@@ -938,7 +938,7 @@ public class StreamUtilsFiltersTest {
 
         List<Project> projects = em.createNamedQuery("Project.getAll").getResultList();
 
-        projects = StreamUtils.queryEntities(projects, Project.class, q);
+        projects = StreamUtils.queryEntities(projects, q);
 
         Assert.assertNotNull(projects);
         Assert.assertEquals(0, projects.size());
@@ -957,7 +957,7 @@ public class StreamUtilsFiltersTest {
         q.getFilters().add(qf);
 
         List<Project> projects = em.createNamedQuery("Project.getAll").getResultList();
-        projects = StreamUtils.queryEntities(projects, Project.class, q);
+        projects = StreamUtils.queryEntities(projects, q);
 
         Assert.assertNotNull(projects);
         Assert.assertEquals(0, projects.size());
@@ -976,7 +976,7 @@ public class StreamUtilsFiltersTest {
         q.getFilters().add(qf);
 
         List<Project> projects = em.createNamedQuery("Project.getAll").getResultList();
-        projects = StreamUtils.queryEntities(projects, Project.class, q);
+        projects = StreamUtils.queryEntities(projects, q);
 
         Assert.assertNotNull(projects);
         Assert.assertEquals(0, projects.size());
@@ -993,10 +993,9 @@ public class StreamUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<Project> projects = new ArrayList<>();
-        projects = em.createNamedQuery("Project.getAll").getResultList();
+        List<Project> projects = em.createNamedQuery("Project.getAll").getResultList();
 
-        projects = StreamUtils.queryEntities(projects, Project.class, q);
+        StreamUtils.queryEntities(projects, q);
 
         Assert.fail("No exception was thrown");
     }
@@ -1012,9 +1011,8 @@ public class StreamUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<Project> projects = new ArrayList<>();
-        projects = em.createNamedQuery("Project.getAll").getResultList();
-        projects = StreamUtils.queryEntities(projects, Project.class, q);
+        List<Project> projects = em.createNamedQuery("Project.getAll").getResultList();
+        projects = StreamUtils.queryEntities(projects, q);
 
         Assert.assertNotNull(projects);
         Assert.assertEquals(1, projects.size());
@@ -1031,10 +1029,9 @@ public class StreamUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<Project> projects = new ArrayList<>();
-        projects = em.createNamedQuery("Project.getAll").getResultList();
+        List<Project> projects = em.createNamedQuery("Project.getAll").getResultList();
 
-        projects = StreamUtils.queryEntities(projects, Project.class, q);
+        projects = StreamUtils.queryEntities(projects, q);
 
         Assert.assertNotNull(projects);
         Assert.assertEquals(99, projects.size());
@@ -1050,10 +1047,9 @@ public class StreamUtilsFiltersTest {
 
         q.getFilters().add(new QueryFilter(ignoredFieldName, FilterOperation.EQ, "customValue"));
 
-        List<User> users = new ArrayList<>();
-        users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, users.size());
@@ -1068,10 +1064,9 @@ public class StreamUtilsFiltersTest {
 
         q.getFilters().add(new QueryFilter(ignoredFieldName, FilterOperation.EQ, "customValue"));
 
-        List<User> users = new ArrayList<>();
-        users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, users.size());
@@ -1089,10 +1084,9 @@ public class StreamUtilsFiltersTest {
         q.getFilters().add(new QueryFilter("career.years", FilterOperation.EQ, "5"));
         q.getFilters().add(new QueryFilter(ignoredFieldName, FilterOperation.EQ, "customValue"));
 
-        List<User> users = new ArrayList<>();
-        users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(1, users.size());
@@ -1107,10 +1101,8 @@ public class StreamUtilsFiltersTest {
 
         q.getFilters().add(new QueryFilter(ignoredFieldName, FilterOperation.EQ, "customValue"));
 
-        List<User> users = new ArrayList<>();
-
-        users = em.createNamedQuery("User.getAll").getResultList();
-        StreamUtils.queryEntities(users, User.class, q);
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        StreamUtils.queryEntities(users, q);
     }
 
 }

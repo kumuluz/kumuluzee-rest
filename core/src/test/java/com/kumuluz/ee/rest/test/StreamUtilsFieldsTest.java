@@ -52,7 +52,7 @@ public class StreamUtilsFieldsTest {
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
         em.clear();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, users.size());
@@ -71,7 +71,7 @@ public class StreamUtilsFieldsTest {
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
         em.clear();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, users.size());
@@ -89,7 +89,7 @@ public class StreamUtilsFieldsTest {
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
         em.clear();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, users.size());
@@ -107,7 +107,7 @@ public class StreamUtilsFieldsTest {
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
         em.clear();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, users.size());
@@ -125,11 +125,10 @@ public class StreamUtilsFieldsTest {
 
         q.getFields().add(ignoredFieldName);
 
-        List<User> users = new ArrayList<>();
-        users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
         em.clear();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, users.size());
@@ -147,7 +146,7 @@ public class StreamUtilsFieldsTest {
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
         em.clear();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, users.size());
@@ -162,11 +161,10 @@ public class StreamUtilsFieldsTest {
 
         q.getFields().add(ignoredFieldName);
 
-        List<User> users = new ArrayList<>();
-        users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
         em.clear();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, users.size());
@@ -181,11 +179,10 @@ public class StreamUtilsFieldsTest {
 
         q.getFields().add(ignoredFieldName);
 
-        List<User> users = new ArrayList<>();
-        users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
         em.clear();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        StreamUtils.queryEntities(users, q);
     }
 
     @Test
@@ -194,11 +191,10 @@ public class StreamUtilsFieldsTest {
         QueryParameters q = new QueryParameters();
         q.getFields().add("firstnameChanged");
 
-        List<User> users = new ArrayList<>();
-        users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
         em.clear();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, users.size());
@@ -213,11 +209,10 @@ public class StreamUtilsFieldsTest {
         QueryParameters q = new QueryParameters();
         q.getFields().add("firstnameAndLastname");
 
-        List<User> users = new ArrayList<>();
-        users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
         em.clear();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, users.size());
@@ -234,11 +229,10 @@ public class StreamUtilsFieldsTest {
         q.getFields().add("career.experience");
         q.getFields().add("career.currentPosition");
 
-        List<User> users = new ArrayList<>();
-        users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
         em.clear();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(1, users.size());
@@ -254,11 +248,10 @@ public class StreamUtilsFieldsTest {
         q.getFilters().add(new QueryFilter("lastname", FilterOperation.EQ, "Torres"));
         q.getFields().add("emailAndCurrentPosition");
 
-        List<User> users = new ArrayList<>();
-        users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
         em.clear();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(1, users.size());
@@ -281,7 +274,7 @@ public class StreamUtilsFieldsTest {
         List<User> users = em.createNamedQuery("User.getAll").getResultList();
         em.clear();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, users.size());
@@ -301,11 +294,10 @@ public class StreamUtilsFieldsTest {
         QueryParameters q = new QueryParameters();
         q.getFields().add("lastname");
 
-        List<User> users = new ArrayList<>();
-        users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
         em.clear();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, users.size());
@@ -322,10 +314,9 @@ public class StreamUtilsFieldsTest {
         QueryParameters q = new QueryParameters();
         q.getFields().add("something");
 
-        List<User> users = new ArrayList<>();
-        users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
         em.clear();
 
-        users = StreamUtils.queryEntities(users, User.class, q);
+        StreamUtils.queryEntities(users, q);
     }
 }
