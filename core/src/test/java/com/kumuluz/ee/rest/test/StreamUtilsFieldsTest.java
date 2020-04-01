@@ -18,10 +18,10 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Zvone Gazvoda
@@ -306,6 +306,24 @@ public class StreamUtilsFieldsTest {
         Assert.assertNull(users.get(0).getFirstname());
         Assert.assertEquals("Ramos", users.get(0).getLastname());
         Assert.assertEquals(1, users.get(0).getId().intValue());
+    }
+
+    @Test
+    public void fieldsQueryShouldNotChangeOrder() {
+
+        QueryParameters q = new QueryParameters();
+        q.getFields().add("lastname");
+
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        em.clear();
+
+        List<User> result = StreamUtils.queryEntities(users.stream(), User.class, q).collect(Collectors.toList());
+
+        Assert.assertNotNull(users);
+        for (int i = 0; i < users.size(); i++) {
+            Assert.assertNotNull(result.get(i));
+            Assert.assertEquals(users.get(i).getId(), result.get(i).getId());
+        }
     }
 
     @Test(expected = NoSuchEntityFieldException.class)

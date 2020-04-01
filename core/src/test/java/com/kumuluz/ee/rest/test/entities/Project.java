@@ -4,6 +4,7 @@ import com.kumuluz.ee.rest.annotations.RestIgnore;
 import com.kumuluz.ee.rest.test.entities.enums.ProjectStatus;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.UUID;
 
 /**
@@ -13,7 +14,7 @@ import java.util.UUID;
 @RestIgnore({"projectIgnoreField"})
 @Table(name = "projects")
 @NamedQueries({@NamedQuery(name = "Project.getAll", query = "SELECT p FROM Project p")})
-public class Project {
+public class Project implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -5,6 +5,7 @@ import com.kumuluz.ee.rest.annotations.RestMapping;
 import com.kumuluz.ee.rest.test.entities.enums.UserStatus;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -18,7 +19,7 @@ import java.util.List;
 @RestIgnore("userIgnoredField")
 @Table(name = "users")
 @NamedQueries({@NamedQuery(name = "User.getAll", query = "SELECT u FROM User u")})
-public class User implements Comparable {
+public class User implements Comparable, Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

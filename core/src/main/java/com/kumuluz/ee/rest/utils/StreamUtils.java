@@ -20,8 +20,6 @@
  */
 package com.kumuluz.ee.rest.utils;
 
-import com.kumuluz.ee.rest.annotations.RestIgnore;
-import com.kumuluz.ee.rest.annotations.RestMapping;
 import com.kumuluz.ee.rest.beans.QueryFilter;
 import com.kumuluz.ee.rest.beans.QueryParameters;
 import com.kumuluz.ee.rest.beans.StreamCriteriaField;
@@ -30,20 +28,14 @@ import com.kumuluz.ee.rest.enums.FilterOperation;
 import com.kumuluz.ee.rest.enums.OrderDirection;
 import com.kumuluz.ee.rest.enums.OrderNulls;
 import com.kumuluz.ee.rest.exceptions.InvalidEntityFieldException;
-import com.kumuluz.ee.rest.exceptions.InvalidFieldValueException;
-import com.kumuluz.ee.rest.exceptions.NoGenericTypeException;
 import com.kumuluz.ee.rest.exceptions.NoSuchEntityFieldException;
 import com.kumuluz.ee.rest.interfaces.CriteriaFilter;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -51,6 +43,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static com.kumuluz.ee.rest.utils.ClassUtils.*;
 
 /**
  * @author Zvone
@@ -245,7 +239,7 @@ public class StreamUtils {
         HashMap<String, HashSet<String>> fieldsMap = new HashMap<>();
 
         final List<String> fields = q.getFields().stream().distinct().flatMap(restField ->
-                getRestFieldMappings(r, restField).map(f -> {
+                ClassUtils.getRestFieldMappings(r, restField).map(f -> {
 
                     String[] fSplit = f.split("\\.");
 
@@ -253,7 +247,7 @@ public class StreamUtils {
                     for (String fS : fSplit) {
                         try {
                             if (isRestIgnored(null == p ? r : p, fS)) {
-                                return Optional.<String>empty();
+                                return null;
                             }
 
                             p = p == null ? ClassUtils.fieldLookup(r, fS).getType() : ClassUtils.fieldLookup(p, fS).getType();
@@ -266,9 +260,9 @@ public class StreamUtils {
                         throw new NoSuchEntityFieldException("", f, r.getSimpleName());
                     }
 
-                    return Optional.<String>of(f);
+                    return f;
 
-                }).filter(Optional::isPresent).map(Optional::get)
+                }).filter(Objects::nonNull)
         ).collect(Collectors.toList());
 
         fields.add("id");
@@ -473,37 +467,6 @@ public class StreamUtils {
         return new StreamCriteriaWhereQuery(predicate, containsToMany);
     }
 
-
-    private static Object getValueForField(Field field, String value) {
-
-        if (value == null) return null;
-
-        Class c = field.getType();
-
-        try {
-
-            if (c.equals(Date.class))
-                return Date.from(ZonedDateTime.parse(value).toInstant());
-
-            if (c.equals(Instant.class))
-                return ZonedDateTime.parse(value).toInstant();
-
-            if (c.equals(Boolean.class))
-                return Boolean.parseBoolean(value);
-
-            if (c.isEnum())
-                return Enum.valueOf(c, value);
-
-            if (c.equals(UUID.class))
-                return UUID.fromString(value);
-        } catch (IllegalArgumentException | DateTimeParseException e) {
-
-            throw new InvalidFieldValueException(e.getMessage(), field.getName(), value);
-        }
-
-        return value;
-    }
-
     private static StreamCriteriaField getStreamCriteriaField(Class<?> clazz, String fieldName) {
 
         if (fieldName == null) throw new NoSuchEntityFieldException("No such entity field", fieldName, clazz.getSimpleName());
@@ -518,7 +481,7 @@ public class StreamUtils {
 
         for (String field : fields) {
 
-            final Optional<String> mappedFieldOptional = getRestFieldMappings(from, field).findFirst();
+            final Optional<String> mappedFieldOptional = ClassUtils.getRestFieldMappings(from, field).findFirst();
 
             //ignored
             if (!mappedFieldOptional.isPresent()) {
@@ -551,37 +514,6 @@ public class StreamUtils {
         return new StreamCriteriaField(path.toString(), isCollectionField);
     }
 
-    private static Stream<String> getRestFieldMappings(final Class<?> clazz, final String restField) {
-
-        if (null == restField || isRestIgnored(clazz, restField)) {
-            return Stream.empty();
-        }
-
-        List<String> mappingList = Stream.of(clazz.getDeclaredFields())
-                .flatMap(entityField -> Stream.of(entityField.getAnnotationsByType(RestMapping.class))
-                        .map(annotation -> {
-                                    String restFieldName = annotation.value();
-                                    String entityFieldPath = annotation.toChildField().isEmpty() ? entityField.getName() :
-                                            entityField.getName() + "." + annotation.toChildField();
-                                    return new AbstractMap.SimpleEntry<>(restFieldName, entityFieldPath);
-                                }
-                        )
-                        .filter(e -> restField.equals(e.getKey())).map(AbstractMap.SimpleEntry::getValue)
-                ).collect(Collectors.toList());
-
-        return mappingList.isEmpty() ? Stream.of(restField) : mappingList.stream();
-    }
-
-    private static boolean isRestIgnored(final Class entityClass, final String restField) {
-        final RestIgnore restIgnore = (RestIgnore) entityClass.getAnnotation(RestIgnore.class);
-
-        if (restIgnore != null) {
-            return Stream.of(restIgnore.value()).anyMatch(restField::equalsIgnoreCase);
-        }
-
-        return false;
-    }
-
     private static <T> Predicate<T> filter(Class<T> clazz, String fieldName, Object fieldValue, FilterOperation operation) {
 
         return (T instance) -> {
@@ -589,6 +521,10 @@ public class StreamUtils {
                 String[] fieldNames = fieldName.split("\\.");
 
                 Field f = ClassUtils.fieldLookup(clazz, fieldNames[0]);
+
+                if (null == f) {
+                    return true;
+                }
 
                 f.setAccessible(true);
 
@@ -1016,28 +952,14 @@ public class StreamUtils {
         };
     }
 
-    private static Class<?> getGenericType(Field field) {
-
-        ParameterizedType pt = (ParameterizedType) field.getGenericType();
-        Type[] fieldArgTypes = pt.getActualTypeArguments();
-
-        if (fieldArgTypes.length > 0) {
-            return (Class) fieldArgTypes[0];
-        } else {
-            throw new NoGenericTypeException("Unable to obtain GenericType from Collection field.", field.getName(),
-                    field.getClass().getSimpleName());
-        }
-
-    }
-
     private static <T> Comparator<T> comparator(Class<T> clazz, String fieldName, OrderDirection orderDirection, OrderNulls orderNulls) {
         //optimization for sorting by children value
-        Map<Collection, Object> minCollectionValCache = new HashMap<>();
+        Map<Collection, Optional<Object>> minCollectionValCache = new HashMap<>();
         return (T instance1, T instance2) -> compareInstanceFields(clazz, fieldName, instance1, instance2, orderDirection, orderNulls, minCollectionValCache);
     }
 
     private static <T> int compareInstanceFields(Class<T> clazz, String fieldName, T instance1, T instance2, OrderDirection orderDirection,
-                                                 OrderNulls orderNulls, Map<Collection, Object> minCollectionValCache) {
+                                                 OrderNulls orderNulls, Map<Collection, Optional<Object>> minCollectionValCache) {
 
         try {
             String[] fieldNames = fieldName.split("\\.");
@@ -1061,21 +983,24 @@ public class StreamUtils {
                 if (fieldNames.length > 1) {
 
                     //get from cache
-                    value1 = minCollectionValCache.get(c1);
-                    value2 = minCollectionValCache.get(c2);
+                    Optional<Object> cachedOpt1 = minCollectionValCache.get(c1);
+                    Optional<Object> cachedOpt2 = minCollectionValCache.get(c2);
 
-                    if (value1 == null || value2 == null) {
+                    if (cachedOpt1 == null || cachedOpt2 == null) {
                         String nextLevelFieldName = String.join(".", Arrays.copyOfRange(fieldNames, 1, fieldNames.length));
                         Comparator comparator = comparator(getGenericType(f), nextLevelFieldName, orderDirection, orderNulls);
-                        if (value1 == null) {
-                            value1 = c1.stream().min(comparator).orElse(null);
-                            minCollectionValCache.put(c1, value1);
+                        if (cachedOpt1 == null) {
+                            cachedOpt1 = c1.stream().min(comparator);
+                            minCollectionValCache.put(c1, cachedOpt1);
                         }
-                        if (value2 == null) {
-                            value2 = c2.stream().min(comparator).orElse(null);
-                            minCollectionValCache.put(c2, value2);
+                        if (cachedOpt2 == null) {
+                            cachedOpt2 = c2.stream().min(comparator);
+                            minCollectionValCache.put(c2, cachedOpt2);
                         }
                     }
+
+                    value1 = cachedOpt1.orElse(null);
+                    value2 = cachedOpt2.orElse(null);
 
                 } else {
                     throw new InvalidEntityFieldException("OneToMany and ManyToMany relations are not supported by the order query",

@@ -1,6 +1,7 @@
 package com.kumuluz.ee.rest.test.entities;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 /**
  * @author gpor0
@@ -8,7 +9,7 @@ import javax.persistence.*;
 @Entity
 @Table(name = "project_locations")
 @NamedQueries({@NamedQuery(name = "ProjectLocation.getAll", query = "SELECT pl FROM ProjectLocation pl")})
-public class ProjectLocation extends ExternalInfo {
+public class ProjectLocation extends ExternalInfo implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
