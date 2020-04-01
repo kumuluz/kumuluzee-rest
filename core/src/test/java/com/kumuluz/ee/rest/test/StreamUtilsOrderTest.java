@@ -268,7 +268,7 @@ public class StreamUtilsOrderTest {
         try {
 
             List<User> users = em.createNamedQuery("User.getAll").getResultList();
-            users = StreamUtils.queryEntities(users, q);
+            StreamUtils.queryEntities(users, q);
 
             Assert.fail("No exception was thrown");
         } catch (NoSuchEntityFieldException e) {
@@ -290,7 +290,7 @@ public class StreamUtilsOrderTest {
         try {
 
             List<User> users = em.createNamedQuery("User.getAll").getResultList();
-            users = StreamUtils.queryEntities(users, q);
+            StreamUtils.queryEntities(users, q);
 
             Assert.fail("No exception was thrown");
         } catch (NoSuchEntityFieldException e) {
@@ -406,6 +406,33 @@ public class StreamUtilsOrderTest {
         q.getOrder().add(o);
 
         JPAUtils.queryEntities(em, User.class, q);
+    }
+
+    @Test
+    public void shouldOrderByRelationHavingInheritance() {
+
+        QueryOrder qo = new QueryOrder();
+        qo.setField("projects.projectLocation.externalId");
+        qo.setOrder(OrderDirection.ASC);
+
+        QueryParameters q = new QueryParameters();
+        q.getOrder().add(qo);
+
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+
+        users = StreamUtils.queryEntities(users, q);
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(100, users.size());
+        Assert.assertNotNull(users.get(0).getLastname());
+        Assert.assertEquals("Fox", users.get(0).getLastname());
+        Assert.assertEquals("x", users.get(0).getProjects().get(0).getProjectLocation().getExternalId());
+        Assert.assertNotNull(users.get(1).getLastname());
+        Assert.assertEquals("Holmes", users.get(1).getLastname());
+        Assert.assertEquals("y", users.get(1).getProjects().get(0).getProjectLocation().getExternalId());
+        Assert.assertNotNull(users.get(2).getLastname());
+        Assert.assertEquals("Mitchell", users.get(2).getLastname());
+        Assert.assertEquals("z", users.get(2).getProjects().get(0).getProjectLocation().getExternalId());
     }
 
     @Test

@@ -256,7 +256,7 @@ public class StreamUtils {
                                 return Optional.<String>empty();
                             }
 
-                            p = p == null ? r.getDeclaredField(fS).getType() : p.getDeclaredField(fS).getType();
+                            p = p == null ? ClassUtils.fieldLookup(r, fS).getType() : ClassUtils.fieldLookup(p, fS).getType();
                         } catch (IllegalArgumentException | NoSuchFieldException e) {
                             throw new NoSuchEntityFieldException(e.getMessage(), f, r.getSimpleName());
                         }
@@ -317,9 +317,9 @@ public class StreamUtils {
 
                 String[] fieldNames = entityField.split("\\.");
 
-                Field field = clazz.getDeclaredField(fieldNames[0]);
+                Field field = ClassUtils.fieldLookup(clazz, fieldNames[0]);
 
-                Class<?> clazzTarget = clazz.getDeclaredField(fieldNames[0]).getType();
+                Class<?> clazzTarget = ClassUtils.fieldLookup(clazz, fieldNames[0]).getType();
                 field.setAccessible(true);
 
                 if (fieldNames.length > 1) {
@@ -333,7 +333,7 @@ public class StreamUtils {
 
                         fieldNames = newFieldName.split("\\.");
 
-                        field = clazzTarget.getDeclaredField(fieldNames[0]);
+                        field = ClassUtils.fieldLookup(clazzTarget, fieldNames[0]);
                         field.setAccessible(true);
 
                         clazzTarget = field.getType();
@@ -528,18 +528,19 @@ public class StreamUtils {
             String mappedField = mappedFieldOptional.get();
 
             try {
+                Field declaredField = ClassUtils.fieldLookup(from, mappedField);
                 if (path.toString().equals("")) {
-                    path.append(from.getDeclaredField(mappedField).getName());
+                    path.append(declaredField.getName());
                 } else {
-                    path.append(".").append(from.getDeclaredField(mappedField).getName());
+                    path.append(".").append(declaredField.getName());
                 }
 
-                if (Collection.class.isAssignableFrom(from.getDeclaredField(mappedField).getType())) {
+                if (Collection.class.isAssignableFrom(declaredField.getType())) {
                     isCollectionField = true;
 
-                    from = getGenericType(from.getDeclaredField(mappedField));
+                    from = getGenericType(declaredField);
                 } else {
-                    from = from.getDeclaredField(mappedField).getType();
+                    from = declaredField.getType();
                 }
 
             } catch (NoSuchFieldException e) {
@@ -587,7 +588,8 @@ public class StreamUtils {
             try {
                 String[] fieldNames = fieldName.split("\\.");
 
-                Field f = clazz.getDeclaredField(fieldNames[0]);
+                Field f = ClassUtils.fieldLookup(clazz, fieldNames[0]);
+
                 f.setAccessible(true);
 
                 final Field field = f;
@@ -1042,7 +1044,7 @@ public class StreamUtils {
 
             Class clazzTarget = clazz;
 
-            Field f = clazzTarget.getDeclaredField(fieldNames[0]);
+            Field f = ClassUtils.fieldLookup(clazzTarget, fieldNames[0]);
             f.setAccessible(true);
             Class fieldClass = f.getType();
 
@@ -1130,7 +1132,7 @@ public class StreamUtils {
 
                         String[] fieldNameParts = key.split("\\.");
 
-                        Field f = clazzTarget.getDeclaredField(fieldNameParts[0]);
+                        Field f = ClassUtils.fieldLookup(clazzTarget, fieldNameParts[0]);
                         f.setAccessible(true);
 
                         if (Collection.class.isAssignableFrom(f.getType())) {
@@ -1146,7 +1148,7 @@ public class StreamUtils {
 
                             clazzTarget = f.getType();
 
-                            f = clazzTarget.getDeclaredField(fieldNameParts[i]);
+                            f = ClassUtils.fieldLookup(clazzTarget, fieldNameParts[i]);
                             f.setAccessible(true);
 
                             if (Collection.class.isAssignableFrom(f.getType())) {

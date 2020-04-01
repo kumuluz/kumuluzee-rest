@@ -1,16 +1,14 @@
 package com.kumuluz.ee.rest.test.entities;
 
-import com.kumuluz.ee.rest.annotations.RestMapping;
-
 import javax.persistence.*;
 
 /**
- * @author Gregor Porocnik
+ * @author gpor0
  */
 @Entity
 @Table(name = "project_locations")
 @NamedQueries({@NamedQuery(name = "ProjectLocation.getAll", query = "SELECT pl FROM ProjectLocation pl")})
-public class ProjectLocation {
+public class ProjectLocation extends ExternalInfo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

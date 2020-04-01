@@ -202,6 +202,6 @@ insert into projects (id, name, description, status, user_id) values (100, 'Maro
 
 insert into user_careers (id, years, current_position, user_id) values (1, 5, 'Developer', 4);
 
-insert into project_locations (id, location_name, project_id) values (1, 'Ljubljana', 16);
-insert into project_locations (id, location_name, project_id) values (2, 'Celje', 14);
-insert into project_locations (id, location_name, project_id) values (3, 'Maribor', 50);
+insert into project_locations (id, external_id, location_name, project_id) values (1, 'z', 'Ljubljana', 16);
+insert into project_locations (id, external_id, location_name, project_id) values (2, 'y', 'Celje', 14);
+insert into project_locations (id, external_id, location_name, project_id) values (3, 'x', 'Maribor', 50);
