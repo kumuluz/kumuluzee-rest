@@ -13,6 +13,9 @@
         <class>com.kumuluz.ee.rest.test.entities.Project</class>
         <class>com.kumuluz.ee.rest.test.utils.UUIDConverter</class>
         <class>com.kumuluz.ee.rest.test.entities.UserCareer</class>
+        <class>com.kumuluz.ee.rest.test.entities.Event</class>
+        <class>com.kumuluz.ee.rest.test.entities.InstantAttributeConverter</class>
+        <class>com.kumuluz.ee.rest.test.entities.ZonedDateTimeAttributeConverter</class>
 
         <properties>
             <property name="javax.persistence.jdbc.driver" value="org.h2.Driver"/>
@@ -39,6 +42,7 @@
         <class>com.kumuluz.ee.rest.test.entities.User</class>
         <class>com.kumuluz.ee.rest.test.entities.Project</class>
         <class>com.kumuluz.ee.rest.test.entities.UserCareer</class>
+        <class>com.kumuluz.ee.rest.test.entities.Event</class>
 
         <properties>
             <property name="javax.persistence.jdbc.driver" value="org.h2.Driver"/>
