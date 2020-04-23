@@ -330,12 +330,6 @@ public class JPAUtils {
 
                 if (null != field) {
 
-                    if (field.containsToMany()) {
-                        throw new InvalidEntityFieldException(
-                                "OneToMany and ManyToMany relations are not supported by the order query",
-                                qo.getField(), r.getJavaType().getSimpleName());
-                    }
-
                     if (qo.getOrder() == OrderDirection.DESC) {
 
                         orders.add(cb.desc(field.getPath()));
