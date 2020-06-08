@@ -201,3 +201,7 @@ insert into projects (id, name, description, status, user_id) values (99, 'Teal'
 insert into projects (id, name, description, status, user_id) values (100, 'Maroon', null, 0, 83);
 
 insert into user_careers (id, years, current_position, user_id) values (1, 5, 'Developer', 4);
+
+insert into events (id, begins_at, intermission_at, ends_at) values (1, '2020-01-01T00:00:00.00Z', '2020-01-01T09:00:00.00Z', '2020-01-01T18:00:00.00Z');
+insert into events (id, begins_at, intermission_at, ends_at) values (2, '2020-01-02T00:00:00.00Z', '2020-01-02T09:00:00.00Z', '2020-01-02T18:00:00.00Z');
+insert into events (id, begins_at, intermission_at, ends_at) values (3, '2020-01-03T00:00:00.00Z', '2020-01-03T09:00:00.00Z', '2020-01-03T18:00:00.00Z');
