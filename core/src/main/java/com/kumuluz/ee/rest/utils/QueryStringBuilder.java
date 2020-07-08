@@ -23,10 +23,15 @@ package com.kumuluz.ee.rest.utils;
 import com.kumuluz.ee.rest.beans.QueryFilter;
 import com.kumuluz.ee.rest.beans.QueryOrder;
 import com.kumuluz.ee.rest.beans.QueryParameters;
+import com.kumuluz.ee.rest.beans.FilterExpression;
+import com.kumuluz.ee.rest.enums.FilterExpressionOperation;
 import com.kumuluz.ee.rest.enums.FilterOperation;
 import com.kumuluz.ee.rest.enums.OrderDirection;
 import com.kumuluz.ee.rest.enums.QueryFormatError;
 import com.kumuluz.ee.rest.exceptions.QueryFormatException;
+import org.parboiled.Parboiled;
+import org.parboiled.parserunners.RecoveringParseRunner;
+import org.parboiled.support.ParsingResult;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -339,10 +344,11 @@ public class QueryStringBuilder {
             case FILTER_DELIMITER_ALT:
 
                 if (filtersEnabled) {
-                    params.getFilters().clear();
+//                    params.getFilters().clear();
+//                    params.getFilters().addAll(buildFilter(key, value));
 
-                    params.getFilters().addAll(buildFilter(key, value));
-
+                    params.setFilterExpression(null);
+                    params.setFilterExpression(buildFilterExpression(key, value));
                 }
 
                 break;
@@ -561,19 +567,57 @@ public class QueryStringBuilder {
         return filterList;
     }
 
+    private FilterExpression buildFilterExpression(String key, String value) {
+        log.finest("Building filter string: " + value);
+
+        QueryFilterExpressionParser parser = Parboiled.createParser(QueryFilterExpressionParser.class, key);
+
+        FilterExpression filterExpression;
+        try {
+            RecoveringParseRunner<FilterExpression> parseRunner = new RecoveringParseRunner<>(parser.InputLine());
+            ParsingResult<FilterExpression> parseResult = parseRunner.run(value);
+            filterExpression = parseResult.resultValue;
+        } catch (Exception e) {
+            if (e.getCause() != null && e.getCause() instanceof QueryFormatException) {
+                throw (QueryFormatException) e.getCause();
+            }
+
+            throw new QueryFormatException("One of the filters is malformed or has too many arguments.", key, QueryFormatError.MALFORMED);
+        }
+
+        return filterExpression;
+    }
+
     private void addDefaultFilters(QueryParameters params) {
 
         if (defaultFilters == null || defaultFilters.isEmpty()) return;
 
-        params.getFilters().addAll(
-                defaultFilters
-                        .stream()
-                        .filter(df ->
-                                params.getFilters()
-                                        .stream()
-                                        .noneMatch(fl -> fl.getField().equals(df.getField()))
-                        ).collect(Collectors.toList())
-        );
+        List<QueryFilter> applicableDefaultFilters;
+
+        FilterExpression filterExpression = params.getFilterExpression();
+        if (filterExpression == null) {
+            applicableDefaultFilters = defaultFilters;
+        } else {
+            applicableDefaultFilters = defaultFilters.stream()
+                    .filter(df ->
+                            filterExpression.getAllValues()
+                                    .stream()
+                                    .noneMatch(fl -> fl.getField().equals(df.getField()))
+                    ).collect(Collectors.toList());
+        }
+
+        FilterExpression modifiedFilterExpression = filterExpression;
+        for (QueryFilter defaultFilter : applicableDefaultFilters) {
+            FilterExpression additionalFilterExpression = new FilterExpression(defaultFilter);
+
+            if (modifiedFilterExpression == null) {
+                modifiedFilterExpression = additionalFilterExpression;
+            } else {
+                modifiedFilterExpression = new FilterExpression(FilterExpressionOperation.AND, filterExpression, additionalFilterExpression);
+            }
+        }
+
+        params.setFilterExpression(modifiedFilterExpression);
     }
 
     private Date parseDate(String date) {

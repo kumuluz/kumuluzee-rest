@@ -23,6 +23,7 @@ package com.kumuluz.ee.rest.utils;
 import com.kumuluz.ee.rest.annotations.RestIgnore;
 import com.kumuluz.ee.rest.annotations.RestMapping;
 import com.kumuluz.ee.rest.beans.*;
+import com.kumuluz.ee.rest.enums.FilterExpressionOperation;
 import com.kumuluz.ee.rest.enums.OrderDirection;
 import com.kumuluz.ee.rest.exceptions.InvalidEntityFieldException;
 import com.kumuluz.ee.rest.exceptions.InvalidFieldValueException;
@@ -44,6 +45,7 @@ import java.lang.reflect.Method;
 import java.time.*;
 import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -199,9 +201,16 @@ public class JPAUtils {
 
         Predicate wherePredicate = null;
 
-        if (!q.getFilters().isEmpty()) {
+//        if (!q.getFilters().isEmpty()) {
+//
+//            CriteriaWhereQuery criteriaWhereQuery = createWhereQueryInternal(em, cb, r, q);
+//
+//            requiresDistinct = criteriaWhereQuery.containsToMany();
+//            wherePredicate = criteriaWhereQuery.getPredicate();
+//        }
 
-            CriteriaWhereQuery criteriaWhereQuery = createWhereQueryInternal(em, cb, r, q);
+        if (q.getFilterExpression() != null || !q.getFilters().isEmpty()) {
+            CriteriaWhereQuery criteriaWhereQuery = createWhereQueryInternal2(em, cb, r, q);
 
             requiresDistinct = criteriaWhereQuery.containsToMany();
             wherePredicate = criteriaWhereQuery.getPredicate();
@@ -290,9 +299,17 @@ public class JPAUtils {
 
         Predicate wherePredicate = null;
 
-        if (!q.getFilters().isEmpty()) {
+//        if (!q.getFilters().isEmpty()) {
+//
+//            CriteriaWhereQuery criteriaWhereQuery = createWhereQueryInternal(em, cb, r, q);
+//
+//            requiresDistinct = criteriaWhereQuery.containsToMany();
+//            wherePredicate = criteriaWhereQuery.getPredicate();
+//        }
 
-            CriteriaWhereQuery criteriaWhereQuery = createWhereQueryInternal(em, cb, r, q);
+        if (q.getFilterExpression() != null || !q.getFilters().isEmpty()) {
+
+            CriteriaWhereQuery criteriaWhereQuery = createWhereQueryInternal2(em, cb, r, q);
 
             requiresDistinct = criteriaWhereQuery.containsToMany();
             wherePredicate = criteriaWhereQuery.getPredicate();
@@ -362,11 +379,11 @@ public class JPAUtils {
 
     @Deprecated
     public static Predicate createWhereQuery(CriteriaBuilder cb, Root<?> r, QueryParameters q) {
-        return createWhereQueryInternal(null, cb, r, q).getPredicate();
+        return createWhereQueryInternal2(null, cb, r, q).getPredicate();
     }
 
     public static Predicate createWhereQuery(EntityManager em, CriteriaBuilder cb, Root<?> r, QueryParameters q) {
-        return createWhereQueryInternal(em, cb, r, q).getPredicate();
+        return createWhereQueryInternal2(em, cb, r, q).getPredicate();
     }
 
     public static List<Selection<?>> createFieldsSelect(Root<?> r, QueryParameters q, String
@@ -416,12 +433,221 @@ public class JPAUtils {
 
     // Temporary methods to not break the public API
 
-    private static CriteriaWhereQuery createWhereQueryInternal(EntityManager em, CriteriaBuilder cb, Root<?> r, QueryParameters q) {
+//    private static CriteriaWhereQuery createWhereQueryInternal(EntityManager em, CriteriaBuilder cb, Root<?> r, QueryParameters q) {
+//
+//        Predicate predicate = cb.conjunction();
+//        Boolean containsToMany = false;
+//
+//        for (QueryFilter f : q.getFilters()) {
+//
+//            Predicate np = null;
+//
+//            try {
+//                CriteriaField criteriaField = getCriteriaField(f.getField(), r);
+//
+//                if (null == criteriaField) {
+//                    continue;
+//                }
+//
+//                if (criteriaField.containsToMany()) {
+//                    containsToMany = true;
+//                }
+//
+//                Path entityField = criteriaField.getPath();
+//
+//                if (entityField.getModel() == null || !((Attribute) entityField.getModel()).getPersistentAttributeType()
+//                        .equals(Attribute.PersistentAttributeType.BASIC)) {
+//                    continue;
+//                }
+//
+//                @SuppressWarnings("unchecked")
+//                Path<String> stringField = (Path<String>) entityField;
+//                @SuppressWarnings("unchecked")
+//                Path<Date> dateField = (Path<Date>) entityField;
+//                @SuppressWarnings("unchecked")
+//                Path<Comparable> compField = (Path<Comparable>) entityField;
+//
+//                switch (f.getOperation()) {
+//
+//                    case EQ:
+//                        if (f.getDateValue() != null && entityField.getJavaType().equals(Date.class)) {
+//                            np = cb.equal(entityField, f.getDateValue());
+//                        } else if (f.getValue() != null) {
+//                            np = cb.equal(entityField, getValueForPath(entityField, f.getValue()));
+//                        }
+//                        break;
+//                    case EQIC:
+//                        if (entityField.getJavaType().equals(String.class) && f.getValue() != null) {
+//                            np = cb.equal(cb.lower(stringField), f.getValue().toLowerCase());
+//                        }
+//                        break;
+//                    case NEQ:
+//                        if (f.getDateValue() != null && entityField.getJavaType().equals(Date.class)) {
+//                            np = cb.notEqual(entityField, f.getDateValue());
+//                        } else if (f.getValue() != null) {
+//                            np = cb.notEqual(entityField, getValueForPath(entityField, f.getValue()));
+//                        }
+//                        break;
+//                    case NEQIC:
+//                        if (entityField.getJavaType().equals(String.class) && f.getValue() != null) {
+//                            np = cb.notEqual(cb.lower(stringField), f.getValue().toLowerCase());
+//                        }
+//                        break;
+//                    case LIKE:
+//                        if (em == null && entityField.getJavaType().equals(String.class) && f.getValue() != null) {
+//                            np = cb.like(stringField, f.getValue());
+//                        } else if (em != null && (entityField.getJavaType().equals(String.class) || entityField.getJavaType().equals(UUID.class)) && f.getValue() != null) {
+//                            String driver = (String) em.getProperties().get(PROP_PERSISTENCE_JDBC_DRIVER);
+//                            if (POSTGRES_SQL_DRIVER.equalsIgnoreCase(driver)) {
+//                                np = cb.like(cb.function("text", String.class, entityField), f.getValue());
+//                            } else {
+//                                np = cb.like(entityField.as(String.class), f.getValue());
+//                            }
+//                        }
+//                        break;
+//                    case LIKEIC:
+//                        if (em == null && entityField.getJavaType().equals(String.class) && f.getValue() != null) {
+//                            np = cb.like(cb.lower(stringField), f.getValue().toLowerCase());
+//                        } else if (em != null && (entityField.getJavaType().equals(String.class) || entityField.getJavaType().equals(UUID.class)) && f.getValue() != null) {
+//                            String driver = (String) em.getProperties().get(PROP_PERSISTENCE_JDBC_DRIVER);
+//                            if (POSTGRES_SQL_DRIVER.equalsIgnoreCase(driver)) {
+//                                np = cb.like(cb.lower(cb.function("text", String.class, entityField)), f.getValue().toLowerCase());
+//                            } else {
+//                                np = cb.like(cb.lower(entityField.as(String.class)), f.getValue().toLowerCase());
+//                            }
+//                        }
+//                        break;
+//                    case GT:
+//                        if (Date.class.isAssignableFrom(entityField.getJavaType()) ||
+//                                isAssignableToInstantHoldingTemporal(entityField.getJavaType()) ||
+//                                Number.class.isAssignableFrom(entityField.getJavaType()) ||
+//                                String.class.isAssignableFrom(entityField.getJavaType())) {
+//
+//                            if (f.getDateValue() != null && entityField.getJavaType().equals(Date.class)) {
+//                                np = cb.greaterThan(dateField, f.getDateValue());
+//                            } else if (f.getValue() != null) {
+//                                np = cb.greaterThan(compField, (Comparable) getValueForPath(stringField, f.getValue()));
+//                            }
+//                        }
+//                        break;
+//                    case GTE:
+//                        if (Date.class.isAssignableFrom(entityField.getJavaType()) ||
+//                                isAssignableToInstantHoldingTemporal(entityField.getJavaType()) ||
+//                                Number.class.isAssignableFrom(entityField.getJavaType()) ||
+//                                String.class.isAssignableFrom(entityField.getJavaType())) {
+//
+//                            if (f.getDateValue() != null && entityField.getJavaType().equals(Date.class)) {
+//                                np = cb.greaterThanOrEqualTo(dateField, f.getDateValue());
+//                            } else if (f.getValue() != null) {
+//                                np = cb.greaterThanOrEqualTo(compField, (Comparable) getValueForPath(stringField, f.getValue()));
+//                            }
+//                        }
+//                        break;
+//                    case LT:
+//                        if (Date.class.isAssignableFrom(entityField.getJavaType()) ||
+//                                isAssignableToInstantHoldingTemporal(entityField.getJavaType()) ||
+//                                Number.class.isAssignableFrom(entityField.getJavaType()) ||
+//                                String.class.isAssignableFrom(entityField.getJavaType())) {
+//
+//                            if (f.getDateValue() != null && entityField.getJavaType().equals(Date.class)) {
+//                                np = cb.lessThan(dateField, f.getDateValue());
+//                            } else if (f.getValue() != null) {
+//                                np = cb.lessThan(compField, (Comparable) getValueForPath(stringField, f.getValue()));
+//                            }
+//                        }
+//                        break;
+//                    case LTE:
+//                        if (Date.class.isAssignableFrom(entityField.getJavaType()) ||
+//                                isAssignableToInstantHoldingTemporal(entityField.getJavaType()) ||
+//                                Number.class.isAssignableFrom(entityField.getJavaType()) ||
+//                                String.class.isAssignableFrom(entityField.getJavaType())) {
+//
+//                            if (f.getDateValue() != null && entityField.getJavaType().equals(Date.class)) {
+//                                np = cb.lessThanOrEqualTo(dateField, f.getDateValue());
+//                            } else if (f.getValue() != null) {
+//                                np = cb.lessThanOrEqualTo(compField, (Comparable) getValueForPath(stringField, f.getValue()));
+//                            }
+//                        }
+//                        break;
+//                    case IN:
+//                        np = stringField.in(f.getValues().stream()
+//                                .filter(Objects::nonNull)
+//                                .map(s -> getValueForPath(entityField, s)).collect(Collectors
+//                                        .toList()));
+//                        break;
+//                    case INIC:
+//                        if (entityField.getJavaType().equals(String.class)) {
+//                            np = cb.lower(stringField)
+//                                    .in(f.getValues().stream()
+//                                            .filter(Objects::nonNull)
+//                                            .map(String::toLowerCase)
+//                                            .collect(Collectors.toList()));
+//                        }
+//                        break;
+//                    case NIN:
+//                        np = cb.not(stringField.in(f.getValues().stream()
+//                                .filter(Objects::nonNull)
+//                                .map(s -> getValueForPath(entityField, s)).collect(Collectors.toList())));
+//                        break;
+//                    case NINIC:
+//                        if (entityField.getJavaType().equals(String.class)) {
+//                            np = cb.not(cb.lower(stringField)
+//                                    .in(f.getValues().stream()
+//                                            .filter(Objects::nonNull)
+//                                            .map(String::toLowerCase)
+//                                            .collect(Collectors.toList())));
+//                        }
+//                        break;
+//                    case ISNULL:
+//                        np = cb.isNull(entityField);
+//                        break;
+//                    case ISNOTNULL:
+//                        np = cb.isNotNull(entityField);
+//                        break;
+//                }
+//            } catch (IllegalArgumentException e) {
+//
+//                throw new NoSuchEntityFieldException(e.getMessage(), f.getField(), r.getJavaType().getSimpleName());
+//            }
+//
+//            if (np != null) {
+//                predicate = cb.and(predicate, np);
+//            }
+//        }
+//
+//        return new CriteriaWhereQuery(predicate, containsToMany);
+//    }
 
+    private static CriteriaWhereQuery createWhereQueryInternal2(EntityManager em, CriteriaBuilder cb, Root<?> r, QueryParameters q) {
         Predicate predicate = cb.conjunction();
-        Boolean containsToMany = false;
+        AtomicBoolean containsToManyAtomic = new AtomicBoolean();
 
-        for (QueryFilter f : q.getFilters()) {
+        FilterExpression filterExpression = q.getFilterExpression();
+
+        for (QueryFilter queryFilter : q.getFilters()) {
+            FilterExpression additionalFilterExpression = new FilterExpression(queryFilter);
+
+            if (filterExpression == null) {
+                filterExpression = additionalFilterExpression;
+            } else {
+                filterExpression = new FilterExpression(FilterExpressionOperation.AND, filterExpression, additionalFilterExpression);
+            }
+        }
+
+        if (filterExpression != null) {
+            Predicate filterExpressionPredicate = createWhereQueryInternal2(em, cb, r, containsToManyAtomic, filterExpression);
+            if (filterExpressionPredicate != null) {
+                predicate = cb.and(predicate, filterExpressionPredicate);
+            }
+        }
+
+        return new CriteriaWhereQuery(predicate, containsToManyAtomic.get());
+    }
+
+    private static Predicate createWhereQueryInternal2(EntityManager em, CriteriaBuilder cb, Root<?> r, AtomicBoolean containsToManyAtomic, FilterExpression expression) {
+
+        if (expression.isLeaf()) {
+            QueryFilter f = expression.value();
 
             Predicate np = null;
 
@@ -429,18 +655,17 @@ public class JPAUtils {
                 CriteriaField criteriaField = getCriteriaField(f.getField(), r);
 
                 if (null == criteriaField) {
-                    continue;
+                    return null;
                 }
 
                 if (criteriaField.containsToMany()) {
-                    containsToMany = true;
+                    containsToManyAtomic.set(true);
                 }
 
                 Path entityField = criteriaField.getPath();
 
-                if (entityField.getModel() == null || !((Attribute) entityField.getModel()).getPersistentAttributeType()
-                        .equals(Attribute.PersistentAttributeType.BASIC)) {
-                    continue;
+                if (entityField.getModel() == null || !((Attribute) entityField.getModel()).getPersistentAttributeType().equals(Attribute.PersistentAttributeType.BASIC)) {
+                    return null;
                 }
 
                 @SuppressWarnings("unchecked")
@@ -477,20 +702,27 @@ public class JPAUtils {
                         }
                         break;
                     case LIKE:
-                        if (entityField.getJavaType().equals(String.class) && f.getValue() != null) {
+                        if (em == null && entityField.getJavaType().equals(String.class) && f.getValue() != null) {
                             np = cb.like(stringField, f.getValue());
-                        } else if (entityField.getJavaType().equals(UUID.class) && f.getValue() != null) {
-                            String driver = (null == em ? null : (String) em.getProperties().get(PROP_PERSISTENCE_JDBC_DRIVER));
+                        } else if (em != null && (entityField.getJavaType().equals(String.class) || entityField.getJavaType().equals(UUID.class)) && f.getValue() != null) {
+                            String driver = (String) em.getProperties().get(PROP_PERSISTENCE_JDBC_DRIVER);
                             if (POSTGRES_SQL_DRIVER.equalsIgnoreCase(driver)) {
-                                np = cb.like(cb.function("text", String.class, r.get(f.getField()).as(String.class)), f.getValue());
+                                np = cb.like(cb.function("text", String.class, entityField), f.getValue());
                             } else {
-                                np = cb.like(r.get(f.getField()).as(String.class), f.getValue());
+                                np = cb.like(entityField.as(String.class), f.getValue());
                             }
                         }
                         break;
                     case LIKEIC:
-                        if (entityField.getJavaType().equals(String.class) && f.getValue() != null) {
+                        if (em == null && entityField.getJavaType().equals(String.class) && f.getValue() != null) {
                             np = cb.like(cb.lower(stringField), f.getValue().toLowerCase());
+                        } else if (em != null && (entityField.getJavaType().equals(String.class) || entityField.getJavaType().equals(UUID.class)) && f.getValue() != null) {
+                            String driver = (String) em.getProperties().get(PROP_PERSISTENCE_JDBC_DRIVER);
+                            if (POSTGRES_SQL_DRIVER.equalsIgnoreCase(driver)) {
+                                np = cb.like(cb.lower(cb.function("text", String.class, entityField)), f.getValue().toLowerCase());
+                            } else {
+                                np = cb.like(cb.lower(entityField.as(String.class)), f.getValue().toLowerCase());
+                            }
                         }
                         break;
                     case GT:
@@ -582,16 +814,36 @@ public class JPAUtils {
                         break;
                 }
             } catch (IllegalArgumentException e) {
-
                 throw new NoSuchEntityFieldException(e.getMessage(), f.getField(), r.getJavaType().getSimpleName());
             }
 
-            if (np != null) {
-                predicate = cb.and(predicate, np);
+            return np;
+        } else if (expression.isEmptyLeaf()) {
+            return cb.conjunction();
+        } else {
+            FilterExpressionOperation operation = expression.operation();
+
+            Predicate leftPredicate = createWhereQueryInternal2(em, cb, r, containsToManyAtomic, expression.left());
+            Predicate rightPredicate = createWhereQueryInternal2(em, cb, r, containsToManyAtomic, expression.right());
+
+            if (leftPredicate == null && rightPredicate == null) {
+                return cb.conjunction();
+            }
+
+            if (leftPredicate == null) {
+                leftPredicate = cb.conjunction();
+            }
+
+            if (rightPredicate == null) {
+                rightPredicate = cb.conjunction();
+            }
+
+            if (operation.equals(FilterExpressionOperation.AND)) {
+                return cb.and(leftPredicate, rightPredicate);
+            } else {
+                return cb.or(leftPredicate, rightPredicate);
             }
         }
-
-        return new CriteriaWhereQuery(predicate, containsToMany);
     }
 
     ///// Private helper methods

@@ -40,6 +40,7 @@ public class QueryParameters implements Serializable {
     private List<QueryOrder> order;
     private List<String> fields;
     private List<QueryFilter> filters;
+    private FilterExpression filterExpression;
 
     public Long getLimit() {
         return limit;
@@ -85,6 +86,10 @@ public class QueryParameters implements Serializable {
         return fields;
     }
 
+    public void setFields(List<String> fields) {
+        this.fields = fields;
+    }
+
     public void addFilter(QueryFilter filter) {
         if(filter != null) {
             getFilters().add(filter);
@@ -103,8 +108,12 @@ public class QueryParameters implements Serializable {
         return filters;
     }
 
-    public void setFields(List<String> fields) {
-        this.fields = fields;
+    public FilterExpression getFilterExpression() {
+        return filterExpression;
+    }
+
+    public void setFilterExpression(FilterExpression filterExpression) {
+        this.filterExpression = filterExpression;
     }
 
     // Static methods for creating the query builder
