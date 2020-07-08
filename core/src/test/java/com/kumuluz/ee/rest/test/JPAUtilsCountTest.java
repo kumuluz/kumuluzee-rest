@@ -6,7 +6,6 @@ import com.kumuluz.ee.rest.enums.FilterOperation;
 import com.kumuluz.ee.rest.test.entities.User;
 import com.kumuluz.ee.rest.test.utils.JpaUtil;
 import com.kumuluz.ee.rest.utils.JPAUtils;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,7 +41,7 @@ public class JPAUtilsCountTest {
         Long count = JPAUtils.queryEntitiesCount(em, User.class);
 
         Assert.assertNotNull(count);
-        Assert.assertEquals((long)100, count.longValue());
+        Assert.assertEquals(100, count.longValue());
     }
 
     @Test
@@ -68,6 +67,6 @@ public class JPAUtilsCountTest {
         Long count = JPAUtils.queryEntitiesCount(em, User.class, q);
 
         Assert.assertNotNull(count);
-        Assert.assertEquals((long)2, count.longValue());
+        Assert.assertEquals(2, count.longValue());
     }
 }

@@ -2,14 +2,12 @@ package com.kumuluz.ee.rest.test.entities;
 
 import com.kumuluz.ee.rest.annotations.RestIgnore;
 import com.kumuluz.ee.rest.annotations.RestMapping;
-
-import javax.persistence.*;
 import com.kumuluz.ee.rest.test.utils.UUIDConverter;
 import org.eclipse.persistence.annotations.Converter;
 
+import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
-
 import java.util.UUID;
 
 /**

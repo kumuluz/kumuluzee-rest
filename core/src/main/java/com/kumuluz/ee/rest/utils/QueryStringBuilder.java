@@ -20,12 +20,11 @@
  */
 package com.kumuluz.ee.rest.utils;
 
+import com.kumuluz.ee.rest.beans.FilterExpression;
 import com.kumuluz.ee.rest.beans.QueryFilter;
 import com.kumuluz.ee.rest.beans.QueryOrder;
 import com.kumuluz.ee.rest.beans.QueryParameters;
-import com.kumuluz.ee.rest.beans.FilterExpression;
 import com.kumuluz.ee.rest.enums.FilterExpressionOperation;
-import com.kumuluz.ee.rest.enums.FilterOperation;
 import com.kumuluz.ee.rest.enums.OrderDirection;
 import com.kumuluz.ee.rest.enums.QueryFormatError;
 import com.kumuluz.ee.rest.exceptions.QueryFormatException;
@@ -38,9 +37,9 @@ import java.net.URI;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeParseException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -344,10 +343,8 @@ public class QueryStringBuilder {
             case FILTER_DELIMITER_ALT:
 
                 if (filtersEnabled) {
-//                    params.getFilters().clear();
-//                    params.getFilters().addAll(buildFilter(key, value));
-
                     params.setFilterExpression(null);
+
                     params.setFilterExpression(buildFilterExpression(key, value));
                 }
 
@@ -469,104 +466,6 @@ public class QueryStringBuilder {
                 .collect(Collectors.toList());
     }
 
-    private List<QueryFilter> buildFilter(String key, String value) {
-
-        log.finest("Building filter string: " + value);
-
-        List<QueryFilter> filterList = new ArrayList<>();
-
-        if (value == null || value.isEmpty()) return filterList;
-
-        List<String[]> filters = Arrays.stream(value.split("[(\\s|\\+)]+(?=([^']*'[^']*')*[^']*$)"))
-                .map(f -> f.split("[:]+(?=([^']*'[^']*')*[^']*$)"))
-                .collect(Collectors.toList());
-
-        // Validate too many arguments
-        if (filters.stream().anyMatch(f -> f.length > 3)) {
-            throw new QueryFormatException("One of the filters has too many arguments.", "filter", QueryFormatError.MALFORMED);
-        }
-
-        filters.stream().filter(f -> f.length == 2).forEach(f -> {
-
-            QueryFilter qf = new QueryFilter();
-            qf.setField(f[0]);
-
-            try {
-
-                qf.setOperation(FilterOperation.valueOf(f[1].toUpperCase()));
-            } catch (IllegalArgumentException e) {
-
-                String msg = "Constant in '" + key + "' does not exist: '" + value + "'";
-
-                log.finest(msg);
-
-                throw new QueryFormatException(msg, key, QueryFormatError.NO_SUCH_CONSTANT);
-            }
-
-            if (qf.getOperation() == FilterOperation.ISNULL || qf.getOperation() ==
-                    FilterOperation.ISNOTNULL) {
-
-                filterList.add(qf);
-            }
-        });
-
-        filters.stream()
-                .filter(f -> f.length == 3)
-                .forEach(f -> {
-
-                    QueryFilter qf = new QueryFilter();
-                    qf.setField(f[0]);
-
-                    try {
-
-                        qf.setOperation(FilterOperation.valueOf(f[1].toUpperCase()));
-                    } catch (IllegalArgumentException e) {
-
-                        String msg = "Constant in '" + key + "' does not exist: '" + value + "'";
-
-                        log.finest(msg);
-
-                        throw new QueryFormatException(msg, key, QueryFormatError.NO_SUCH_CONSTANT);
-                    }
-
-                    if (f[2].matches("^\\[.*\\]$") &&
-                            (qf.getOperation() == FilterOperation.IN ||
-                            qf.getOperation() == FilterOperation.NIN ||
-                            qf.getOperation() == FilterOperation.NINIC ||
-                            qf.getOperation() == FilterOperation.INIC)) {
-
-                        String values = f[2].replaceAll("(^\\[)|(\\]$)", "");
-
-                        Arrays.stream(values.split("[,]+(?=([^']*'[^']*')*[^']*$)"))
-                                .filter(e -> !e.isEmpty()).distinct()
-                                .map(e -> e.replaceAll("(^')|('$)", ""))
-                                .forEach(e -> qf.getValues().add(e));
-
-                    } else if (f[2].matches("^dt'.*'$")) {
-
-                        Date d = parseDate(f[2].replaceAll("(^dt')|('$)", ""));
-
-                        if (d == null) {
-
-                            String msg = "Value for '" + key + "' is malformed: '" + value + "'";
-
-                            log.finest(msg);
-
-                            throw new QueryFormatException(msg, key, QueryFormatError.MALFORMED);
-                        }
-
-                        qf.setDateValue(d);
-                    } else {
-
-                        qf.setValue(f[2].replaceAll("(^')|('$)", ""));
-                    }
-
-                    filterList.add(qf);
-                });
-
-        return filterList;
-    }
-
     private FilterExpression buildFilterExpression(String key, String value) {
         log.finest("Building filter string: " + value);
 
@@ -618,16 +517,6 @@ public class QueryStringBuilder {
         }
 
         params.setFilterExpression(modifiedFilterExpression);
-    }
-
-    private Date parseDate(String date) {
-
-        try {
-            return Date.from(ZonedDateTime.parse(date).toInstant());
-        } catch (DateTimeParseException e) {
-
-            return null;
-        }
     }
 
     private String decodeUrl(String url) {

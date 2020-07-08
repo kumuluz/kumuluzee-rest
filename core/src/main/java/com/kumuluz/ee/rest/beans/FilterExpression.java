@@ -4,7 +4,6 @@ import com.kumuluz.ee.rest.enums.FilterExpressionOperation;
 import org.parboiled.trees.ImmutableBinaryTreeNode;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class FilterExpression extends ImmutableBinaryTreeNode<FilterExpression> {

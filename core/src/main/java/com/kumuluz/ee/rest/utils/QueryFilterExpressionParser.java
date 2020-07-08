@@ -1,7 +1,7 @@
 package com.kumuluz.ee.rest.utils;
 
-import com.kumuluz.ee.rest.beans.QueryFilter;
 import com.kumuluz.ee.rest.beans.FilterExpression;
+import com.kumuluz.ee.rest.beans.QueryFilter;
 import com.kumuluz.ee.rest.enums.FilterExpressionOperation;
 import com.kumuluz.ee.rest.enums.FilterOperation;
 import com.kumuluz.ee.rest.enums.QueryFormatError;
