@@ -203,6 +203,7 @@ public class JPAUtils {
         Predicate wherePredicate = null;
 
         if (q.getFilterExpression() != null || !q.getFilters().isEmpty()) {
+
             CriteriaWhereQuery criteriaWhereQuery = createWhereQueryInternal(em, cb, r, q);
 
             requiresDistinct = criteriaWhereQuery.containsToMany();
@@ -421,15 +422,15 @@ public class JPAUtils {
         Predicate predicate = cb.conjunction();
         AtomicBoolean containsToManyAtomic = new AtomicBoolean();
 
-        FilterExpression filterExpression = q.getFilterExpression();
+        QueryFilterExpression filterExpression = q.getFilterExpression();
 
         for (QueryFilter queryFilter : q.getFilters()) {
-            FilterExpression additionalFilterExpression = new FilterExpression(queryFilter);
+            QueryFilterExpression additionalFilterExpression = new QueryFilterExpression(queryFilter);
 
             if (filterExpression == null) {
                 filterExpression = additionalFilterExpression;
             } else {
-                filterExpression = new FilterExpression(FilterExpressionOperation.AND, filterExpression, additionalFilterExpression);
+                filterExpression = new QueryFilterExpression(FilterExpressionOperation.AND, filterExpression, additionalFilterExpression);
             }
         }
 
@@ -443,10 +444,10 @@ public class JPAUtils {
         return new CriteriaWhereQuery(predicate, containsToManyAtomic.get());
     }
 
-    private static Predicate createWhereQueryInternal(EntityManager em, CriteriaBuilder cb, Root<?> r, AtomicBoolean containsToManyAtomic, FilterExpression expression) {
+    private static Predicate createWhereQueryInternal(EntityManager em, CriteriaBuilder cb, Root<?> r, AtomicBoolean containsToManyAtomic, QueryFilterExpression filterExpression) {
 
-        if (expression.isLeaf()) {
-            QueryFilter f = expression.value();
+        if (filterExpression.isLeaf()) {
+            QueryFilter f = filterExpression.value();
 
             Predicate np = null;
 
@@ -617,13 +618,13 @@ public class JPAUtils {
             }
 
             return np;
-        } else if (expression.isEmptyLeaf()) {
+        } else if (filterExpression.isEmptyLeaf()) {
             return cb.conjunction();
         } else {
-            FilterExpressionOperation operation = expression.operation();
+            FilterExpressionOperation operation = filterExpression.operation();
 
-            Predicate leftPredicate = createWhereQueryInternal(em, cb, r, containsToManyAtomic, expression.left());
-            Predicate rightPredicate = createWhereQueryInternal(em, cb, r, containsToManyAtomic, expression.right());
+            Predicate leftPredicate = createWhereQueryInternal(em, cb, r, containsToManyAtomic, filterExpression.left());
+            Predicate rightPredicate = createWhereQueryInternal(em, cb, r, containsToManyAtomic, filterExpression.right());
 
             if (leftPredicate == null && rightPredicate == null) {
                 return cb.conjunction();

@@ -20,8 +20,8 @@
  */
 package com.kumuluz.ee.rest.utils;
 
-import com.kumuluz.ee.rest.beans.FilterExpression;
 import com.kumuluz.ee.rest.beans.QueryFilter;
+import com.kumuluz.ee.rest.beans.QueryFilterExpression;
 import com.kumuluz.ee.rest.beans.QueryOrder;
 import com.kumuluz.ee.rest.beans.QueryParameters;
 import com.kumuluz.ee.rest.enums.FilterExpressionOperation;
@@ -466,15 +466,15 @@ public class QueryStringBuilder {
                 .collect(Collectors.toList());
     }
 
-    private FilterExpression buildFilterExpression(String key, String value) {
+    private QueryFilterExpression buildFilterExpression(String key, String value) {
         log.finest("Building filter string: " + value);
 
         QueryFilterExpressionParser parser = Parboiled.createParser(QueryFilterExpressionParser.class, key);
 
-        FilterExpression filterExpression;
+        QueryFilterExpression filterExpression;
         try {
-            RecoveringParseRunner<FilterExpression> parseRunner = new RecoveringParseRunner<>(parser.InputLine());
-            ParsingResult<FilterExpression> parseResult = parseRunner.run(value);
+            RecoveringParseRunner<QueryFilterExpression> parseRunner = new RecoveringParseRunner<>(parser.InputLine());
+            ParsingResult<QueryFilterExpression> parseResult = parseRunner.run(value);
             filterExpression = parseResult.resultValue;
         } catch (Exception e) {
             if (e.getCause() != null && e.getCause() instanceof QueryFormatException) {
@@ -493,7 +493,7 @@ public class QueryStringBuilder {
 
         List<QueryFilter> applicableDefaultFilters;
 
-        FilterExpression filterExpression = params.getFilterExpression();
+        QueryFilterExpression filterExpression = params.getFilterExpression();
         if (filterExpression == null) {
             applicableDefaultFilters = defaultFilters;
         } else {
@@ -505,14 +505,14 @@ public class QueryStringBuilder {
                     ).collect(Collectors.toList());
         }
 
-        FilterExpression modifiedFilterExpression = filterExpression;
+        QueryFilterExpression modifiedFilterExpression = filterExpression;
         for (QueryFilter defaultFilter : applicableDefaultFilters) {
-            FilterExpression additionalFilterExpression = new FilterExpression(defaultFilter);
+            QueryFilterExpression additionalFilterExpression = new QueryFilterExpression(defaultFilter);
 
             if (modifiedFilterExpression == null) {
                 modifiedFilterExpression = additionalFilterExpression;
             } else {
-                modifiedFilterExpression = new FilterExpression(FilterExpressionOperation.AND, filterExpression, additionalFilterExpression);
+                modifiedFilterExpression = new QueryFilterExpression(FilterExpressionOperation.AND, filterExpression, additionalFilterExpression);
             }
         }
 

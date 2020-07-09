@@ -1,7 +1,7 @@
 package com.kumuluz.ee.rest.utils;
 
-import com.kumuluz.ee.rest.beans.FilterExpression;
 import com.kumuluz.ee.rest.beans.QueryFilter;
+import com.kumuluz.ee.rest.beans.QueryFilterExpression;
 import com.kumuluz.ee.rest.enums.FilterExpressionOperation;
 import com.kumuluz.ee.rest.enums.FilterOperation;
 import com.kumuluz.ee.rest.enums.QueryFormatError;
@@ -20,7 +20,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @BuildParseTree
-public class QueryFilterExpressionParser extends BaseParser<FilterExpression> {
+public class QueryFilterExpressionParser extends BaseParser<QueryFilterExpression> {
 
     private static final Logger log = Logger.getLogger(QueryFilterExpressionParser.class.getSimpleName());
 
@@ -46,7 +46,7 @@ public class QueryFilterExpressionParser extends BaseParser<FilterExpression> {
                                 ),
                                 WhiteSpace(),
                                 AndExpression(),
-                                swap() && push(new FilterExpression(FilterExpressionOperation.OR, pop(), pop()))
+                                swap() && push(new QueryFilterExpression(FilterExpressionOperation.OR, pop(), pop()))
                         )
                 )
         );
@@ -69,7 +69,7 @@ public class QueryFilterExpressionParser extends BaseParser<FilterExpression> {
                                         WhiteSpace()
                                 ),
                                 Expression(),
-                                swap() && push(new FilterExpression(FilterExpressionOperation.AND, pop(), pop()))
+                                swap() && push(new QueryFilterExpression(FilterExpressionOperation.AND, pop(), pop()))
                         )
                 )
         );
@@ -107,7 +107,7 @@ public class QueryFilterExpressionParser extends BaseParser<FilterExpression> {
                 ':',
                 FilterOperator(),
                 operator.set(match()),
-                push(new FilterExpression(buildQueryFilter(field.get(), operator.get())))
+                push(new QueryFilterExpression(buildQueryFilter(field.get(), operator.get())))
         );
     }
 
@@ -125,7 +125,7 @@ public class QueryFilterExpressionParser extends BaseParser<FilterExpression> {
                 ':',
                 FilterValue(),
                 value.set(match()),
-                push(new FilterExpression(buildQueryFilter(field.get(), operator.get(), value.get())))
+                push(new QueryFilterExpression(buildQueryFilter(field.get(), operator.get(), value.get())))
         );
     }
 
