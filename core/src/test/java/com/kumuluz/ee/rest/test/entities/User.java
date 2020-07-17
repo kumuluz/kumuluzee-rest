@@ -9,8 +9,14 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import com.kumuluz.ee.rest.test.utils.UUIDConverter;
+import org.eclipse.persistence.annotations.Converter;
+
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
+
+import java.util.UUID;
 
 /**
  * @author Tilen Faganel
@@ -18,12 +24,17 @@ import java.util.List;
 @Entity
 @RestIgnore("userIgnoredField")
 @Table(name = "users")
+@Converter(name = "uuid", converterClass = UUIDConverter.class)
 @NamedQueries({@NamedQuery(name = "User.getAll", query = "SELECT u FROM User u")})
 public class User implements Comparable, Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
+    @Column(columnDefinition = "uuid")
+    @Convert(converter = UUIDConverter.class)
+    private UUID uuid;
 
     @RestMapping("firstnameChanged")
     @RestMapping("firstnameAndLastname")
@@ -71,6 +82,14 @@ public class User implements Comparable, Serializable {
 
     public void setId(Integer id) {
         this.id = id;
+    }
+
+    public UUID getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
     }
 
     public String getFirstname() {
@@ -121,10 +140,6 @@ public class User implements Comparable, Serializable {
         this.role = role;
     }
 
-    public Boolean isConfirmed() {
-        return confirmed;
-    }
-
     public Date getCreatedAt() {
         return createdAt;
     }
@@ -147,11 +162,6 @@ public class User implements Comparable, Serializable {
 
     public void setCareer(UserCareer career) {
         this.career = career;
-    }
-
-    @Override
-    public int compareTo(Object o) {
-        return id.compareTo(((User) o).getId());
     }
 
     public UserStatus getStatus() {
@@ -192,6 +202,11 @@ public class User implements Comparable, Serializable {
 
     public void setRegistrationDate(LocalDateTime registrationDate) {
         this.registrationDate = registrationDate;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        return id.compareTo(((User) o).getId());
     }
 
     @Override

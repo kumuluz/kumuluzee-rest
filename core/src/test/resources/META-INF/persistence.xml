@@ -12,7 +12,12 @@
         <class>com.kumuluz.ee.rest.test.entities.User</class>
         <class>com.kumuluz.ee.rest.test.entities.Project</class>
         <class>com.kumuluz.ee.rest.test.entities.UserCareer</class>
+        <class>com.kumuluz.ee.rest.test.entities.Event</class>
         <class>com.kumuluz.ee.rest.test.entities.ProjectLocation</class>
+
+        <class>com.kumuluz.ee.rest.test.utils.UUIDConverter</class>
+        <class>com.kumuluz.ee.rest.test.entities.InstantAttributeConverter</class>
+        <class>com.kumuluz.ee.rest.test.entities.ZonedDateTimeAttributeConverter</class>
 
         <properties>
             <property name="javax.persistence.jdbc.driver" value="org.h2.Driver"/>
@@ -27,7 +32,7 @@
 
             <property name="javax.persistence.sql-load-script-source" value="db_init.sql"/>
 
-            <!--property name="eclipselink.logging.level.sql" value="FINE"/-->
+<!--            <property name="eclipselink.logging.level.sql" value="FINE"/>-->
         </properties>
 
     </persistence-unit>
@@ -39,6 +44,7 @@
         <class>com.kumuluz.ee.rest.test.entities.User</class>
         <class>com.kumuluz.ee.rest.test.entities.Project</class>
         <class>com.kumuluz.ee.rest.test.entities.UserCareer</class>
+        <class>com.kumuluz.ee.rest.test.entities.Event</class>
         <class>com.kumuluz.ee.rest.test.entities.ProjectLocation</class>
 
         <properties>
@@ -54,7 +60,7 @@
 
             <property name="javax.persistence.sql-load-script-source" value="db_init.sql"/>
 
-            <!--property name="hibernate.show_sql" value="true"/-->
+<!--            <property name="hibernate.show_sql" value="true"/>-->
         </properties>
 
     </persistence-unit>

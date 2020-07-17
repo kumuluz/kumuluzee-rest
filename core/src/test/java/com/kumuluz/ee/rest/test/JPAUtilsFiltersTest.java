@@ -787,6 +787,23 @@ public class JPAUtilsFiltersTest {
     }
 
     @Test
+    public void testUuidLikeFilter() {
+
+        QueryFilter qf = new QueryFilter();
+        qf.setField("uuid");
+        qf.setOperation(FilterOperation.LIKE);
+        qf.setValue("7932efdd-067b-4418-3ae9-72%");
+
+        QueryParameters q = new QueryParameters();
+        q.getFilters().add(qf);
+
+        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(1, users.size());
+    }
+
+    @Test
     public void testUuidInFilter() {
 
         QueryFilter qf = new QueryFilter();

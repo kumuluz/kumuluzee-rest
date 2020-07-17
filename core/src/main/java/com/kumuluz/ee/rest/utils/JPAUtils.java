@@ -42,6 +42,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
@@ -55,7 +56,56 @@ import java.util.stream.Stream;
  */
 public class JPAUtils {
 
-    private static final Logger log = Logger.getLogger(JPAUtils.class.getSimpleName());
+    private static final Logger LOG = Logger.getLogger(JPAUtils.class.getSimpleName());
+
+    private static final String PROP_PERSISTENCE_JDBC_DRIVER = "javax.persistence.jdbc.driver";
+    private static final String POSTGRES_SQL_DRIVER = "org.postgresql.Driver";
+
+    public static <T> Stream<T> getEntityStream(EntityManager em, Class<T> entity) {
+
+        return getEntityStream(em, entity, new QueryParameters());
+    }
+
+    public static <T> Stream<T> getEntityStream(EntityManager em, Class<T> entity, QueryParameters q) {
+
+        return getEntityStream(em, entity, q, null, null, null);
+    }
+
+    public static <T> Stream<T> getEntityStream(EntityManager em, Class<T> entity, CriteriaFilter<T> customFilter) {
+        return getEntityStream(em, entity, new QueryParameters(), customFilter, null, null);
+    }
+
+    public static <T> Stream<T> getEntityStream(EntityManager em, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter) {
+        return getEntityStream(em, entity, q, customFilter, null, null);
+    }
+
+    public static <T> Stream<T> getEntityStream(EntityManager em, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter,
+                                                List<QueryHintPair> queryHints) {
+        return getEntityStream(em, entity, q, customFilter, queryHints, null);
+    }
+
+    public static <T> Queried<T> getQueried(EntityManager em, Class<T> entity) {
+
+        return getQueried(em, entity, new QueryParameters());
+    }
+
+    public static <T> Queried<T> getQueried(EntityManager em, Class<T> entity, QueryParameters q) {
+
+        return getQueried(em, entity, q, null, null, null);
+    }
+
+    public static <T> Queried<T> getQueried(EntityManager em, Class<T> entity, CriteriaFilter<T> customFilter) {
+        return getQueried(em, entity, new QueryParameters(), customFilter, null, null);
+    }
+
+    public static <T> Queried<T> getQueried(EntityManager em, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter) {
+        return getQueried(em, entity, q, customFilter, null, null);
+    }
+
+    public static <T> Queried<T> getQueried(EntityManager em, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter,
+                                            List<QueryHintPair> queryHints) {
+        return getQueried(em, entity, q, customFilter, queryHints, null);
+    }
 
     public static <T> List<T> queryEntities(EntityManager em, Class<T> entity) {
 
@@ -80,10 +130,46 @@ public class JPAUtils {
         return queryEntities(em, entity, q, customFilter, queryHints, null);
     }
 
+    public static <T> Queried<T> getQueried(EntityManager em, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter,
+                                            List<QueryHintPair> queryHints, String rootAlias) {
+
+        Long totalCount = queryEntitiesCount(em, entity, q, customFilter);
+        Stream<T> entityStream = getEntityStream(em, entity, q, customFilter, queryHints, rootAlias);
+
+        return Queried.result(totalCount, entityStream);
+    }
+
+    public static <T> Stream<T> getEntityStream(EntityManager em, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter,
+                                                List<QueryHintPair> queryHints, String rootAlias) {
+
+        TypedQuery<?> tq = buildQuery(em, entity, q, customFilter, queryHints, rootAlias);
+
+        if (q.getFields().isEmpty()) {
+
+            return (Stream<T>) tq.getResultStream();
+        } else {
+
+            return createEntitiesFromTuples((List<Tuple>) tq.getResultList(), entity, getEntityIdField(em, entity));
+        }
+    }
+
     @SuppressWarnings("unchecked")
     public static <T> List<T> queryEntities(EntityManager em, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter,
                                             List<QueryHintPair> queryHints, String rootAlias) {
 
+        TypedQuery<?> tq = buildQuery(em, entity, q, customFilter, queryHints, rootAlias);
+
+        if (q.getFields().isEmpty()) {
+
+            return (List<T>) tq.getResultList();
+        } else {
+
+            return createEntitiesFromTuples((List<Tuple>) tq.getResultList(), entity, getEntityIdField(em, entity)).collect(Collectors.toList());
+        }
+    }
+
+    private static <T> TypedQuery<?> buildQuery(EntityManager em, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter,
+                                                List<QueryHintPair> queryHints, String rootAlias) {
         if (em == null || entity == null)
             throw new IllegalArgumentException("The entity manager and the entity cannot be null.");
 
@@ -92,7 +178,7 @@ public class JPAUtils {
                     "If you don't have any parameters either pass a empty object or " +
                     "use the queryEntities(EntityManager, Class<T>) method.");
 
-        log.finest("Querying entity: '" + entity.getSimpleName() + "' with parameters: " + q);
+        LOG.finest("Querying entity: '" + entity.getSimpleName() + "' with parameters: " + q);
 
         Boolean requiresDistinct = false;
 
@@ -117,7 +203,7 @@ public class JPAUtils {
 
         if (!q.getFilters().isEmpty()) {
 
-            CriteriaWhereQuery criteriaWhereQuery = createWhereQueryInternal(cb, r, q);
+            CriteriaWhereQuery criteriaWhereQuery = createWhereQueryInternal(em, cb, r, q);
 
             requiresDistinct = criteriaWhereQuery.containsToMany();
             wherePredicate = criteriaWhereQuery.getPredicate();
@@ -166,13 +252,7 @@ public class JPAUtils {
             );
         }
 
-        if (q.getFields().isEmpty()) {
-
-            return (List<T>) tq.getResultList();
-        } else {
-
-            return createEntitiesFromTuples((List<Tuple>) tq.getResultList(), entity, getEntityIdField(em, entity));
-        }
+        return tq;
     }
 
     public static <T> Long queryEntitiesCount(EntityManager em, Class<T> entity) {
@@ -200,7 +280,7 @@ public class JPAUtils {
                     "If you don't have any parameters either pass a empty object or " +
                     "use the queryEntitiesCount(EntityManager, Class<T>) method.");
 
-        log.finest("Querying entity count: '" + entity.getSimpleName() + "' with parameters: " + q);
+        LOG.finest("Querying entity count: '" + entity.getSimpleName() + "' with parameters: " + q);
 
         Boolean requiresDistinct = false;
 
@@ -214,7 +294,7 @@ public class JPAUtils {
 
         if (!q.getFilters().isEmpty()) {
 
-            CriteriaWhereQuery criteriaWhereQuery = createWhereQueryInternal(cb, r, q);
+            CriteriaWhereQuery criteriaWhereQuery = createWhereQueryInternal(em, cb, r, q);
 
             requiresDistinct = criteriaWhereQuery.containsToMany();
             wherePredicate = criteriaWhereQuery.getPredicate();
@@ -282,8 +362,13 @@ public class JPAUtils {
         return orders;
     }
 
+    @Deprecated
     public static Predicate createWhereQuery(CriteriaBuilder cb, Root<?> r, QueryParameters q) {
-        return createWhereQueryInternal(cb, r, q).getPredicate();
+        return createWhereQueryInternal(null, cb, r, q).getPredicate();
+    }
+
+    public static Predicate createWhereQuery(EntityManager em, CriteriaBuilder cb, Root<?> r, QueryParameters q) {
+        return createWhereQueryInternal(em, cb, r, q).getPredicate();
     }
 
     public static List<Selection<?>> createFieldsSelect(Root<?> r, QueryParameters q, String
@@ -333,7 +418,7 @@ public class JPAUtils {
 
     // Temporary methods to not break the public API
 
-    private static CriteriaWhereQuery createWhereQueryInternal(CriteriaBuilder cb, Root<?> r, QueryParameters q) {
+    private static CriteriaWhereQuery createWhereQueryInternal(EntityManager em, CriteriaBuilder cb, Root<?> r, QueryParameters q) {
 
         Predicate predicate = cb.conjunction();
         Boolean containsToMany = false;
@@ -396,6 +481,13 @@ public class JPAUtils {
                     case LIKE:
                         if (entityField.getJavaType().equals(String.class) && f.getValue() != null) {
                             np = cb.like(stringField, f.getValue());
+                        } else if (entityField.getJavaType().equals(UUID.class) && f.getValue() != null) {
+                            String driver = (null == em ? null : (String) em.getProperties().get(PROP_PERSISTENCE_JDBC_DRIVER));
+                            if (POSTGRES_SQL_DRIVER.equalsIgnoreCase(driver)) {
+                                np = cb.like(cb.function("text", String.class, r.get(f.getField()).as(String.class)), f.getValue());
+                            } else {
+                                np = cb.like(r.get(f.getField()).as(String.class), f.getValue());
+                            }
                         }
                         break;
                     case LIKEIC:
@@ -405,7 +497,7 @@ public class JPAUtils {
                         break;
                     case GT:
                         if (Date.class.isAssignableFrom(entityField.getJavaType()) ||
-                                Instant.class.isAssignableFrom(entityField.getJavaType()) ||
+                                isAssignableToInstantHoldingTemporal(entityField.getJavaType()) ||
                                 Number.class.isAssignableFrom(entityField.getJavaType()) ||
                                 String.class.isAssignableFrom(entityField.getJavaType())) {
 
@@ -418,7 +510,7 @@ public class JPAUtils {
                         break;
                     case GTE:
                         if (Date.class.isAssignableFrom(entityField.getJavaType()) ||
-                                Instant.class.isAssignableFrom(entityField.getJavaType()) ||
+                                isAssignableToInstantHoldingTemporal(entityField.getJavaType()) ||
                                 Number.class.isAssignableFrom(entityField.getJavaType()) ||
                                 String.class.isAssignableFrom(entityField.getJavaType())) {
 
@@ -431,7 +523,7 @@ public class JPAUtils {
                         break;
                     case LT:
                         if (Date.class.isAssignableFrom(entityField.getJavaType()) ||
-                                Instant.class.isAssignableFrom(entityField.getJavaType()) ||
+                                isAssignableToInstantHoldingTemporal(entityField.getJavaType()) ||
                                 Number.class.isAssignableFrom(entityField.getJavaType()) ||
                                 String.class.isAssignableFrom(entityField.getJavaType())) {
 
@@ -444,7 +536,7 @@ public class JPAUtils {
                         break;
                     case LTE:
                         if (Date.class.isAssignableFrom(entityField.getJavaType()) ||
-                                Instant.class.isAssignableFrom(entityField.getJavaType()) ||
+                                isAssignableToInstantHoldingTemporal(entityField.getJavaType()) ||
                                 Number.class.isAssignableFrom(entityField.getJavaType()) ||
                                 String.class.isAssignableFrom(entityField.getJavaType())) {
 
@@ -507,13 +599,11 @@ public class JPAUtils {
     ///// Private helper methods
 
     @SuppressWarnings("unchecked")
-    private static <T> List<T> createEntitiesFromTuples(List<Tuple> tuples, Class<T> entity, String idField) {
-
-        List<T> entities = new ArrayList<>();
+    private static <T> Stream<T> createEntitiesFromTuples(List<Tuple> tuples, Class<T> entity, String idField) {
 
         Map<Object, List<Tuple>> tuplesGrouping = getTuplesGroupingById(tuples, idField);
 
-        for (Map.Entry<Object, List<Tuple>> tuplesGroup : tuplesGrouping.entrySet()) {
+        return tuplesGrouping.entrySet().stream().map(tuplesGroup -> {
 
             T el;
 
@@ -580,10 +670,8 @@ public class JPAUtils {
                 }
             }
 
-            entities.add(el);
-        }
-
-        return entities;
+            return el;
+        });
     }
 
     @SuppressWarnings("unchecked")
@@ -677,8 +765,17 @@ public class JPAUtils {
             if (c.equals(Date.class))
                 return Date.from(ZonedDateTime.parse(value).toInstant());
 
-            if (c.equals(Instant.class))
+            if (c.equals(Instant.class)) {
                 return ZonedDateTime.parse(value).toInstant();
+            }
+
+            if (c.equals(OffsetDateTime.class)) {
+                return ZonedDateTime.parse(value).toOffsetDateTime();
+            }
+
+            if (c.equals(ZonedDateTime.class)) {
+                return ZonedDateTime.parse(value);
+            }
 
             if (c.equals(Boolean.class))
                 return Boolean.parseBoolean(value);
@@ -757,7 +854,15 @@ public class JPAUtils {
             return Stream.empty();
         }
 
-        List<String> mappingList = Stream.of(path.getJavaType().getDeclaredFields())
+        Class<?> javaType = path.getJavaType();
+
+        Stream<Field> declaredFields = Stream.of(javaType.getDeclaredFields());
+        while (javaType.getSuperclass() != null) {
+            declaredFields = Stream.concat(declaredFields, Stream.of(javaType.getSuperclass().getDeclaredFields()));
+            javaType = javaType.getSuperclass();
+        }
+
+        List<String> mappingList = declaredFields
                 .map(entityField -> Stream.of(entityField.getAnnotationsByType(RestMapping.class))
                         .map(annotation -> {
                                     String restFieldName = annotation.value();
@@ -773,7 +878,7 @@ public class JPAUtils {
     }
 
     private static Map<Object, List<Tuple>> getTuplesGroupingById(List<Tuple> tuples, String idField) {
-        Map<Object, List<Tuple>> tupleGrouping = new HashMap<>();
+        Map<Object, List<Tuple>> tupleGrouping = new LinkedHashMap<>();
 
         for (Tuple tuple : tuples) {
             Object id = tuple.get(idField);
@@ -799,5 +904,11 @@ public class JPAUtils {
 
     private static boolean isObjectField(Field f) {
         return !f.getType().isPrimitive() && !f.getType().isAssignableFrom(String.class);
+    }
+
+    private static boolean isAssignableToInstantHoldingTemporal(Class clazz) {
+        return Instant.class.isAssignableFrom(clazz) ||
+                OffsetDateTime.class.isAssignableFrom(clazz) ||
+                ZonedDateTime.class.isAssignableFrom(clazz);
     }
 }
