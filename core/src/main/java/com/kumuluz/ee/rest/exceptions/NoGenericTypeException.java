@@ -18,60 +18,28 @@
  *  software. See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package com.kumuluz.ee.rest.beans;
-
-import com.kumuluz.ee.rest.enums.OrderDirection;
-import com.kumuluz.ee.rest.enums.OrderNulls;
-
-import java.io.Serializable;
-import java.util.Objects;
+package com.kumuluz.ee.rest.exceptions;
 
 /**
  * @author Tilen Faganel
  */
-public class QueryOrder implements Serializable {
-
-    private final static long serialVersionUID = 1L;
+public class NoGenericTypeException extends RuntimeException {
 
     private String field;
+    private String entity;
 
-    private OrderDirection order;
-    private OrderNulls nulls;
+    public NoGenericTypeException(String message, String field, String entity) {
+        super(message);
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        QueryOrder order = (QueryOrder) o;
-        return Objects.equals(field, order.field);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(field);
+        this.field = field;
+        this.entity = entity;
     }
 
     public String getField() {
         return field;
     }
 
-    public void setField(String field) {
-        this.field = field;
-    }
-
-    public OrderDirection getOrder() {
-        return order;
-    }
-
-    public void setOrder(OrderDirection order) {
-        this.order = order;
-    }
-
-    public OrderNulls getNulls() {
-        return nulls;
-    }
-
-    public void setNulls(OrderNulls nulls) {
-        this.nulls = nulls;
+    public String getEntity() {
+        return entity;
     }
 }

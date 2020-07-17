@@ -20,58 +20,29 @@
  */
 package com.kumuluz.ee.rest.beans;
 
-import com.kumuluz.ee.rest.enums.OrderDirection;
-import com.kumuluz.ee.rest.enums.OrderNulls;
-
+import javax.persistence.criteria.Path;
 import java.io.Serializable;
-import java.util.Objects;
 
 /**
- * @author Tilen Faganel
+ * @author Zvone Gazvoda
  */
-public class QueryOrder implements Serializable {
+public class StreamCriteriaField implements Serializable {
 
     private final static long serialVersionUID = 1L;
 
-    private String field;
+    private String path;
+    private Boolean isCollection;
 
-    private OrderDirection order;
-    private OrderNulls nulls;
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        QueryOrder order = (QueryOrder) o;
-        return Objects.equals(field, order.field);
+    public StreamCriteriaField(String path, Boolean isCollection) {
+        this.path = path;
+        this.isCollection = isCollection;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(field);
+    public String getPath() {
+        return path;
     }
 
-    public String getField() {
-        return field;
-    }
-
-    public void setField(String field) {
-        this.field = field;
-    }
-
-    public OrderDirection getOrder() {
-        return order;
-    }
-
-    public void setOrder(OrderDirection order) {
-        this.order = order;
-    }
-
-    public OrderNulls getNulls() {
-        return nulls;
-    }
-
-    public void setNulls(OrderNulls nulls) {
-        this.nulls = nulls;
+    public Boolean isCollection() {
+        return isCollection;
     }
 }

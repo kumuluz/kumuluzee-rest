@@ -4,6 +4,7 @@ import com.kumuluz.ee.rest.annotations.RestIgnore;
 import com.kumuluz.ee.rest.annotations.RestMapping;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 /**
  * @author Gregor Porocnik
@@ -11,7 +12,8 @@ import javax.persistence.*;
 @Entity
 @RestIgnore("careerIgnoreField")
 @Table(name = "user_careers")
-public class UserCareer {
+@NamedQueries({@NamedQuery(name = "UserCareer.getAll", query = "SELECT uc FROM UserCareer uc")})
+public class UserCareer implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -25,6 +25,7 @@ import com.kumuluz.ee.rest.beans.QueryOrder;
 import com.kumuluz.ee.rest.beans.QueryParameters;
 import com.kumuluz.ee.rest.enums.FilterOperation;
 import com.kumuluz.ee.rest.enums.OrderDirection;
+import com.kumuluz.ee.rest.enums.OrderNulls;
 import com.kumuluz.ee.rest.enums.QueryFormatError;
 import com.kumuluz.ee.rest.exceptions.QueryFormatException;
 
@@ -44,23 +45,17 @@ import java.util.stream.Collectors;
  */
 public class QueryStringBuilder {
 
-    private static final Logger log = Logger.getLogger(QueryStringBuilder.class.getSimpleName());
-
     public static final String LIMIT_DELIMITER = "limit";
     public static final String LIMIT_DELIMITER_ALT = "max";
-
     public static final String OFFSET_DELIMITER = "offset";
     public static final String OFFSET_DELIMITER_ALT = "skip";
-
     public static final String ORDER_DELIMITER = "order";
     public static final String ORDER_DELIMITER_ALT = "sort";
-
     public static final String FIELDS_DELIMITER = "fields";
     public static final String FIELDS_DELIMITER_ALT = "select";
-
     public static final String FILTER_DELIMITER = "filter";
     public static final String FILTER_DELIMITER_ALT = "where";
-
+    private static final Logger log = Logger.getLogger(QueryStringBuilder.class.getSimpleName());
     private String query;
 
     private Boolean paginationEnabled = true;
@@ -439,6 +434,10 @@ public class QueryStringBuilder {
             try {
 
                 o.setOrder(OrderDirection.valueOf(pair[1].toUpperCase()));
+
+                if (pair.length > 2) {
+                    o.setNulls(OrderNulls.parseValue(String.join(" ", Arrays.copyOfRange(pair, 1, pair.length))));
+                }
             } catch (IllegalArgumentException e) {
 
                 String msg = "Constant in '" + key + "' does not exist: '" + value + "'";
@@ -450,6 +449,7 @@ public class QueryStringBuilder {
         } else {
 
             o.setOrder(OrderDirection.ASC);
+            o.setNulls(OrderNulls.LAST);
         }
 
         return o;
@@ -525,9 +525,9 @@ public class QueryStringBuilder {
 
                     if (f[2].matches("^\\[.*\\]$") &&
                             (qf.getOperation() == FilterOperation.IN ||
-                            qf.getOperation() == FilterOperation.NIN ||
-                            qf.getOperation() == FilterOperation.NINIC ||
-                            qf.getOperation() == FilterOperation.INIC)) {
+                                    qf.getOperation() == FilterOperation.NIN ||
+                                    qf.getOperation() == FilterOperation.NINIC ||
+                                    qf.getOperation() == FilterOperation.INIC)) {
 
                         String values = f[2].replaceAll("(^\\[)|(\\]$)", "");
 

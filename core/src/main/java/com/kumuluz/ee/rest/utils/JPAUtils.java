@@ -383,7 +383,7 @@ public class JPAUtils {
                     for (String fS : fSplit) {
                         try {
 
-                            if (isRestIgnored(null == p ? r.getJavaType() : p.getJavaType(), fS)) {
+                            if (ClassUtils.isRestIgnored(null == p ? r.getJavaType() : p.getJavaType(), fS)) {
                                 Optional<Selection<?>> empty = Optional.empty();
                                 return empty;
                             }
@@ -740,7 +740,7 @@ public class JPAUtils {
     private static Field getFieldFromEntity(Class entityClass, String fieldName) throws NoSuchFieldException {
 
         try {
-            if (isRestIgnored(entityClass, fieldName)) {
+            if (ClassUtils.isRestIgnored(entityClass, fieldName)) {
                 return null;
             }
             return entityClass.getDeclaredField(fieldName);
@@ -850,7 +850,7 @@ public class JPAUtils {
 
     private static Stream<String> getRestFieldMappings(final Path path, final String restField) {
 
-        if (null == restField || isRestIgnored(path.getJavaType(), restField)) {
+        if (null == restField || ClassUtils.isRestIgnored(path.getJavaType(), restField)) {
             return Stream.empty();
         }
 
@@ -900,18 +900,6 @@ public class JPAUtils {
 
     private static boolean isCollectionField(Field f) {
         return Collection.class.isAssignableFrom(f.getType());
-    }
-
-    private static boolean isRestIgnored(final Class entityClass, final String restField) {
-        final RestIgnore restIgnore = (RestIgnore) entityClass.getAnnotation(RestIgnore.class);
-
-        if (restIgnore != null) {
-            if (Stream.of(restIgnore.value()).filter(f -> restField.equalsIgnoreCase(f)).findFirst().isPresent()) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private static boolean isObjectField(Field f) {
