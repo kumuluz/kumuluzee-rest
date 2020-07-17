@@ -41,7 +41,9 @@ import javax.persistence.metamodel.SingularAttribute;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.time.*;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.function.Function;
@@ -852,7 +854,15 @@ public class JPAUtils {
             return Stream.empty();
         }
 
-        List<String> mappingList = Stream.of(path.getJavaType().getDeclaredFields())
+        Class<?> javaType = path.getJavaType();
+
+        Stream<Field> declaredFields = Stream.of(javaType.getDeclaredFields());
+        while (javaType.getSuperclass() != null) {
+            declaredFields = Stream.concat(declaredFields, Stream.of(javaType.getSuperclass().getDeclaredFields()));
+            javaType = javaType.getSuperclass();
+        }
+
+        List<String> mappingList = declaredFields
                 .map(entityField -> Stream.of(entityField.getAnnotationsByType(RestMapping.class))
                         .map(annotation -> {
                                     String restFieldName = annotation.value();
@@ -868,7 +878,7 @@ public class JPAUtils {
     }
 
     private static Map<Object, List<Tuple>> getTuplesGroupingById(List<Tuple> tuples, String idField) {
-        Map<Object, List<Tuple>> tupleGrouping = new HashMap<>();
+        Map<Object, List<Tuple>> tupleGrouping = new LinkedHashMap<>();
 
         for (Tuple tuple : tuples) {
             Object id = tuple.get(idField);
