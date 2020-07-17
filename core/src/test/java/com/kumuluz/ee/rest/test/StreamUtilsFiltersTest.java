@@ -18,7 +18,10 @@ import javax.persistence.EntityManager;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author Zvone Gazvoda
@@ -41,7 +44,6 @@ public class StreamUtilsFiltersTest {
     }
 
     @Test
-
     public void testSingleStringFilter() {
 
         QueryFilter qf = new QueryFilter();
@@ -60,7 +62,6 @@ public class StreamUtilsFiltersTest {
         Assert.assertNotNull(users.get(0).getFirstname());
         Assert.assertEquals("Sandra", users.get(0).getFirstname());
     }
-
 
     @Test
     public void testSingleLocalDateFilter() {
