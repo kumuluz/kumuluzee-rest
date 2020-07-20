@@ -383,7 +383,7 @@ public class JPAUtils {
                     for (String fS : fSplit) {
                         try {
 
-                            if (isRestIgnored(null == p ? r.getJavaType() : p.getJavaType(), fS)) {
+                            if (ClassUtils.isRestIgnored(null == p ? r.getJavaType() : p.getJavaType(), fS)) {
                                 Optional<Selection<?>> empty = Optional.empty();
                                 return empty;
                             }
@@ -790,7 +790,7 @@ public class JPAUtils {
     private static Field getFieldFromEntity(Class entityClass, String fieldName) throws NoSuchFieldException {
 
         try {
-            if (isRestIgnored(entityClass, fieldName)) {
+            if (ClassUtils.isRestIgnored(entityClass, fieldName)) {
                 return null;
             }
             return entityClass.getDeclaredField(fieldName);
@@ -898,11 +898,19 @@ public class JPAUtils {
 
     private static Stream<String> getRestFieldMappings(final Path path, final String restField) {
 
-        if (null == restField || isRestIgnored(path.getJavaType(), restField)) {
+        if (null == restField || ClassUtils.isRestIgnored(path.getJavaType(), restField)) {
             return Stream.empty();
         }
 
-        List<String> mappingList = Stream.of(path.getJavaType().getDeclaredFields())
+        Class<?> javaType = path.getJavaType();
+
+        Stream<Field> declaredFields = Stream.of(javaType.getDeclaredFields());
+        while (javaType.getSuperclass() != null) {
+            declaredFields = Stream.concat(declaredFields, Stream.of(javaType.getSuperclass().getDeclaredFields()));
+            javaType = javaType.getSuperclass();
+        }
+
+        List<String> mappingList = declaredFields
                 .flatMap(entityField -> Stream.of(entityField.getAnnotationsByType(RestMapping.class))
                         .map(annotation -> {
                             String restFieldName = annotation.value();
@@ -916,7 +924,7 @@ public class JPAUtils {
     }
 
     private static Map<Object, List<Tuple>> getTuplesGroupingById(List<Tuple> tuples, String idField) {
-        Map<Object, List<Tuple>> tupleGrouping = new HashMap<>();
+        Map<Object, List<Tuple>> tupleGrouping = new LinkedHashMap<>();
 
         for (Tuple tuple : tuples) {
             Object id = tuple.get(idField);

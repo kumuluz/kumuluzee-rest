@@ -20,58 +20,29 @@
  */
 package com.kumuluz.ee.rest.beans;
 
-import com.kumuluz.ee.rest.enums.OrderDirection;
-import com.kumuluz.ee.rest.enums.OrderNulls;
-
 import java.io.Serializable;
-import java.util.Objects;
+import java.util.function.Predicate;
 
 /**
- * @author Tilen Faganel
+ * @author Zvone Gazvoda
  */
-public class QueryOrder implements Serializable {
+public class StreamCriteriaWhereQuery implements Serializable {
 
     private final static long serialVersionUID = 1L;
 
-    private String field;
+    private Predicate predicate;
+    private Boolean containsToMany;
 
-    private OrderDirection order;
-    private OrderNulls nulls;
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        QueryOrder order = (QueryOrder) o;
-        return Objects.equals(field, order.field);
+    public StreamCriteriaWhereQuery(Predicate predicate, Boolean containsToMany) {
+        this.predicate = predicate;
+        this.containsToMany = containsToMany;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(field);
+    public Predicate getPredicate() {
+        return predicate;
     }
 
-    public String getField() {
-        return field;
-    }
-
-    public void setField(String field) {
-        this.field = field;
-    }
-
-    public OrderDirection getOrder() {
-        return order;
-    }
-
-    public void setOrder(OrderDirection order) {
-        this.order = order;
-    }
-
-    public OrderNulls getNulls() {
-        return nulls;
-    }
-
-    public void setNulls(OrderNulls nulls) {
-        this.nulls = nulls;
+    public Boolean containsToMany() {
+        return containsToMany;
     }
 }

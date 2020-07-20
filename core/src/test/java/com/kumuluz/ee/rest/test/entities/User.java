@@ -2,10 +2,16 @@ package com.kumuluz.ee.rest.test.entities;
 
 import com.kumuluz.ee.rest.annotations.RestIgnore;
 import com.kumuluz.ee.rest.annotations.RestMapping;
+import com.kumuluz.ee.rest.test.entities.enums.UserStatus;
+
+import javax.persistence.*;
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import com.kumuluz.ee.rest.test.utils.UUIDConverter;
 import org.eclipse.persistence.annotations.Converter;
 
-import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -17,7 +23,8 @@ import java.util.UUID;
 @RestIgnore("userIgnoredField")
 @Table(name = "users")
 @Converter(name = "uuid", converterClass = UUIDConverter.class)
-public class User {
+@NamedQueries({@NamedQuery(name = "User.getAll", query = "SELECT u FROM User u")})
+public class User implements Comparable, Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,10 +58,21 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<Project> projects;
 
+    private UserStatus status;
+
     @RestMapping(value = "career.experience", toChildField = "years")
     @RestMapping(value = "emailAndCurrentPosition", toChildField = "currentPosition")
     @OneToOne(mappedBy = "user")
     private UserCareer career;
+
+    @Column(name = "score", scale = 2, precision = 10)
+    private BigDecimal score;
+
+    @Column(name = "birth_date")
+    private LocalDate birthDate;
+
+    @Column(name = "registration_date")
+    private LocalDateTime registrationDate;
 
     public Integer getId() {
         return id;
@@ -120,14 +138,6 @@ public class User {
         this.role = role;
     }
 
-    public Boolean isConfirmed() {
-        return confirmed;
-    }
-
-    public void setConfirmed(Boolean confirmed) {
-        this.confirmed = confirmed;
-    }
-
     public Date getCreatedAt() {
         return createdAt;
     }
@@ -150,5 +160,59 @@ public class User {
 
     public void setCareer(UserCareer career) {
         this.career = career;
+    }
+
+    public UserStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(UserStatus status) {
+        this.status = status;
+    }
+
+    public Boolean getConfirmed() {
+        return confirmed;
+    }
+
+    public void setConfirmed(Boolean confirmed) {
+        this.confirmed = confirmed;
+    }
+
+    public BigDecimal getScore() {
+        return score;
+    }
+
+    public void setScore(BigDecimal score) {
+        this.score = score;
+    }
+
+    public LocalDate getBirthDate() {
+        return birthDate;
+    }
+
+    public void setBirthDate(LocalDate birthDate) {
+        this.birthDate = birthDate;
+    }
+
+    public LocalDateTime getRegistrationDate() {
+        return registrationDate;
+    }
+
+    public void setRegistrationDate(LocalDateTime registrationDate) {
+        this.registrationDate = registrationDate;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        return id.compareTo(((User) o).getId());
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", firstname='" + firstname + '\'' +
+                ", lastname='" + lastname + '\'' +
+                '}';
     }
 }

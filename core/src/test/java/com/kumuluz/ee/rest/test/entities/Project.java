@@ -4,6 +4,7 @@ import com.kumuluz.ee.rest.annotations.RestIgnore;
 import com.kumuluz.ee.rest.test.entities.enums.ProjectStatus;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.UUID;
 
 /**
@@ -12,7 +13,8 @@ import java.util.UUID;
 @Entity
 @RestIgnore({"projectIgnoreField"})
 @Table(name = "projects")
-public class Project {
+@NamedQueries({@NamedQuery(name = "Project.getAll", query = "SELECT p FROM Project p")})
+public class Project implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,6 +28,9 @@ public class Project {
     private String description;
 
     private ProjectStatus status;
+
+    @OneToOne(mappedBy = "project")
+    private ProjectLocation projectLocation;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -77,5 +82,22 @@ public class Project {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public ProjectLocation getProjectLocation() {
+        return projectLocation;
+    }
+
+    public void setProjectLocation(ProjectLocation projectLocation) {
+        this.projectLocation = projectLocation;
+    }
+
+    @Override
+    public String toString() {
+        return "Project{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", projectLocation=" + projectLocation +
+                '}';
     }
 }

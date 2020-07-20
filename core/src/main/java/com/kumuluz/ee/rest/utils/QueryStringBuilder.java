@@ -26,6 +26,7 @@ import com.kumuluz.ee.rest.beans.QueryOrder;
 import com.kumuluz.ee.rest.beans.QueryParameters;
 import com.kumuluz.ee.rest.enums.FilterExpressionOperation;
 import com.kumuluz.ee.rest.enums.OrderDirection;
+import com.kumuluz.ee.rest.enums.OrderNulls;
 import com.kumuluz.ee.rest.enums.QueryFormatError;
 import com.kumuluz.ee.rest.exceptions.QueryFormatException;
 import org.parboiled.Parboiled;
@@ -442,6 +443,10 @@ public class QueryStringBuilder {
             try {
 
                 o.setOrder(OrderDirection.valueOf(pair[1].toUpperCase()));
+
+                if (pair.length > 2) {
+                    o.setNulls(OrderNulls.parseValue(String.join(" ", Arrays.copyOfRange(pair, 1, pair.length))));
+                }
             } catch (IllegalArgumentException e) {
 
                 String msg = "Constant in '" + key + "' does not exist: '" + value + "'";
@@ -453,6 +458,7 @@ public class QueryStringBuilder {
         } else {
 
             o.setOrder(OrderDirection.ASC);
+            o.setNulls(OrderNulls.LAST);
         }
 
         return o;
