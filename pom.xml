@@ -49,6 +49,12 @@
             <email>tilen.faganel@me.com</email>
             <url>https://github.com/TFaga</url>
         </developer>
+        <developer>
+            <name>Benjamin Kastelic</name>
+            <id>osbeorn</id>
+            <email>kastelic.benjamin@gmail.com</email>
+            <url>https://github.com/osbeorn</url>
+        </developer>
     </developers>
 
     <licenses>

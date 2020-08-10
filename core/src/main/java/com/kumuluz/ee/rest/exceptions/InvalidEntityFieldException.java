@@ -25,8 +25,8 @@ package com.kumuluz.ee.rest.exceptions;
  */
 public class InvalidEntityFieldException extends RuntimeException {
 
-    private String field;
-    private String entity;
+    private final String field;
+    private final String entity;
 
     public InvalidEntityFieldException(String message, String field, String entity) {
         super(message);

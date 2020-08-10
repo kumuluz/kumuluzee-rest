@@ -25,11 +25,10 @@ package com.kumuluz.ee.rest.exceptions;
  */
 public class InvalidFieldValueException extends RuntimeException {
 
-    private String field;
-    private String value;
+    private final String field;
+    private final String value;
 
     public InvalidFieldValueException(String msg, String field, String value) {
-
         super(msg);
 
         this.field = field;

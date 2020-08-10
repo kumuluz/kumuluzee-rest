@@ -27,12 +27,10 @@ import com.kumuluz.ee.rest.enums.QueryFormatError;
  */
 public class QueryFormatException extends RuntimeException {
 
-    private String field;
-
-    private QueryFormatError reason;
+    private final String field;
+    private final QueryFormatError reason;
 
     public QueryFormatException(String msg, String field, QueryFormatError reason) {
-
         super(msg);
 
         this.field = field;

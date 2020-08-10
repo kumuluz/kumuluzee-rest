@@ -38,17 +38,18 @@ public class Queried<R> {
 
     public static <T> Queried<T> result(Long totalCount, Stream<T> result) {
 
-        return new Queried(totalCount, result);
+        return new Queried<T>(totalCount, result);
     }
 
     public static <T> Queried<T> result(Long totalCount, List<T> result) {
 
-        return new Queried(totalCount, result.stream());
+        return new Queried<T>(totalCount, result.stream());
     }
 
+    @SafeVarargs
     public static <T> Queried<T> result(Long totalCount, T... result) {
 
-        return new Queried(totalCount, Stream.of(result));
+        return new Queried<T>(totalCount, Stream.of(result));
     }
 
     public Long getTotalCount() {

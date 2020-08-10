@@ -374,6 +374,16 @@ public class StreamUtils {
                             np = filter(clazz, entityField, f.getValue().toLowerCase(), FilterOperation.LIKEIC);
                         }
                         break;
+                    case NLIKE:
+                        if (clazzTarget.equals(String.class) && f.getValue() != null) {
+                            np = filter(clazz, entityField, f.getValue(), FilterOperation.NLIKE);
+                        }
+                        break;
+                    case NLIKEIC:
+                        if (clazzTarget.equals(String.class) && f.getValue() != null) {
+                            np = filter(clazz, entityField, f.getValue().toLowerCase(), FilterOperation.NLIKEIC);
+                        }
+                        break;
                     case GT:
                         if (Date.class.isAssignableFrom(clazzTarget) ||
                                 Instant.class.isAssignableFrom(clazzTarget) ||
@@ -688,6 +698,51 @@ public class StreamUtils {
                     } else { // assume entity class
                         Predicate newPredicate = filter(field.getType(), fieldName.substring(fieldNames[0].length() + 1), fieldValue,
                                 FilterOperation.LIKEIC);
+                        return newPredicate.test(value);
+                    }
+                } else if (operation.equals(FilterOperation.NLIKE)) {
+                    if (value == null) {
+                        return false;
+                    } else if (value instanceof String) {
+                        String expr = ((String) fieldValue);
+                        expr = expr.replace(".", "\\.");
+                        expr = expr.replace("?", ".");
+                        expr = expr.replace("%", ".*");
+
+                        return !((String) value).matches(expr);
+
+                    } else if (Collection.class.isAssignableFrom(value.getClass())) {
+
+                        Predicate newPredicate = filter(getGenericType(field), fieldName.substring(fieldNames[0].length() + 1), fieldValue,
+                                FilterOperation.NLIKE);
+
+                        return ((List<?>) value).stream().anyMatch(newPredicate);
+
+                    } else { // assume entity class
+                        Predicate newPredicate = filter(field.getType(), fieldName.substring(fieldNames[0].length() + 1), fieldValue,
+                                FilterOperation.NLIKE);
+                        return newPredicate.test(value);
+                    }
+                } else if (operation.equals(FilterOperation.NLIKEIC)) {
+                    if (value == null) {
+                        return false;
+                    } else if (value instanceof String) {
+                        String expr = ((String) fieldValue).toLowerCase();
+                        expr = expr.replace(".", "\\.");
+                        expr = expr.replace("?", ".");
+                        expr = expr.replace("%", ".*");
+
+                        return !((String) value).toLowerCase().matches(expr);
+                    } else if (Collection.class.isAssignableFrom(value.getClass())) {
+
+                        Predicate newPredicate = filter(getGenericType(field), fieldName.substring(fieldNames[0].length() + 1), fieldValue,
+                                FilterOperation.NLIKEIC);
+
+                        return ((List<?>) value).stream().anyMatch(newPredicate);
+
+                    } else { // assume entity class
+                        Predicate newPredicate = filter(field.getType(), fieldName.substring(fieldNames[0].length() + 1), fieldValue,
+                                FilterOperation.NLIKEIC);
                         return newPredicate.test(value);
                     }
                 } else if (operation.equals(FilterOperation.GT)) {

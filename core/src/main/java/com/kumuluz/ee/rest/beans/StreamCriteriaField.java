@@ -20,7 +20,6 @@
  */
 package com.kumuluz.ee.rest.beans;
 
-import javax.persistence.criteria.Path;
 import java.io.Serializable;
 
 /**
@@ -30,8 +29,8 @@ public class StreamCriteriaField implements Serializable {
 
     private final static long serialVersionUID = 1L;
 
-    private String path;
-    private Boolean isCollection;
+    private final String path;
+    private final Boolean isCollection;
 
     public StreamCriteriaField(String path, Boolean isCollection) {
         this.path = path;
