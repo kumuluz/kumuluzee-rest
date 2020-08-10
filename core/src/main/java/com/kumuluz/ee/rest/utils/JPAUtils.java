@@ -1020,7 +1020,6 @@ public class JPAUtils {
 
             // only first since multiple field operations are not supported
             final Optional<String> mappedFieldOptional = getRestFieldMappings(from, field).findFirst();
-            // TODO - benjamink - handle dots in mappedField (ManyToOne)
 
             // ignored
             if (!mappedFieldOptional.isPresent()) {
