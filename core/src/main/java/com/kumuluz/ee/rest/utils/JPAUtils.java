@@ -38,9 +38,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.logging.Logger;
@@ -978,6 +976,14 @@ public class JPAUtils {
 
             if (c.equals(Instant.class)) {
                 return ZonedDateTime.parse(value).toInstant();
+            }
+
+            if (c.equals(LocalDate.class)) {
+                return LocalDate.parse(value);
+            }
+
+            if (c.equals(LocalDateTime.class)) {
+                return LocalDateTime.parse(value);
             }
 
             if (c.equals(OffsetDateTime.class)) {
