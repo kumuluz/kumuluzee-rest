@@ -536,6 +536,7 @@ public class JPAUtils {
                 }
 
                 Path entityField = criteriaField.getPath();
+                entityField.alias(f.getField());
 
                 if (entityField.getModel() == null || !(entityField.getModel() instanceof Attribute)) {
                     continue;

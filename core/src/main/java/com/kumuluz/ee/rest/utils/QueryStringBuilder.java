@@ -471,7 +471,7 @@ public class QueryStringBuilder {
 
         if (value == null || value.isEmpty()) return filterList;
 
-        List<String[]> filters = Arrays.stream(value.split("[(\\s|\\+)]+(?=([^']*'[^']*')*[^']*$)"))
+        List<String[]> filters = Arrays.stream(value.split("[(\\s|\\+)]+(?=([^']*'[^']*')*[^']*$)(?=([^\\[]*\\[[^\\]]*\\])*[^\\]]*$)"))
                 .map(f -> f.split("[:]+(?=([^']*'[^']*')*[^']*$)"))
                 .collect(Collectors.toList());
 
@@ -532,7 +532,9 @@ public class QueryStringBuilder {
                         String values = f[2].replaceAll("(^\\[)|(\\]$)", "");
 
                         Arrays.stream(values.split("[,]+(?=([^']*'[^']*')*[^']*$)"))
-                                .filter(e -> !e.isEmpty()).distinct()
+                                .map(String::trim)
+                                .filter(e -> !e.isEmpty())
+                                .distinct()
                                 .map(e -> e.replaceAll("(^')|('$)", ""))
                                 .forEach(e -> qf.getValues().add(e));
 
