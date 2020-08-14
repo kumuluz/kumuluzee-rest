@@ -28,12 +28,18 @@ import com.kumuluz.ee.rest.enums.QueryFormatError;
 public class QueryFormatException extends RuntimeException {
 
     private final String field;
+    private final String source;
     private final QueryFormatError reason;
 
     public QueryFormatException(String msg, String field, QueryFormatError reason) {
+        this(msg, field, null, reason);
+    }
+
+    public QueryFormatException(String msg, String field, String source, QueryFormatError reason) {
         super(msg);
 
         this.field = field;
+        this.source = source;
         this.reason = reason;
     }
 
@@ -43,5 +49,9 @@ public class QueryFormatException extends RuntimeException {
 
     public QueryFormatError getReason() {
         return reason;
+    }
+
+    public String getSource() {
+        return source;
     }
 }

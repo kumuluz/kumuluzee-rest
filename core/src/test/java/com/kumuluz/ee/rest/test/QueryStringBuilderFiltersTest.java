@@ -4,7 +4,6 @@ import com.kumuluz.ee.rest.beans.QueryParameters;
 import com.kumuluz.ee.rest.enums.FilterOperation;
 import com.kumuluz.ee.rest.enums.QueryFormatError;
 import com.kumuluz.ee.rest.exceptions.QueryFormatException;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -94,7 +93,7 @@ public class QueryStringBuilderFiltersTest {
 
         try {
 
-            QueryParameters.query("filter=usernameeq:test test").build();
+            QueryParameters.query("filter=usernameeq:test").build();
             Assert.fail("No exception was thrown");
         } catch (QueryFormatException e) {
 
@@ -107,11 +106,16 @@ public class QueryStringBuilderFiltersTest {
     @Test
     public void testMalformedBinaryFilter() {
 
-        QueryParameters query = QueryParameters.query("filter=usernameeq:eq test").build();
+        try {
 
-        Assert.assertNotNull(query);
-        Assert.assertNotNull(query.getFilters());
-        Assert.assertEquals(0, query.getFilters().size());
+            QueryParameters.query("filter=usernameeq:eq test").build();
+            Assert.fail("No exception was thrown");
+        } catch (QueryFormatException e) {
+
+            Assert.assertEquals("filter", e.getField());
+            Assert.assertNotNull(e.getReason());
+            Assert.assertEquals(QueryFormatError.MALFORMED, e.getReason());
+        }
     }
 
     @Test
@@ -119,7 +123,7 @@ public class QueryStringBuilderFiltersTest {
 
         try {
 
-            QueryParameters.query("filter=username:equal:test test").build();
+            QueryParameters.query("filter=username:equal:test").build();
             Assert.fail("No exception was thrown");
         } catch (QueryFormatException e) {
 

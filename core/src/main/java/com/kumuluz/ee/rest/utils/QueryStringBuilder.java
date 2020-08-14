@@ -472,37 +472,46 @@ public class QueryStringBuilder {
         if (value == null || value.isEmpty()) return filterList;
 
         List<String[]> filters = Arrays.stream(value.split("[(\\s|\\+)]+(?=([^']*'[^']*')*[^']*$)(?=([^\\[]*\\[[^\\]]*\\])*[^\\]]*$)"))
-                .map(f -> f.split("[:]+(?=([^']*'[^']*')*[^']*$)"))
+                .map(f -> {
+                    String[] fSplit = f.split("[:]+(?=([^']*'[^']*')*[^']*$)");
+
+                    // Validate too few arguments
+                    if (fSplit.length < 2) {
+                        throw new QueryFormatException("A filter has too few arguments or is malformed", key, f, QueryFormatError.MALFORMED);
+                    }
+
+                    // Validate too many arguments
+                    if (fSplit.length > 3) {
+                        throw new QueryFormatException("A filter has too many arguments or is malformed", key, f, QueryFormatError.MALFORMED);
+                    }
+
+                    return fSplit;
+                })
                 .collect(Collectors.toList());
 
-        // Validate too many arguments
-        if (filters.stream().anyMatch(f -> f.length > 3)) {
-            throw new QueryFormatException("One of the filters has too many arguments.", "filter", QueryFormatError.MALFORMED);
-        }
+        filters.stream()
+                .filter(f -> f.length == 2).forEach(f -> {
 
-        filters.stream().filter(f -> f.length == 2).forEach(f -> {
+                    QueryFilter qf = new QueryFilter();
+                    qf.setField(f[0]);
 
-            QueryFilter qf = new QueryFilter();
-            qf.setField(f[0]);
+                    try {
 
-            try {
+                        qf.setOperation(FilterOperation.valueOf(f[1].toUpperCase()));
+                    } catch (IllegalArgumentException e) {
 
-                qf.setOperation(FilterOperation.valueOf(f[1].toUpperCase()));
-            } catch (IllegalArgumentException e) {
+                        String msg = "Constant in '" + key + "' does not exist: '" + value + "'";
 
-                String msg = "Constant in '" + key + "' does not exist: '" + value + "'";
+                        log.finest(msg);
 
-                log.finest(msg);
+                        throw new QueryFormatException(msg, key, QueryFormatError.NO_SUCH_CONSTANT);
+                    }
 
-                throw new QueryFormatException(msg, key, QueryFormatError.NO_SUCH_CONSTANT);
-            }
+                    if (qf.getOperation() == FilterOperation.ISNULL || qf.getOperation() == FilterOperation.ISNOTNULL) {
 
-            if (qf.getOperation() == FilterOperation.ISNULL || qf.getOperation() ==
-                    FilterOperation.ISNOTNULL) {
-
-                filterList.add(qf);
-            }
-        });
+                        filterList.add(qf);
+                    }
+                });
 
         filters.stream()
                 .filter(f -> f.length == 3)
