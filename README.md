@@ -159,19 +159,21 @@ After the last user specified sort, order by unique ID is automatically appended
 The entities can be filtered by using multiple operations:
 
 * EQ | Equals
-* EQIC | Equals ignore case
+* EQIC | Case-insensitive equals
 * NEQ | Not equal
-* NEQIC | Not equal ignoring case
+* NEQIC | Case-insensitive not equal
 * LIKE | Pattern matching (% replaces characters, _ replaces a single character)
-* LIKEIC | Pattern matching ignore case (% replaces characters, _ replaces a single character)
+* LIKEIC | Case-insensitive pattern matching (% replaces characters, _ replaces a single character)
+* NLIKE | Negated pattern matching (% replaces characters, _ replaces a single character)
+* NLIKEIC | Case-insensitive negated pattern matching (% replaces characters, _ replaces a single character)
 * GT | Greater than
 * GTE | Greater than or equal
 * LT | Lower than
 * LTE | Lower than or equal
 * IN | In set
-* INIC | In set ignore case
+* INIC | Case-insensitive in set
 * NIN | Not in set
-* NINIC | Not in set ignore case
+* NINIC | Case-insensitive not in set
 * ISNULL | Null
 * ISNOTNULL | Not null
 
