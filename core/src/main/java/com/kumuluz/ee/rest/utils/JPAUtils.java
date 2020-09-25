@@ -776,11 +776,14 @@ public class JPAUtils {
 
                 for (TupleElement<?> te : tes) {
                     Object o = t.get(te);
+                    if (o == null) {
+                        continue;
+                    }
 
                     try {
                         String[] fName = te.getAlias().split("\\.");
 
-                        createEntityFromTuple(fName, entity, el, o, i, Arrays.asList("project.id"));
+                        createEntityFromTuple(fName, entity, el, o, i);
                     } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException | InvocationTargetException | InstantiationException e) {
 
                         throw new NoSuchEntityFieldException(e.getMessage(), te.getAlias(), entity.getSimpleName());
@@ -792,7 +795,7 @@ public class JPAUtils {
         });
     }
 
-    private static <T> T createEntityFromTuple(String[] fName, Class<?> entity, T el, Object o, int row, List<String> idFields)
+    private static <T> T createEntityFromTuple(String[] fName, Class<?> entity, T el, Object o, int row)
             throws IllegalAccessException, NoSuchMethodException, InvocationTargetException, InstantiationException, NoSuchFieldException {
         String fName2 = fName[0];
 
@@ -825,7 +828,7 @@ public class JPAUtils {
             el2 = initializeField(el, field, entity2);
         }
 
-        Object o2 = createEntityFromTuple(Arrays.asList(fName).subList(1, fName.length).toArray(new String[]{}), entity2, el2, o, row, idFields);
+        Object o2 = createEntityFromTuple(Arrays.asList(fName).subList(1, fName.length).toArray(new String[]{}), entity2, el2, o, row);
 
         setEntityFieldValue(el, field, o2);
 
