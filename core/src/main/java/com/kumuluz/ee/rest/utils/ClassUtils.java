@@ -28,8 +28,7 @@ import com.kumuluz.ee.rest.exceptions.NoGenericTypeException;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.time.Instant;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeParseException;
 import java.util.AbstractMap;
 import java.util.Date;
@@ -114,6 +113,14 @@ public class ClassUtils {
             if (c.equals(Instant.class))
                 return ZonedDateTime.parse(value).toInstant();
 
+            if (c.equals(LocalDate.class)) {
+                return LocalDate.parse(value);
+            }
+
+            if (c.equals(LocalDateTime.class)) {
+                return LocalDateTime.parse(value);
+            }
+
             if (c.equals(Boolean.class))
                 return Boolean.parseBoolean(value);
 
@@ -125,6 +132,33 @@ public class ClassUtils {
         } catch (IllegalArgumentException | DateTimeParseException e) {
 
             throw new InvalidFieldValueException(e.getMessage(), field.getName(), value);
+        }
+
+        return value;
+    }
+
+    protected static Object getTargetDateTypeValue(Date value, Class<?> clazzType) {
+
+        if (value == null) return null;
+
+        try {
+
+            if (clazzType.equals(Date.class))
+                return value;
+
+            if (clazzType.equals(Instant.class))
+                return value.toInstant();
+
+            if (clazzType.equals(LocalDate.class)) {
+                return value.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            }
+
+            if (clazzType.equals(LocalDateTime.class)) {
+                return value.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            }
+        } catch (IllegalArgumentException | DateTimeParseException e) {
+
+            throw new InvalidFieldValueException(e.getMessage(), "", value.toString());
         }
 
         return value;
