@@ -37,6 +37,20 @@ public class QueryOrder implements Serializable {
 
     private OrderDirection order;
     private OrderNulls nulls;
+    
+    public QueryOrder() {
+    }
+    
+    public QueryOrder(String field, OrderDirection direction) {
+        this.field = field;
+        this.order = direction;
+    }
+    
+    public QueryOrder(String field, OrderDirection direction, OrderNulls nulls) {
+        this.field = field;
+        this.order = direction;
+        this.nulls = nulls;
+    }
 
     @Override
     public boolean equals(Object o) {
