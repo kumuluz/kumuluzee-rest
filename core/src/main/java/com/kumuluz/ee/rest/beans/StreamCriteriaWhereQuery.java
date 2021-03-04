@@ -30,15 +30,15 @@ public class StreamCriteriaWhereQuery implements Serializable {
 
     private final static long serialVersionUID = 1L;
 
-    private Predicate predicate;
-    private Boolean containsToMany;
+    private final Predicate<?> predicate;
+    private final Boolean containsToMany;
 
-    public StreamCriteriaWhereQuery(Predicate predicate, Boolean containsToMany) {
+    public StreamCriteriaWhereQuery(Predicate<?> predicate, Boolean containsToMany) {
         this.predicate = predicate;
         this.containsToMany = containsToMany;
     }
 
-    public Predicate getPredicate() {
+    public Predicate<?> getPredicate() {
         return predicate;
     }
 

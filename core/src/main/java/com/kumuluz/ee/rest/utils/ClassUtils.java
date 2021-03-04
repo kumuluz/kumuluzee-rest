@@ -63,7 +63,7 @@ public class ClassUtils {
     protected static boolean isRestIgnored(final Class<?> entityClass, final String restField) {
         final RestIgnore restIgnore = entityClass.getAnnotation(RestIgnore.class);
 
-        return restIgnore != null && Stream.of(restIgnore.value()).anyMatch(f -> restField.equalsIgnoreCase(f));
+        return restIgnore != null && Stream.of(restIgnore.value()).anyMatch(restField::equalsIgnoreCase);
     }
 
     protected static Stream<String> getRestFieldMappings(final Class<?> clazz, final String restField) {
@@ -93,7 +93,7 @@ public class ClassUtils {
         Type[] fieldArgTypes = pt.getActualTypeArguments();
 
         if (fieldArgTypes.length > 0) {
-            return (Class) fieldArgTypes[0];
+            return (Class<?>) fieldArgTypes[0];
         } else {
             throw new NoGenericTypeException("Unable to obtain GenericType from Collection field.", field.getName(),
                     field.getClass().getSimpleName());

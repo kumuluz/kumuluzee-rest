@@ -11,8 +11,8 @@ public class JpaUtil {
 
     private static JpaUtil instance;
 
-    private EntityManagerFactory emfEclipseLink;
-    private EntityManagerFactory emfHibernate;
+    private final EntityManagerFactory emfEclipseLink;
+    private final EntityManagerFactory emfHibernate;
 
     public static JpaUtil getInstance() {
         if (instance == null) {

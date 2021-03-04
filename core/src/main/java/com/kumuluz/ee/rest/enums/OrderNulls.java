@@ -27,7 +27,7 @@ public enum OrderNulls {
 
     LAST("NULLS LAST"), FIRST("NULLS FIRST");
 
-    String value;
+    private final String value;
 
     OrderNulls(String value) {
         this.value = value;
@@ -39,6 +39,7 @@ public enum OrderNulls {
                 return e;
             }
         }
+
         return LAST;
     }
 }

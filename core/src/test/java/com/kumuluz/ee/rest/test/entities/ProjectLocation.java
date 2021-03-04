@@ -18,7 +18,7 @@ public class ProjectLocation extends ExternalInfo implements Serializable {
     @Column(name = "location_name")
     private String locationName;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "project_id")
     private Project project;
 

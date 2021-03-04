@@ -30,15 +30,15 @@ public class CriteriaField implements Serializable {
 
     private final static long serialVersionUID = 1L;
 
-    private Path path;
-    private Boolean containsToMany;
+    private final Path<?> path;
+    private final Boolean containsToMany;
 
-    public CriteriaField(Path path, Boolean containsToMany) {
+    public CriteriaField(Path<?> path, Boolean containsToMany) {
         this.path = path;
         this.containsToMany = containsToMany;
     }
 
-    public Path getPath() {
+    public Path<?> getPath() {
         return path;
     }
 

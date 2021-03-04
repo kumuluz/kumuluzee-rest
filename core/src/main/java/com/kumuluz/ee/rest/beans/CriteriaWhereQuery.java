@@ -30,8 +30,8 @@ public class CriteriaWhereQuery implements Serializable {
 
     private final static long serialVersionUID = 1L;
 
-    private Predicate predicate;
-    private Boolean containsToMany;
+    private final Predicate predicate;
+    private final Boolean containsToMany;
 
     public CriteriaWhereQuery(Predicate predicate, Boolean containsToMany) {
         this.predicate = predicate;

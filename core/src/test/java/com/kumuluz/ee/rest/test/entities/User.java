@@ -3,15 +3,14 @@ package com.kumuluz.ee.rest.test.entities;
 import com.kumuluz.ee.rest.annotations.RestIgnore;
 import com.kumuluz.ee.rest.annotations.RestMapping;
 import com.kumuluz.ee.rest.test.entities.enums.UserStatus;
+import com.kumuluz.ee.rest.test.utils.UUIDConverter;
+import org.eclipse.persistence.annotations.Converter;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import com.kumuluz.ee.rest.test.utils.UUIDConverter;
-import org.eclipse.persistence.annotations.Converter;
-
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -24,7 +23,7 @@ import java.util.UUID;
 @Table(name = "users")
 @Converter(name = "uuid", converterClass = UUIDConverter.class)
 @NamedQueries({@NamedQuery(name = "User.getAll", query = "SELECT u FROM User u")})
-public class User implements Comparable, Serializable {
+public class User implements Comparable<User>, Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -203,8 +202,8 @@ public class User implements Comparable, Serializable {
     }
 
     @Override
-    public int compareTo(Object o) {
-        return id.compareTo(((User) o).getId());
+    public int compareTo(User o) {
+        return id.compareTo(o.getId());
     }
 
     @Override

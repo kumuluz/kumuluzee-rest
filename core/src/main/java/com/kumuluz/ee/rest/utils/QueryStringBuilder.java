@@ -359,7 +359,7 @@ public class QueryStringBuilder {
 
         log.finest("Building offset string: " + value);
 
-        Long offset;
+        long offset;
 
         try {
 
@@ -389,7 +389,7 @@ public class QueryStringBuilder {
 
         log.finest("Building limit string: " + value);
 
-        Long limit;
+        long limit;
 
         try {
 

@@ -25,8 +25,8 @@ package com.kumuluz.ee.rest.exceptions;
  */
 public class NoSuchEntityFieldException extends IllegalArgumentException {
 
-    private String field;
-    private String entity;
+    private final String field;
+    private final String entity;
 
     public NoSuchEntityFieldException(String msg, String field, String entity) {
 

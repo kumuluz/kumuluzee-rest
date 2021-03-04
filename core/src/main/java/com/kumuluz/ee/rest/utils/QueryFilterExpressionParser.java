@@ -24,7 +24,7 @@ public class QueryFilterExpressionParser extends BaseParser<QueryFilterExpressio
 
     private static final Logger log = Logger.getLogger(QueryFilterExpressionParser.class.getSimpleName());
 
-    private String key;
+    private final String key;
 
     public QueryFilterExpressionParser(String key) {
         this.key = key;

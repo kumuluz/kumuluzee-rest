@@ -653,7 +653,7 @@ public class JPAUtils {
 
         Map<Object, List<Tuple>> tuplesGrouping = getTuplesGroupingById(tuples, idField);
 
-        return tuplesGrouping.entrySet().stream().map(tuplesGroup -> {
+        return tuplesGrouping.values().stream().map(tupleList -> {
 
             T el;
 
@@ -665,7 +665,7 @@ public class JPAUtils {
                 throw new AssertionError();
             }
 
-            for (Tuple t : tuplesGroup.getValue()) {
+            for (Tuple t : tupleList) {
 
                 List<TupleElement<?>> tes = t.getElements()
                         .stream()
@@ -851,7 +851,7 @@ public class JPAUtils {
 
         From from = r;
         Path path = r;
-        Boolean containsToMany = false;
+        boolean containsToMany = false;
 
         final Set<Join> joins = new HashSet<>();
         for (String field : fields) {
