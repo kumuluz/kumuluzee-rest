@@ -536,7 +536,7 @@ public class JPAUtils {
         }
 
         if (filterExpression != null) {
-            Predicate filterExpressionPredicate = createWhereQueryInternal(em, cb, r, containsToManyAtomic, filterExpression);
+            Predicate filterExpressionPredicate = createWhereQueryInternal(em, cb, r, containsToManyAtomic, filterExpression, fieldJoins);
             if (filterExpressionPredicate != null) {
                 predicate = cb.and(predicate, filterExpressionPredicate);
             }
@@ -545,7 +545,7 @@ public class JPAUtils {
         return new CriteriaWhereQuery(predicate, containsToManyAtomic.get());
     }
 
-    private static Predicate createWhereQueryInternal(EntityManager em, CriteriaBuilder cb, Root<?> r, AtomicBoolean containsToManyAtomic, QueryFilterExpression filterExpression) {
+    private static Predicate createWhereQueryInternal(EntityManager em, CriteriaBuilder cb, Root<?> r, AtomicBoolean containsToManyAtomic, QueryFilterExpression filterExpression, Map<String, From> fieldJoins) {
 
         if (filterExpression.isLeaf()) {
             QueryFilter f = filterExpression.value();
@@ -771,8 +771,8 @@ public class JPAUtils {
         } else {
             FilterExpressionOperation operation = filterExpression.operation();
 
-            Predicate leftPredicate = createWhereQueryInternal(em, cb, r, containsToManyAtomic, filterExpression.left());
-            Predicate rightPredicate = createWhereQueryInternal(em, cb, r, containsToManyAtomic, filterExpression.right());
+            Predicate leftPredicate = createWhereQueryInternal(em, cb, r, containsToManyAtomic, filterExpression.left(), fieldJoins);
+            Predicate rightPredicate = createWhereQueryInternal(em, cb, r, containsToManyAtomic, filterExpression.right(), fieldJoins);
 
             if (leftPredicate == null && rightPredicate == null) {
                 return cb.conjunction();
