@@ -197,6 +197,8 @@ __parentheses__. Both `OR` and `AND` operator can be written in several differen
 * OR | `,`, `or`
 * AND | ` `, `;`, `and`
 
+__NOTE__: `AND` has precedence over `OR`, __parantheses__ have precedence over `AND`
+
 ```
 GET v1/customers?filter=age:GT:10 id:IN:[1,2,3] lastName:ISNOTNULL, firstName:LIKE:'B%'
 GET v1/customers?filter=age:GT:10 id:IN:[1,2,3] and lastName:ISNOTNULL or firstName:LIKE:'B%'
