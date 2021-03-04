@@ -558,6 +558,24 @@ public class StreamUtilsFiltersTest {
     }
 
     @Test
+    public void testNLikeic() {
+
+        QueryFilter qf = new QueryFilter();
+        qf.setField("firstname");
+        qf.setOperation(FilterOperation.NLIKEIC);
+        qf.setValue("jA%");
+
+        QueryParameters q = new QueryParameters();
+        q.getFilters().add(qf);
+
+        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        users = StreamUtils.queryEntities(users, q);
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(95, users.size());
+    }
+
+    @Test
     public void testIntegerEq() {
 
         QueryFilter qf = new QueryFilter();

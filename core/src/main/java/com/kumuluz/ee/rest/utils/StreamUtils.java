@@ -36,6 +36,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -341,8 +342,8 @@ public class StreamUtils {
                 switch (f.getOperation()) {
 
                     case EQ:
-                        if (f.getDateValue() != null && clazzTarget.equals(Date.class)) {
-                            np = filter(clazz, entityField, f.getDateValue(), FilterOperation.EQ);
+                        if (f.getDateValue() != null && (clazzTarget.equals(Date.class) || clazzTarget.equals(Instant.class) || clazzTarget.equals(LocalDate.class) || clazzTarget.equals(LocalDateTime.class))) {
+                            np = filter(clazz, entityField, getTargetDateTypeValue(f.getDateValue(), clazzTarget), FilterOperation.EQ);
                         } else if (f.getValue() != null) {
                             np = filter(clazz, entityField, getValueForField(field, f.getValue()), FilterOperation.EQ);
                         }
@@ -353,8 +354,8 @@ public class StreamUtils {
                         }
                         break;
                     case NEQ:
-                        if (f.getDateValue() != null && clazzTarget.equals(Date.class)) {
-                            np = filter(clazz, entityField, f.getDateValue(), FilterOperation.NEQ);
+                        if (f.getDateValue() != null && (clazzTarget.equals(Date.class) || clazzTarget.equals(Instant.class) || clazzTarget.equals(LocalDate.class) || clazzTarget.equals(LocalDateTime.class))) {
+                            np = filter(clazz, entityField, getTargetDateTypeValue(f.getDateValue(), clazzTarget), FilterOperation.NEQ);
                         } else if (f.getValue() != null) {
                             np = filter(clazz, entityField, getValueForField(field, f.getValue()), FilterOperation.NEQ);
                         }
@@ -374,14 +375,26 @@ public class StreamUtils {
                             np = filter(clazz, entityField, f.getValue().toLowerCase(), FilterOperation.LIKEIC);
                         }
                         break;
+                    case NLIKE:
+                        if (clazzTarget.equals(String.class) && f.getValue() != null) {
+                            np = filter(clazz, entityField, f.getValue(), FilterOperation.NLIKE);
+                        }
+                        break;
+                    case NLIKEIC:
+                        if (clazzTarget.equals(String.class) && f.getValue() != null) {
+                            np = filter(clazz, entityField, f.getValue().toLowerCase(), FilterOperation.NLIKEIC);
+                        }
+                        break;
                     case GT:
                         if (Date.class.isAssignableFrom(clazzTarget) ||
                                 Instant.class.isAssignableFrom(clazzTarget) ||
                                 Number.class.isAssignableFrom(clazzTarget) ||
+                                LocalDate.class.isAssignableFrom(clazzTarget) ||
+                                LocalDateTime.class.isAssignableFrom(clazzTarget) ||
                                 String.class.isAssignableFrom(clazzTarget)) {
 
-                            if (f.getDateValue() != null && clazzTarget.equals(Date.class)) {
-                                np = filter(clazz, entityField, f.getDateValue(), FilterOperation.GT);
+                            if (f.getDateValue() != null && (clazzTarget.equals(Date.class) || clazzTarget.equals(Instant.class) || clazzTarget.equals(LocalDate.class) || clazzTarget.equals(LocalDateTime.class))) {
+                                np = filter(clazz, entityField, getTargetDateTypeValue(f.getDateValue(), clazzTarget), FilterOperation.GT);
                             } else if (f.getValue() != null) {
                                 np = filter(clazz, entityField, getValueForField(field, f.getValue()), FilterOperation.GT);
                             }
@@ -391,10 +404,12 @@ public class StreamUtils {
                         if (Date.class.isAssignableFrom(clazzTarget) ||
                                 Instant.class.isAssignableFrom(clazzTarget) ||
                                 Number.class.isAssignableFrom(clazzTarget) ||
+                                LocalDate.class.isAssignableFrom(clazzTarget) ||
+                                LocalDateTime.class.isAssignableFrom(clazzTarget) ||
                                 String.class.isAssignableFrom(clazzTarget)) {
 
-                            if (f.getDateValue() != null && clazzTarget.equals(Date.class)) {
-                                np = filter(clazz, entityField, f.getDateValue(), FilterOperation.GTE);
+                            if (f.getDateValue() != null && (clazzTarget.equals(Date.class) || clazzTarget.equals(Instant.class) || clazzTarget.equals(LocalDate.class) || clazzTarget.equals(LocalDateTime.class))) {
+                                np = filter(clazz, entityField, getTargetDateTypeValue(f.getDateValue(), clazzTarget), FilterOperation.GTE);
                             } else if (f.getValue() != null) {
                                 np = filter(clazz, entityField, getValueForField(field, f.getValue()), FilterOperation.GTE);
                             }
@@ -404,10 +419,12 @@ public class StreamUtils {
                         if (Date.class.isAssignableFrom(clazzTarget) ||
                                 Instant.class.isAssignableFrom(clazzTarget) ||
                                 Number.class.isAssignableFrom(clazzTarget) ||
+                                LocalDate.class.isAssignableFrom(clazzTarget) ||
+                                LocalDateTime.class.isAssignableFrom(clazzTarget) ||
                                 String.class.isAssignableFrom(clazzTarget)) {
 
-                            if (f.getDateValue() != null && clazzTarget.equals(Date.class)) {
-                                np = filter(clazz, entityField, f.getDateValue(), FilterOperation.LT);
+                            if (f.getDateValue() != null && (clazzTarget.equals(Date.class) || clazzTarget.equals(Instant.class) || clazzTarget.equals(LocalDate.class) || clazzTarget.equals(LocalDateTime.class))) {
+                                np = filter(clazz, entityField, getTargetDateTypeValue(f.getDateValue(), clazzTarget), FilterOperation.LT);
                             } else if (f.getValue() != null) {
                                 np = filter(clazz, entityField, getValueForField(field, f.getValue()), FilterOperation.LT);
                             }
@@ -417,10 +434,12 @@ public class StreamUtils {
                         if (Date.class.isAssignableFrom(clazzTarget) ||
                                 Instant.class.isAssignableFrom(clazzTarget) ||
                                 Number.class.isAssignableFrom(clazzTarget) ||
+                                LocalDate.class.isAssignableFrom(clazzTarget) ||
+                                LocalDateTime.class.isAssignableFrom(clazzTarget) ||
                                 String.class.isAssignableFrom(clazzTarget)) {
 
-                            if (f.getDateValue() != null && clazzTarget.equals(Date.class)) {
-                                np = filter(clazz, entityField, f.getDateValue(), FilterOperation.LTE);
+                            if (f.getDateValue() != null && (clazzTarget.equals(Date.class) || clazzTarget.equals(Instant.class) || clazzTarget.equals(LocalDate.class) || clazzTarget.equals(LocalDateTime.class))) {
+                                np = filter(clazz, entityField, getTargetDateTypeValue(f.getDateValue(), clazzTarget), FilterOperation.LTE);
                             } else if (f.getValue() != null) {
                                 np = filter(clazz, entityField, getValueForField(field, f.getValue()), FilterOperation.LTE);
                             }
@@ -542,9 +561,9 @@ public class StreamUtils {
                     } else if (value instanceof BigDecimal) {
                         return value.equals(new BigDecimal((String) fieldValue));
                     } else if (value instanceof LocalDate) {
-                        return value.equals(LocalDate.parse((String) fieldValue));
+                        return value.equals((LocalDate) fieldValue);
                     } else if (value instanceof LocalDateTime) {
-                        return value.equals(LocalDateTime.parse((String) fieldValue));
+                        return value.equals((LocalDateTime) fieldValue);
                     } else if (value instanceof Double) {
                         return value.equals(Double.parseDouble((String) fieldValue));
                     } else if (value instanceof Float) {
@@ -605,6 +624,10 @@ public class StreamUtils {
                         return !value.equals(Float.parseFloat((String) fieldValue));
                     } else if (value instanceof Long) {
                         return !value.equals(Long.parseLong((String) fieldValue));
+                    } else if (value instanceof LocalDate) {
+                        return !value.equals((LocalDate) fieldValue);
+                    } else if (value instanceof LocalDateTime) {
+                        return !value.equals((LocalDateTime) fieldValue);
                     } else if (value instanceof Boolean) {
                         return !value.equals(fieldValue);
                     } else if (value instanceof Byte) {
@@ -690,6 +713,51 @@ public class StreamUtils {
                                 FilterOperation.LIKEIC);
                         return newPredicate.test(value);
                     }
+                } else if (operation.equals(FilterOperation.NLIKE)) {
+                    if (value == null) {
+                        return false;
+                    } else if (value instanceof String) {
+                        String expr = ((String) fieldValue);
+                        expr = expr.replace(".", "\\.");
+                        expr = expr.replace("?", ".");
+                        expr = expr.replace("%", ".*");
+
+                        return !((String) value).matches(expr);
+
+                    } else if (Collection.class.isAssignableFrom(value.getClass())) {
+
+                        Predicate newPredicate = filter(getGenericType(field), fieldName.substring(fieldNames[0].length() + 1), fieldValue,
+                                FilterOperation.NLIKE);
+
+                        return ((List<?>) value).stream().anyMatch(newPredicate);
+
+                    } else { // assume entity class
+                        Predicate newPredicate = filter(field.getType(), fieldName.substring(fieldNames[0].length() + 1), fieldValue,
+                                FilterOperation.NLIKE);
+                        return newPredicate.test(value);
+                    }
+                } else if (operation.equals(FilterOperation.NLIKEIC)) {
+                    if (value == null) {
+                        return false;
+                    } else if (value instanceof String) {
+                        String expr = ((String) fieldValue).toLowerCase();
+                        expr = expr.replace(".", "\\.");
+                        expr = expr.replace("?", ".");
+                        expr = expr.replace("%", ".*");
+
+                        return !((String) value).toLowerCase().matches(expr);
+                    } else if (Collection.class.isAssignableFrom(value.getClass())) {
+
+                        Predicate newPredicate = filter(getGenericType(field), fieldName.substring(fieldNames[0].length() + 1), fieldValue,
+                                FilterOperation.NLIKEIC);
+
+                        return ((List<?>) value).stream().anyMatch(newPredicate);
+
+                    } else { // assume entity class
+                        Predicate newPredicate = filter(field.getType(), fieldName.substring(fieldNames[0].length() + 1), fieldValue,
+                                FilterOperation.NLIKEIC);
+                        return newPredicate.test(value);
+                    }
                 } else if (operation.equals(FilterOperation.GT)) {
                     if (value == null) {
                         return false;
@@ -703,6 +771,10 @@ public class StreamUtils {
                         return ((Long) value).compareTo(Long.parseLong((String) fieldValue)) > 0;
                     } else if (value instanceof Boolean) {
                         return ((Boolean) value).compareTo((Boolean) fieldValue) > 0;
+                    } else if (value instanceof LocalDate) {
+                        return ((LocalDate) value).compareTo((LocalDate) fieldValue) > 0;
+                    } else if (value instanceof LocalDateTime) {
+                        return ((LocalDateTime) value).compareTo((LocalDateTime) fieldValue) > 0;
                     } else if (value instanceof Byte) {
                         return ((Byte) value).compareTo(Byte.parseByte((String) fieldValue)) > 0;
                     } else if (value instanceof Short) {
@@ -734,6 +806,10 @@ public class StreamUtils {
                         return ((Long) value).compareTo(Long.parseLong((String) fieldValue)) >= 0;
                     } else if (value instanceof Boolean) {
                         return ((Boolean) value).compareTo((Boolean) fieldValue) >= 0;
+                    } else if (value instanceof LocalDate) {
+                        return ((LocalDate) value).compareTo((LocalDate) fieldValue) >= 0;
+                    } else if (value instanceof LocalDateTime) {
+                        return ((LocalDateTime) value).compareTo((LocalDateTime) fieldValue) >= 0;
                     } else if (value instanceof Byte) {
                         return ((Byte) value).compareTo(Byte.parseByte((String) fieldValue)) >= 0;
                     } else if (value instanceof Short) {
@@ -766,6 +842,10 @@ public class StreamUtils {
                         return ((Long) value).compareTo(Long.parseLong((String) fieldValue)) < 0;
                     } else if (value instanceof Boolean) {
                         return ((Boolean) value).compareTo((Boolean) fieldValue) < 0;
+                    } else if (value instanceof LocalDate) {
+                        return ((LocalDate) value).compareTo((LocalDate) fieldValue) < 0;
+                    } else if (value instanceof LocalDateTime) {
+                        return ((LocalDateTime) value).compareTo((LocalDateTime) fieldValue) < 0;
                     } else if (value instanceof Byte) {
                         return ((Byte) value).compareTo(Byte.parseByte((String) fieldValue)) < 0;
                     } else if (value instanceof Short) {
@@ -799,6 +879,10 @@ public class StreamUtils {
                         return ((Long) value).compareTo(Long.parseLong((String) fieldValue)) <= 0;
                     } else if (value instanceof Boolean) {
                         return ((Boolean) value).compareTo((Boolean) fieldValue) <= 0;
+                    } else if (value instanceof LocalDate) {
+                        return ((LocalDate) value).compareTo((LocalDate) fieldValue) <= 0;
+                    } else if (value instanceof LocalDateTime) {
+                        return ((LocalDateTime) value).compareTo((LocalDateTime) fieldValue) <= 0;
                     } else if (value instanceof Byte) {
                         return ((Byte) value).compareTo(Byte.parseByte((String) fieldValue)) <= 0;
                     } else if (value instanceof Short) {
@@ -955,7 +1039,8 @@ public class StreamUtils {
     private static <T> Comparator<T> comparator(Class<T> clazz, String fieldName, OrderDirection orderDirection, OrderNulls orderNulls) {
         //optimization for sorting by children value
         Map<Collection, Optional<Object>> minCollectionValCache = new HashMap<>();
-        return (T instance1, T instance2) -> compareInstanceFields(clazz, fieldName, instance1, instance2, orderDirection, orderNulls, minCollectionValCache);
+        return (T instance1, T instance2) -> compareInstanceFields(clazz, fieldName, instance1, instance2, orderDirection, orderNulls,
+                minCollectionValCache);
     }
 
     private static <T> int compareInstanceFields(Class<T> clazz, String fieldName, T instance1, T instance2, OrderDirection orderDirection,
@@ -977,7 +1062,8 @@ public class StreamUtils {
                 Collection c1 = (Collection) value1;
                 Collection c2 = (Collection) value2;
                 if (c1 == null || c1.isEmpty() || c2 == null || c2.isEmpty()) {
-                    return compare(c1 == null || c1.isEmpty() ? null : c1.size(), c2 == null || c2.isEmpty() ? null : c2.size(), orderDirection,
+                    return compare(c1 == null || c1.isEmpty() ? null : c1.size(), c2 == null || c2.isEmpty() ? null : c2.size(),
+                            orderDirection,
                             orderNulls);
                 }
                 if (fieldNames.length > 1) {
@@ -1012,7 +1098,8 @@ public class StreamUtils {
 
             if (fieldNames.length > 1) {
                 String nextLevelFieldName = String.join(".", Arrays.copyOfRange(fieldNames, 1, fieldNames.length));
-                return compareInstanceFields(fieldClass, nextLevelFieldName, value1, value2, orderDirection, orderNulls, minCollectionValCache);
+                return compareInstanceFields(fieldClass, nextLevelFieldName, value1, value2, orderDirection, orderNulls,
+                        minCollectionValCache);
             }
 
             return compare(value1, value2, orderDirection, orderNulls);

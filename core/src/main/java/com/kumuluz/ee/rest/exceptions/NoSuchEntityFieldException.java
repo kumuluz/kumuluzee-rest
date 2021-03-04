@@ -29,7 +29,6 @@ public class NoSuchEntityFieldException extends IllegalArgumentException {
     private final String entity;
 
     public NoSuchEntityFieldException(String msg, String field, String entity) {
-
         super(msg);
 
         this.field = field;

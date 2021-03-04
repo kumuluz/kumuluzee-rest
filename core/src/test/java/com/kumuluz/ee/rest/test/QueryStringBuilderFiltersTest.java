@@ -639,6 +639,4 @@ public class QueryStringBuilderFiltersTest {
         Assert.assertNotNull(query);
         Assert.assertNull(query.getFilterExpression());
     }
-
-
 }

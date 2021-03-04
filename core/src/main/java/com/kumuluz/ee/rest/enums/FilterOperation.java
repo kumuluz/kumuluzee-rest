@@ -25,5 +25,5 @@ package com.kumuluz.ee.rest.enums;
  */
 public enum FilterOperation {
 
-    EQ, EQIC, NEQ, NEQIC, LIKE, LIKEIC, GT, GTE, LT, LTE, IN, INIC, NIN, NINIC, ISNULL, ISNOTNULL
+    EQ, EQIC, NEQ, NEQIC, LIKE, LIKEIC, NLIKE, NLIKEIC, GT, GTE, LT, LTE, IN, INIC, NIN, NINIC, ISNULL, ISNOTNULL
 }

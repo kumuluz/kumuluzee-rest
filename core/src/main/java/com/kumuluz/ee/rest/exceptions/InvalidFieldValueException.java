@@ -29,7 +29,6 @@ public class InvalidFieldValueException extends RuntimeException {
     private final String value;
 
     public InvalidFieldValueException(String msg, String field, String value) {
-
         super(msg);
 
         this.field = field;
