@@ -7,9 +7,7 @@ import com.kumuluz.ee.rest.enums.OrderNulls;
 import com.kumuluz.ee.rest.exceptions.InvalidEntityFieldException;
 import com.kumuluz.ee.rest.exceptions.NoSuchEntityFieldException;
 import com.kumuluz.ee.rest.test.entities.Project;
-import com.kumuluz.ee.rest.test.entities.ProjectLocation;
 import com.kumuluz.ee.rest.test.entities.User;
-import com.kumuluz.ee.rest.test.entities.enums.ProjectStatus;
 import com.kumuluz.ee.rest.test.utils.JpaUtil;
 import com.kumuluz.ee.rest.utils.JPAUtils;
 import com.kumuluz.ee.rest.utils.StreamUtils;
@@ -19,9 +17,11 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import javax.persistence.EntityManager;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * @author Zvone Gazvoda

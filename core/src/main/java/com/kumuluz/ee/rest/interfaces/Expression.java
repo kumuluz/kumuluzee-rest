@@ -18,28 +18,14 @@
  *  software. See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package com.kumuluz.ee.rest.enums;
+package com.kumuluz.ee.rest.interfaces;
 
-/**
- * @author gpor0
- */
-public enum OrderNulls {
+public interface Expression<V, O, T extends Expression<V, O, T>> {
 
-    LAST("NULLS LAST"), FIRST("NULLS FIRST");
+    V value();
 
-    private final String value;
+    O operation();
 
-    OrderNulls(String value) {
-        this.value = value;
-    }
-
-    public static OrderNulls parseValue(String value) {
-        for (OrderNulls e : values()) {
-            if (value.contains(e.value)) {
-                return e;
-            }
-        }
-
-        return LAST;
-    }
+    Expression<V, O, T> left();
+    Expression<V, O, T> right();
 }

@@ -21,22 +21,26 @@
 package com.kumuluz.ee.rest.utils;
 
 import com.kumuluz.ee.rest.beans.QueryFilter;
+import com.kumuluz.ee.rest.beans.QueryFilterExpression;
 import com.kumuluz.ee.rest.beans.QueryOrder;
 import com.kumuluz.ee.rest.beans.QueryParameters;
-import com.kumuluz.ee.rest.enums.FilterOperation;
+import com.kumuluz.ee.rest.enums.FilterExpressionOperation;
 import com.kumuluz.ee.rest.enums.OrderDirection;
 import com.kumuluz.ee.rest.enums.OrderNulls;
 import com.kumuluz.ee.rest.enums.QueryFormatError;
 import com.kumuluz.ee.rest.exceptions.QueryFormatException;
+import org.parboiled.Parboiled;
+import org.parboiled.parserunners.RecoveringParseRunner;
+import org.parboiled.support.ParsingResult;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeParseException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -45,17 +49,23 @@ import java.util.stream.Collectors;
  */
 public class QueryStringBuilder {
 
+    private static final Logger log = Logger.getLogger(QueryStringBuilder.class.getSimpleName());
+
     public static final String LIMIT_DELIMITER = "limit";
     public static final String LIMIT_DELIMITER_ALT = "max";
+
     public static final String OFFSET_DELIMITER = "offset";
     public static final String OFFSET_DELIMITER_ALT = "skip";
+
     public static final String ORDER_DELIMITER = "order";
     public static final String ORDER_DELIMITER_ALT = "sort";
+
     public static final String FIELDS_DELIMITER = "fields";
     public static final String FIELDS_DELIMITER_ALT = "select";
+
     public static final String FILTER_DELIMITER = "filter";
     public static final String FILTER_DELIMITER_ALT = "where";
-    private static final Logger log = Logger.getLogger(QueryStringBuilder.class.getSimpleName());
+
     private String query;
 
     private Boolean paginationEnabled = true;
@@ -334,10 +344,9 @@ public class QueryStringBuilder {
             case FILTER_DELIMITER_ALT:
 
                 if (filtersEnabled) {
-                    params.getFilters().clear();
+                    params.setFilterExpression(null);
 
-                    params.getFilters().addAll(buildFilter(key, value));
-
+                    params.setFilterExpression(buildFilterExpression(key, value));
                 }
 
                 break;
@@ -350,7 +359,7 @@ public class QueryStringBuilder {
 
         log.finest("Building offset string: " + value);
 
-        Long offset;
+        long offset;
 
         try {
 
@@ -380,7 +389,7 @@ public class QueryStringBuilder {
 
         log.finest("Building limit string: " + value);
 
-        Long limit;
+        long limit;
 
         try {
 
@@ -463,138 +472,57 @@ public class QueryStringBuilder {
                 .collect(Collectors.toList());
     }
 
-    private List<QueryFilter> buildFilter(String key, String value) {
-
+    private QueryFilterExpression buildFilterExpression(String key, String value) {
         log.finest("Building filter string: " + value);
 
-        List<QueryFilter> filterList = new ArrayList<>();
+        QueryFilterExpressionParser parser = Parboiled.createParser(QueryFilterExpressionParser.class, key);
 
-        if (value == null || value.isEmpty()) return filterList;
+        QueryFilterExpression filterExpression;
+        try {
+            RecoveringParseRunner<QueryFilterExpression> parseRunner = new RecoveringParseRunner<>(parser.InputLine());
+            ParsingResult<QueryFilterExpression> parseResult = parseRunner.run(value);
+            filterExpression = parseResult.resultValue;
+        } catch (Exception e) {
+            if (e.getCause() != null && e.getCause() instanceof QueryFormatException) {
+                throw (QueryFormatException) e.getCause();
+            }
 
-        List<String[]> filters = Arrays.stream(value.split("[(\\s|\\+)]+(?=([^']*'[^']*')*[^']*$)(?=([^\\[]*\\[[^\\]]*\\])*[^\\]]*$)"))
-                .map(f -> {
-                    String[] fSplit = f.split("[:]+(?=([^']*'[^']*')*[^']*$)");
+            throw new QueryFormatException("One of the filters is malformed or has too many arguments.", key, QueryFormatError.MALFORMED);
+        }
 
-                    // Validate too few arguments
-                    if (fSplit.length < 2) {
-                        throw new QueryFormatException("A filter has too few arguments or is malformed", key, f, QueryFormatError.MALFORMED);
-                    }
-
-                    // Validate too many arguments
-                    if (fSplit.length > 3) {
-                        throw new QueryFormatException("A filter has too many arguments or is malformed", key, f, QueryFormatError.MALFORMED);
-                    }
-
-                    return fSplit;
-                })
-                .collect(Collectors.toList());
-
-        filters.stream()
-                .filter(f -> f.length == 2).forEach(f -> {
-
-                    QueryFilter qf = new QueryFilter();
-                    qf.setField(f[0]);
-
-                    try {
-
-                        qf.setOperation(FilterOperation.valueOf(f[1].toUpperCase()));
-                    } catch (IllegalArgumentException e) {
-
-                        String msg = "Constant in '" + key + "' does not exist: '" + value + "'";
-
-                        log.finest(msg);
-
-                        throw new QueryFormatException(msg, key, QueryFormatError.NO_SUCH_CONSTANT);
-                    }
-
-                    if (qf.getOperation() == FilterOperation.ISNULL || qf.getOperation() == FilterOperation.ISNOTNULL) {
-
-                        filterList.add(qf);
-                    }
-                });
-
-        filters.stream()
-                .filter(f -> f.length == 3)
-                .forEach(f -> {
-
-                    QueryFilter qf = new QueryFilter();
-                    qf.setField(f[0]);
-
-                    try {
-
-                        qf.setOperation(FilterOperation.valueOf(f[1].toUpperCase()));
-                    } catch (IllegalArgumentException e) {
-
-                        String msg = "Constant in '" + key + "' does not exist: '" + value + "'";
-
-                        log.finest(msg);
-
-                        throw new QueryFormatException(msg, key, QueryFormatError.NO_SUCH_CONSTANT);
-                    }
-
-                    if (f[2].matches("^\\[.*\\]$") &&
-                            (qf.getOperation() == FilterOperation.IN ||
-                                    qf.getOperation() == FilterOperation.NIN ||
-                                    qf.getOperation() == FilterOperation.NINIC ||
-                                    qf.getOperation() == FilterOperation.INIC)) {
-
-                        String values = f[2].replaceAll("(^\\[)|(\\]$)", "");
-
-                        Arrays.stream(values.split("[,]+(?=([^']*'[^']*')*[^']*$)"))
-                                .map(String::trim)
-                                .filter(e -> !e.isEmpty())
-                                .distinct()
-                                .map(e -> e.replaceAll("(^')|('$)", ""))
-                                .forEach(e -> qf.getValues().add(e));
-
-                    } else if (f[2].matches("^dt'.*'$")) {
-
-                        Date d = parseDate(f[2].replaceAll("(^dt')|('$)", ""));
-
-                        if (d == null) {
-
-                            String msg = "Value for '" + key + "' is malformed: '" + value + "'";
-
-                            log.finest(msg);
-
-                            throw new QueryFormatException(msg, key, QueryFormatError.MALFORMED);
-                        }
-
-                        qf.setDateValue(d);
-                    } else {
-
-                        qf.setValue(f[2].replaceAll("(^')|('$)", ""));
-                    }
-
-                    filterList.add(qf);
-                });
-
-        return filterList;
+        return filterExpression;
     }
 
     private void addDefaultFilters(QueryParameters params) {
 
         if (defaultFilters == null || defaultFilters.isEmpty()) return;
 
-        params.getFilters().addAll(
-                defaultFilters
-                        .stream()
-                        .filter(df ->
-                                params.getFilters()
-                                        .stream()
-                                        .noneMatch(fl -> fl.getField().equals(df.getField()))
-                        ).collect(Collectors.toList())
-        );
-    }
+        List<QueryFilter> applicableDefaultFilters;
 
-    private Date parseDate(String date) {
-
-        try {
-            return Date.from(ZonedDateTime.parse(date).toInstant());
-        } catch (DateTimeParseException e) {
-
-            return null;
+        QueryFilterExpression filterExpression = params.getFilterExpression();
+        if (filterExpression == null) {
+            applicableDefaultFilters = defaultFilters;
+        } else {
+            applicableDefaultFilters = defaultFilters.stream()
+                    .filter(df ->
+                            filterExpression.getAllValues()
+                                    .stream()
+                                    .noneMatch(fl -> fl.getField().equals(df.getField()))
+                    ).collect(Collectors.toList());
         }
+
+        QueryFilterExpression modifiedFilterExpression = filterExpression;
+        for (QueryFilter defaultFilter : applicableDefaultFilters) {
+            QueryFilterExpression additionalFilterExpression = new QueryFilterExpression(defaultFilter);
+
+            if (modifiedFilterExpression == null) {
+                modifiedFilterExpression = additionalFilterExpression;
+            } else {
+                modifiedFilterExpression = new QueryFilterExpression(FilterExpressionOperation.AND, filterExpression, additionalFilterExpression);
+            }
+        }
+
+        params.setFilterExpression(modifiedFilterExpression);
     }
 
     private String decodeUrl(String url) {

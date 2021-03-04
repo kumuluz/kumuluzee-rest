@@ -87,6 +87,6 @@ public class QueryFilterTest {
         Assert.assertNull(filter.getDateValue());
         Assert.assertNotNull(filter.getValues());
         Assert.assertEquals(1, filter.getValues().size());
-        Assert.assertTrue(values.equals(filter.getValues()));
+        Assert.assertEquals(values, filter.getValues());
     }
 }

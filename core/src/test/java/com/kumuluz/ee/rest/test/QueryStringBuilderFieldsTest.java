@@ -1,7 +1,6 @@
 package com.kumuluz.ee.rest.test;
 
 import com.kumuluz.ee.rest.beans.QueryParameters;
-
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -905,7 +905,6 @@ public class JPAUtilsFiltersTest {
         Assert.assertEquals(99, projects.size());
     }
 
-
     @Test
     public void ignoredFieldShouldReturnUnchangedResult() {
 
@@ -964,6 +963,39 @@ public class JPAUtilsFiltersTest {
         q.getFilters().add(new QueryFilter(ignoredFieldName, FilterOperation.EQ, "customValue"));
 
         JPAUtils.queryEntities(em, User.class, q);
+    }
+
+    @Test
+    public void testSimpleOrFilter() {
+
+        QueryParameters q = QueryParameters.query("filter=firstname:EQ:Sandra,firstname:EQ:Marilyn").build();
+
+        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(2, users.size());
+    }
+
+    @Test
+    public void testOrWithAndFilter() {
+
+        QueryParameters q = QueryParameters.query("filter=lastname:LIKEIC:%son,country:EQ:China firstname:EQ:Karen").build();
+
+        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(9, users.size());
+    }
+
+    @Test
+    public void testParenthesizedOrWithAndFilter() {
+
+        QueryParameters q = QueryParameters.query("filter=(lastname:LIKEIC:%son,country:EQ:China) firstname:EQ:Karen").build();
+
+        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(3, users.size());
     }
 
 }

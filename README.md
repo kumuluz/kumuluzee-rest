@@ -189,6 +189,23 @@ GET v1/customers?filter=lastName:ISNOTNULL
 GET v1/customers?filter=age:GT:10 id:IN:[1,2,3] lastName:ISNOTNULL
 ```
 
+By default, filters are chained together with an `AND` operator (represented by an empty space). 
+
+#### Complex queries
+It is possible to write more complex queries by using `OR` and `AND` operators and by grouping them together with 
+__parentheses__. Both `OR` and `AND` operator can be written in several different ways:
+* OR | `,`, `or`
+* AND | ` `, `;`, `and`
+
+__NOTE__: `AND` has precedence over `OR`, __parantheses__ have precedence over `AND`
+
+```
+GET v1/customers?filter=age:GT:10 id:IN:[1,2,3] lastName:ISNOTNULL, firstName:LIKE:'B%'
+GET v1/customers?filter=age:GT:10 id:IN:[1,2,3] and lastName:ISNOTNULL or firstName:LIKE:'B%'
+GET v1/customers?filter=age:GT:10 id:IN:[1,2,3]; lastName:ISNOTNULL, firstName:LIKE:'B%'
+GET v1/customers?filter=age:GT:10 id:IN:[1,2,3] and (lastName:ISNOTNULL or firstName:LIKE:'B%')
+```
+
 There are some special cases:
 - If we want to use `LIKE` filter and query values that include a percent sign, it needs to be URL encoded (%25).
 - Dates and instants must be in ISO-8601 format, `+` sign must be URL encoded (%2B). Single quotes for value are required.
@@ -221,7 +238,6 @@ Pagination, sorting and filtering of entities can be combined by separating them
 ```
 GET /v1/customers?offset=10&limit=5&order=id DESC&filter=age:GT:10 id:IN:[1,2,3] lastName:ISNOTNULL
 ```
-Filters are chained together with `AND` operator. `OR WHERE` clause is not supported at this time. 
 
 #### Custom field mapping
 Library supports custom property mappings set on entity properties in order to detach API schema from database model. This functionality turns out to be useful when persistence changes are needed and API needs to stay backwards compatible.

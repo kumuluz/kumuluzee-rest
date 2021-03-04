@@ -6,17 +6,15 @@ import com.kumuluz.ee.rest.enums.OrderDirection;
 import com.kumuluz.ee.rest.test.entities.User;
 import com.kumuluz.ee.rest.test.utils.JpaUtil;
 import com.kumuluz.ee.rest.utils.JPAUtils;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import javax.persistence.EntityManager;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-
-import javax.persistence.EntityManager;
 
 /**
  * @author Tilen Faganel

@@ -20,8 +20,10 @@
  */
 package com.kumuluz.ee.rest.utils;
 
+import com.kumuluz.ee.rest.annotations.RestIgnore;
 import com.kumuluz.ee.rest.annotations.RestMapping;
 import com.kumuluz.ee.rest.beans.*;
+import com.kumuluz.ee.rest.enums.FilterExpressionOperation;
 import com.kumuluz.ee.rest.enums.OrderDirection;
 import com.kumuluz.ee.rest.exceptions.InvalidEntityFieldException;
 import com.kumuluz.ee.rest.exceptions.InvalidFieldValueException;
@@ -41,6 +43,7 @@ import java.lang.reflect.ParameterizedType;
 import java.time.*;
 import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -247,7 +250,7 @@ public class JPAUtils {
 
         Map<String, From> fieldJoins = new HashMap<>();
 
-        if (!q.getFilters().isEmpty()) {
+        if (q.getFilterExpression() != null || !q.getFilters().isEmpty()) {
 
             CriteriaWhereQuery criteriaWhereQuery = createWhereQueryInternal(em, cb, r, q, fieldJoins);
 
@@ -412,7 +415,7 @@ public class JPAUtils {
 
         Map<String, From> fieldJoins = new HashMap<>();
 
-        if (!q.getFilters().isEmpty()) {
+        if (q.getFilterExpression() != null || !q.getFilters().isEmpty()) {
 
             CriteriaWhereQuery criteriaWhereQuery = createWhereQueryInternal(em, cb, r, q, fieldJoins);
 
@@ -518,9 +521,34 @@ public class JPAUtils {
     private static CriteriaWhereQuery createWhereQueryInternal(EntityManager em, CriteriaBuilder cb, Root<?> r, QueryParameters q, Map<String, From> fieldJoins) {
 
         Predicate predicate = cb.conjunction();
-        Boolean containsToMany = false;
+        AtomicBoolean containsToManyAtomic = new AtomicBoolean();
 
-        for (QueryFilter f : q.getFilters()) {
+        QueryFilterExpression filterExpression = q.getFilterExpression();
+
+        for (QueryFilter queryFilter : q.getFilters()) {
+            QueryFilterExpression additionalFilterExpression = new QueryFilterExpression(queryFilter);
+
+            if (filterExpression == null) {
+                filterExpression = additionalFilterExpression;
+            } else {
+                filterExpression = new QueryFilterExpression(FilterExpressionOperation.AND, filterExpression, additionalFilterExpression);
+            }
+        }
+
+        if (filterExpression != null) {
+            Predicate filterExpressionPredicate = createWhereQueryInternal(em, cb, r, containsToManyAtomic, filterExpression, fieldJoins);
+            if (filterExpressionPredicate != null) {
+                predicate = cb.and(predicate, filterExpressionPredicate);
+            }
+        }
+
+        return new CriteriaWhereQuery(predicate, containsToManyAtomic.get());
+    }
+
+    private static Predicate createWhereQueryInternal(EntityManager em, CriteriaBuilder cb, Root<?> r, AtomicBoolean containsToManyAtomic, QueryFilterExpression filterExpression, Map<String, From> fieldJoins) {
+
+        if (filterExpression.isLeaf()) {
+            QueryFilter f = filterExpression.value();
 
             Predicate np = null;
 
@@ -528,18 +556,18 @@ public class JPAUtils {
                 CriteriaField criteriaField = getCriteriaField(f.getField(), r, fieldJoins);
 
                 if (null == criteriaField) {
-                    continue;
+                    return null;
                 }
 
                 if (criteriaField.containsToMany()) {
-                    containsToMany = true;
+                    containsToManyAtomic.set(true);
                 }
 
                 Path entityField = criteriaField.getPath();
                 entityField.alias(f.getField());
 
                 if (entityField.getModel() == null || !(entityField.getModel() instanceof Attribute)) {
-                    continue;
+                    return null;
                 }
 
                 Attribute attribute = (Attribute) entityField.getModel();
@@ -734,16 +762,36 @@ public class JPAUtils {
                     }
                 }
             } catch (IllegalArgumentException e) {
-
                 throw new NoSuchEntityFieldException(e.getMessage(), f.getField(), r.getJavaType().getSimpleName());
             }
 
-            if (np != null) {
-                predicate = cb.and(predicate, np);
+            return np;
+        } else if (filterExpression.isEmptyLeaf()) {
+            return cb.conjunction();
+        } else {
+            FilterExpressionOperation operation = filterExpression.operation();
+
+            Predicate leftPredicate = createWhereQueryInternal(em, cb, r, containsToManyAtomic, filterExpression.left(), fieldJoins);
+            Predicate rightPredicate = createWhereQueryInternal(em, cb, r, containsToManyAtomic, filterExpression.right(), fieldJoins);
+
+            if (leftPredicate == null && rightPredicate == null) {
+                return cb.conjunction();
+            }
+
+            if (leftPredicate == null) {
+                leftPredicate = cb.conjunction();
+            }
+
+            if (rightPredicate == null) {
+                rightPredicate = cb.conjunction();
+            }
+
+            if (operation.equals(FilterExpressionOperation.AND)) {
+                return cb.and(leftPredicate, rightPredicate);
+            } else {
+                return cb.or(leftPredicate, rightPredicate);
             }
         }
-
-        return new CriteriaWhereQuery(predicate, containsToMany);
     }
 
     ///// Private helper methods
@@ -1161,6 +1209,16 @@ public class JPAUtils {
 
     private static boolean isSetField(Field f) {
         return Set.class.isAssignableFrom(f.getType());
+    }
+
+    private static boolean isRestIgnored(final Class entityClass, final String restField) {
+        final RestIgnore restIgnore = (RestIgnore) entityClass.getAnnotation(RestIgnore.class);
+
+        if (restIgnore != null) {
+            return Stream.of(restIgnore.value()).anyMatch(restField::equalsIgnoreCase);
+        }
+
+        return false;
     }
 
     private static boolean isObjectField(Field f) {

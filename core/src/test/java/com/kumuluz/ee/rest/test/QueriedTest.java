@@ -13,7 +13,6 @@ import org.junit.runners.Parameterized;
 import javax.persistence.EntityManager;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.stream.Collectors;
 
 /**
  * @author gpor0
@@ -57,7 +56,7 @@ public class QueriedTest {
 
         Assert.assertNotNull(queried);
         Assert.assertEquals(Long.valueOf(100L), queried.getTotalCount());
-        Assert.assertEquals(limit, queried.stream().collect(Collectors.toList()).size());
+        Assert.assertEquals(limit, queried.stream().count());
     }
 
 }

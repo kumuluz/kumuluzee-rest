@@ -131,25 +131,23 @@ public class QueryStringDefaultsTest {
                 .query("where=name:eq:tilen").build();
 
         Assert.assertNotNull(query);
-        Assert.assertNotNull(query.getFilters());
-        Assert.assertEquals(1, query.getFilters().size());
+        Assert.assertNotNull(query.getFilterExpression());
 
-        Assert.assertNotNull(query.getFilters().get(0));
-        Assert.assertEquals("name", query.getFilters().get(0).getField());
-        Assert.assertEquals(FilterOperation.EQ, query.getFilters().get(0).getOperation());
-        Assert.assertEquals("tilen", query.getFilters().get(0).getValue());
+        Assert.assertNotNull(query.getFilterExpression().value());
+        Assert.assertEquals("name", query.getFilterExpression().value().getField());
+        Assert.assertEquals(FilterOperation.EQ, query.getFilterExpression().value().getOperation());
+        Assert.assertEquals("tilen", query.getFilterExpression().value().getValue());
 
         query = new QueryStringDefaults().builder()
                 .query("where=name:eq:tilen").build();
 
         Assert.assertNotNull(query);
-        Assert.assertNotNull(query.getFilters());
-        Assert.assertEquals(1, query.getFilters().size());
+        Assert.assertNotNull(query.getFilterExpression());
 
-        Assert.assertNotNull(query.getFilters().get(0));
-        Assert.assertEquals("name", query.getFilters().get(0).getField());
-        Assert.assertEquals(FilterOperation.EQ, query.getFilters().get(0).getOperation());
-        Assert.assertEquals("tilen", query.getFilters().get(0).getValue());
+        Assert.assertNotNull(query.getFilterExpression().value());
+        Assert.assertEquals("name", query.getFilterExpression().value().getField());
+        Assert.assertEquals(FilterOperation.EQ, query.getFilterExpression().value().getOperation());
+        Assert.assertEquals("tilen", query.getFilterExpression().value().getValue());
     }
 
     @Test
@@ -159,8 +157,7 @@ public class QueryStringDefaultsTest {
                 .query("where=name:eq:tilen").build();
 
         Assert.assertNotNull(query);
-        Assert.assertNotNull(query.getFilters());
-        Assert.assertEquals(0, query.getFilters().size());
+        Assert.assertNull(query.getFilterExpression());
     }
 
     @Test
@@ -245,9 +242,8 @@ public class QueryStringDefaultsTest {
 
         Assert.assertNotNull(query);
         Assert.assertNotNull(query.getOffset());
-        Assert.assertNotNull(query.getFilters());
-        Assert.assertEquals(1, query.getFilters().size());
-        Assert.assertEquals("true", query.getFilters().get(0).getValue());
+        Assert.assertNotNull(query.getFilterExpression());
+        Assert.assertEquals("true", query.getFilterExpression().value().getValue());
     }
 
     @Test
@@ -260,8 +256,7 @@ public class QueryStringDefaultsTest {
 
         Assert.assertNotNull(query);
         Assert.assertNotNull(query.getOffset());
-        Assert.assertNotNull(query.getFilters());
-        Assert.assertEquals(1, query.getFilters().size());
-        Assert.assertEquals("false", query.getFilters().get(0).getValue());
+        Assert.assertNotNull(query.getFilterExpression());
+        Assert.assertEquals("false", query.getFilterExpression().value().getValue());
     }
 }

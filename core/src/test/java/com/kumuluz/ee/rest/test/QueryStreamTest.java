@@ -10,11 +10,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -65,7 +63,7 @@ public class QueryStreamTest {
 
         Stream<User> users = JPAUtils.getEntityStream(em, User.class, q);
 
-        int size = users.collect(Collectors.toList()).size();
+        int size = (int) users.count();
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, size);
@@ -82,7 +80,7 @@ public class QueryStreamTest {
         Long totalCount = JPAUtils.queryEntitiesCount(em, User.class, q);
 
 
-        int size = users.collect(Collectors.toList()).size();
+        int size = (int) users.count();
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, size);
@@ -96,7 +94,7 @@ public class QueryStreamTest {
 
         Stream<User> users = JPAUtils.getEntityStream(em, User.class, q);
 
-        int collectedCount = users.collect(Collectors.toList()).size();
+        int collectedCount = (int) users.count();
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100L, users.count());

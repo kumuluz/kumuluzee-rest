@@ -28,8 +28,8 @@ import java.util.stream.Stream;
  */
 public class Queried<R> {
 
-    Long totalCount;
-    Stream<R> result;
+    private final Long totalCount;
+    private final Stream<R> result;
 
     private Queried(Long totalCount, Stream<R> result) {
         this.totalCount = totalCount;
@@ -38,18 +38,18 @@ public class Queried<R> {
 
     public static <T> Queried<T> result(Long totalCount, Stream<T> result) {
 
-        return new Queried<T>(totalCount, result);
+        return new Queried<>(totalCount, result);
     }
 
     public static <T> Queried<T> result(Long totalCount, List<T> result) {
 
-        return new Queried<T>(totalCount, result.stream());
+        return new Queried<>(totalCount, result.stream());
     }
 
     @SafeVarargs
     public static <T> Queried<T> result(Long totalCount, T... result) {
 
-        return new Queried<T>(totalCount, Stream.of(result));
+        return new Queried<>(totalCount, Stream.of(result));
     }
 
     public Long getTotalCount() {

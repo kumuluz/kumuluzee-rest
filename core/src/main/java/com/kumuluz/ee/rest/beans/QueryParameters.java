@@ -40,6 +40,7 @@ public class QueryParameters implements Serializable {
     private List<QueryOrder> order;
     private List<String> fields;
     private List<QueryFilter> filters;
+    private QueryFilterExpression filterExpression;
 
     public Long getLimit() {
         return limit;
@@ -85,16 +86,32 @@ public class QueryParameters implements Serializable {
         return fields;
     }
 
+    public void setFields(List<String> fields) {
+        this.fields = fields;
+    }
+
+    /**
+     * @deprecated Will be removed in future releases. Use {@link #getFilterExpression()} ()} and
+     * {@link #setFilterExpression(QueryFilterExpression)} ()} instead.
+     */
     public void addFilter(QueryFilter filter) {
         if(filter != null) {
             getFilters().add(filter);
         }
     }
 
+    /**
+     * @deprecated Will be removed in future releases. Use {@link #setFilterExpression(QueryFilterExpression)} ()} instead.
+     */
+    @Deprecated
     public void setFilters(List<QueryFilter> filters) {
         this.filters = filters;
     }
 
+    /**
+     * @deprecated Will be removed in future releases. Use {@link #getFilterExpression()} instead.
+     */
+    @Deprecated
     public List<QueryFilter> getFilters() {
 
         if (filters == null)
@@ -103,8 +120,12 @@ public class QueryParameters implements Serializable {
         return filters;
     }
 
-    public void setFields(List<String> fields) {
-        this.fields = fields;
+    public QueryFilterExpression getFilterExpression() {
+        return filterExpression;
+    }
+
+    public void setFilterExpression(QueryFilterExpression filterExpression) {
+        this.filterExpression = filterExpression;
     }
 
     // Static methods for creating the query builder

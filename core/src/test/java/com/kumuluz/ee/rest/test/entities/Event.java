@@ -1,7 +1,6 @@
 package com.kumuluz.ee.rest.test.entities;
 
 import javax.persistence.*;
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
