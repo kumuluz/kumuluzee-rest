@@ -25,5 +25,9 @@ package com.kumuluz.ee.rest.enums;
  */
 public enum QueryFormatError {
 
-    MALFORMED, NOT_A_NUMBER, NEGATIVE, NO_SUCH_CONSTANT
+    MALFORMED,
+    NOT_A_NUMBER,
+    NEGATIVE,
+    NO_SUCH_CONSTANT,
+    NOT_A_BOOLEAN
 }

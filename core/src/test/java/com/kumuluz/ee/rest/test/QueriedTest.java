@@ -59,4 +59,47 @@ public class QueriedTest {
         Assert.assertEquals(limit, queried.stream().count());
     }
 
+    @Test
+    public void testQueriedWithCount() {
+        QueryParameters q = new QueryParameters();
+        q.setCount(true);
+
+        Queried<User> queried = JPAUtils.getQueried(em, User.class, q);
+
+        Assert.assertNotNull(queried);
+        Assert.assertEquals(Long.valueOf(100L), queried.getTotalCount());
+    }
+
+    @Test
+    public void testQueriedWithNoCount() {
+        QueryParameters q = new QueryParameters();
+
+        Queried<User> queried = JPAUtils.getQueried(em, User.class, q);
+
+        Assert.assertNotNull(queried);
+        Assert.assertEquals(Long.valueOf(100L), queried.getTotalCount());
+    }
+
+    @Test
+    public void testQueriedWithCountTrue() {
+        QueryParameters q = new QueryParameters();
+        q.setCount(true);
+
+        Queried<User> queried = JPAUtils.getQueried(em, User.class, q);
+
+        Assert.assertNotNull(queried);
+        Assert.assertEquals(Long.valueOf(100L), queried.getTotalCount());
+    }
+
+    @Test
+    public void testQueriedWithCountFalse() {
+        QueryParameters q = new QueryParameters();
+        q.setCount(false);
+
+        Queried<User> queried = JPAUtils.getQueried(em, User.class, q);
+
+        Assert.assertNotNull(queried);
+        Assert.assertNull(queried.getTotalCount());
+    }
+
 }

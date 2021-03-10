@@ -145,7 +145,10 @@ public class JPAUtils {
     public static <T> Queried<T> getQueried(EntityManager em, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter,
                                             List<QueryHintPair> queryHints, String rootAlias, boolean forceDistinct) {
 
-        Long totalCount = queryEntitiesCount(em, entity, q, customFilter);
+        Long totalCount = null;
+        if (q.getCount()) {
+            totalCount = queryEntitiesCount(em, entity, q, customFilter);
+        }
         Stream<T> entityStream = getEntityStream(em, entity, q, customFilter, queryHints, rootAlias, forceDistinct);
 
         return Queried.result(totalCount, entityStream);
@@ -231,10 +234,11 @@ public class JPAUtils {
         if (em == null || entity == null)
             throw new IllegalArgumentException("The entity manager and the entity cannot be null.");
 
-        if (q == null)
+        if (q == null) {
             throw new IllegalArgumentException("Query parameters can't be null. " +
                     "If you don't have any parameters either pass a empty object or " +
                     "use the queryEntitiesCount(EntityManager, Class<T>) method.");
+        }
 
         LOG.finest("Querying entity count: '" + entity.getSimpleName() + "' with parameters: " + q);
 
