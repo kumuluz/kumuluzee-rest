@@ -51,6 +51,8 @@ public class QueryStringBuilder {
 
     private static final Logger log = Logger.getLogger(QueryStringBuilder.class.getSimpleName());
 
+    public static final String COUNT_DELIMITER = "count";
+
     public static final String LIMIT_DELIMITER = "limit";
     public static final String LIMIT_DELIMITER_ALT = "max";
 
@@ -298,6 +300,10 @@ public class QueryStringBuilder {
 
         switch (key) {
 
+            case COUNT_DELIMITER:
+                params.setCount(buildCount(key, value));
+                break;
+
             case LIMIT_DELIMITER:
             case LIMIT_DELIMITER_ALT:
 
@@ -353,6 +359,22 @@ public class QueryStringBuilder {
         }
 
         addDefaultFilters(params);
+    }
+
+    private Boolean buildCount(String key, String value) {
+        log.finest("Building count string: " + value);
+
+        if (value == null || value.equalsIgnoreCase("true")) {
+            return true;
+        } else if (value.equalsIgnoreCase("false")) {
+            return false;
+        }
+
+        String msg = "Value for '" + key + "' is not a valid boolean: '" + value + "'";
+
+        log.finest(msg);
+
+        throw new QueryFormatException(msg, key, QueryFormatError.NOT_A_BOOLEAN);
     }
 
     private Long buildOffset(String key, String value) {

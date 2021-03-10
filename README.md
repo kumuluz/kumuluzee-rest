@@ -140,6 +140,19 @@ Long allCustomersCount = JPAUtils.queryEntitiesCount(em, Customer.class, query);
 
 return Response.ok(allCustomers).header("X-Total-Count", allCustomersCount).build();
 ```
+
+With very large datasets counting all filtered records can be very slow. That is why it's possible to specify the `count` parameter, which can than be used to decide whether or not to perform the count.
+
+```
+GET /v1/customers?offset=10
+GET /v1/customers?count=true&limit=5
+GET /v1/customers?count=false&offset=10&limit=5
+```
+
+Parameter `count` is set to `true`by default.
+
+__NOTE__: When using `JpaUtils.getQueried` counting is performed (or not performed) automatically, depending on the value of `count`.
+
 #### Sorting
 
 Sorting of entities can be specified by providing the field and direction.

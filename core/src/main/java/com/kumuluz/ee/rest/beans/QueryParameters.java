@@ -34,6 +34,8 @@ public class QueryParameters implements Serializable {
 
     private final static long serialVersionUID = 1L;
 
+    private Boolean count;
+
     private Long limit;
     private Long offset;
 
@@ -41,6 +43,18 @@ public class QueryParameters implements Serializable {
     private List<String> fields;
     private List<QueryFilter> filters;
     private QueryFilterExpression filterExpression;
+
+    public boolean getCount() {
+        if (count == null) {
+            return true;
+        }
+
+        return count;
+    }
+
+    public void setCount(Boolean count) {
+        this.count = count;
+    }
 
     public Long getLimit() {
         return limit;
