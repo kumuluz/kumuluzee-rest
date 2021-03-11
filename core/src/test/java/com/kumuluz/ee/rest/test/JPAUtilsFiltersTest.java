@@ -998,4 +998,15 @@ public class JPAUtilsFiltersTest {
         Assert.assertEquals(3, users.size());
     }
 
+    @Test
+    public void testOrFilterWithFields() {
+
+        QueryParameters q = QueryParameters.query("filter=lastname:LIKEIC:%son,country:EQ:China firstname:EQ:Karen&fields=firstname,lastname").build();
+
+        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(9, users.size());
+    }
+
 }

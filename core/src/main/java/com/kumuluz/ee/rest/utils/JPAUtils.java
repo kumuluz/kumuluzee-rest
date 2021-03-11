@@ -496,6 +496,7 @@ public class JPAUtils {
         qq.setOffset(q.getOffset());
         qq.getOrder().addAll(q.getOrder());
         qq.getFields().add(idFieldName);
+        qq.setFilterExpression(q.getFilterExpression());
         qq.getFilters().addAll(q.getFilters());
 
         Optional<TypedQuery<T>> entityListQueryOptional = buildQuerySimple(em, entity, qq, customFilter, queryHints, rootAlias, forceDistinct);
