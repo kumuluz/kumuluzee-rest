@@ -48,6 +48,18 @@ public class QueryFilterExpression implements Expression<QueryFilter, FilterExpr
         right = null;
     }
 
+    public QueryFilterExpression(FilterExpressionOperation operation, QueryFilter left, QueryFilter right) {
+        this(operation, new QueryFilterExpression(left), new QueryFilterExpression(right));
+    }
+
+    public QueryFilterExpression(FilterExpressionOperation operation, QueryFilterExpression left, QueryFilter right) {
+        this(operation, left, new QueryFilterExpression(right));
+    }
+
+    public QueryFilterExpression(FilterExpressionOperation operation, QueryFilter left, QueryFilterExpression right) {
+        this(operation, new QueryFilterExpression(left), right);
+    }
+
     public QueryFilterExpression(FilterExpressionOperation operation, QueryFilterExpression left, QueryFilterExpression right) {
         value = null;
         this.operation = operation;

@@ -20,6 +20,7 @@
  */
 package com.kumuluz.ee.rest.beans;
 
+import com.kumuluz.ee.rest.enums.FilterExpressionOperation;
 import com.kumuluz.ee.rest.utils.QueryStringBuilder;
 
 import java.io.Serializable;
@@ -105,8 +106,8 @@ public class QueryParameters implements Serializable {
     }
 
     /**
-     * @deprecated Will be removed in future releases. Use {@link #getFilterExpression()} ()} and
-     * {@link #setFilterExpression(QueryFilterExpression)} ()} instead.
+     * @deprecated Will be removed in future releases. Use
+     * {@link #addFilterExpression(FilterExpressionOperation, QueryFilterExpression)} ()} instead.
      */
     public void addFilter(QueryFilter filter) {
         if(filter != null) {
@@ -115,7 +116,8 @@ public class QueryParameters implements Serializable {
     }
 
     /**
-     * @deprecated Will be removed in future releases. Use {@link #setFilterExpression(QueryFilterExpression)} ()} instead.
+     * @deprecated Will be removed in future releases. Use {@link #setFilterExpression(QueryFilterExpression)} ()}
+     * instead.
      */
     @Deprecated
     public void setFilters(List<QueryFilter> filters) {
@@ -132,6 +134,11 @@ public class QueryParameters implements Serializable {
             filters = new ArrayList<>();
 
         return filters;
+    }
+
+    public QueryFilterExpression addFilterExpression(FilterExpressionOperation operation, QueryFilterExpression queryFilterExpression) {
+        filterExpression = new QueryFilterExpression(operation, filterExpression, queryFilterExpression);
+        return filterExpression;
     }
 
     public QueryFilterExpression getFilterExpression() {
