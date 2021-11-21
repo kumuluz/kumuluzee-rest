@@ -272,7 +272,7 @@ public class JPAUtils {
             cq.where(wherePredicate);
         }
 
-        cq.select(cb.count(r)).distinct(requiresDistinct);
+        cq.select(requiresDistinct ? cb.countDistinct(r) : cb.count(r));
 
         return em.createQuery(cq).getSingleResult();
     }
@@ -1028,11 +1028,20 @@ public class JPAUtils {
 
         try {
 
-            if (c.equals(Date.class))
+            if (c.equals(Date.class)) {
                 return Date.from(ZonedDateTime.parse(value).toInstant());
+            }
 
             if (c.equals(Instant.class)) {
                 return ZonedDateTime.parse(value).toInstant();
+            }
+
+            if (c.equals(LocalTime.class)) {
+                return LocalTime.parse(value);
+            }
+
+            if (c.equals(OffsetTime.class)) {
+                return OffsetTime.parse(value);
             }
 
             if (c.equals(LocalDate.class)) {
@@ -1051,14 +1060,17 @@ public class JPAUtils {
                 return ZonedDateTime.parse(value);
             }
 
-            if (c.equals(Boolean.class))
+            if (c.equals(Boolean.class)) {
                 return Boolean.parseBoolean(value);
+            }
 
-            if (c.isEnum())
+            if (c.isEnum()) {
                 return Enum.valueOf(c, value);
+            }
 
-            if (c.equals(UUID.class))
+            if (c.equals(UUID.class)) {
                 return UUID.fromString(value);
+            }
         } catch (IllegalArgumentException | DateTimeParseException e) {
 
             throw new InvalidFieldValueException(e.getMessage(), path.getAlias(), value);

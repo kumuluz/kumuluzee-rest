@@ -6,6 +6,7 @@ import com.kumuluz.ee.rest.beans.QueryParameters;
 import com.kumuluz.ee.rest.enums.FilterOperation;
 import com.kumuluz.ee.rest.enums.OrderDirection;
 import com.kumuluz.ee.rest.test.entities.Event;
+import com.kumuluz.ee.rest.test.entities.User;
 import com.kumuluz.ee.rest.test.utils.JpaUtil;
 import com.kumuluz.ee.rest.utils.JPAUtils;
 import org.junit.Assert;
@@ -207,5 +208,24 @@ public class JPAUtilsTemporalTest {
         Assert.assertNotNull(events);
         Assert.assertEquals(1, events.size());
         Assert.assertEquals(Integer.valueOf(1), events.get(0).getId());
+    }
+
+    @Test
+    public void testFilterEQTime() {
+
+        //Match with 06:20:11
+        QueryFilter qf = new QueryFilter();
+        qf.setField("registrationTime");
+        qf.setOperation(FilterOperation.EQ);
+        qf.setValue("06:20:11");
+
+        QueryParameters q = new QueryParameters();
+        q.getFilters().add(qf);
+
+        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(1, users.size());
+        Assert.assertEquals(Integer.valueOf(2), users.get(0).getId());
     }
 }
