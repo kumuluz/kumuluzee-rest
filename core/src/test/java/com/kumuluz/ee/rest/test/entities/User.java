@@ -55,7 +55,7 @@ public class User implements Comparable<User>, Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
     private List<Project> projects;
 
     private UserStatus status;

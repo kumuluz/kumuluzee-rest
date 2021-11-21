@@ -33,10 +33,7 @@ import com.kumuluz.ee.rest.interfaces.CriteriaFilter;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -389,6 +386,8 @@ public class StreamUtils {
                         if (Date.class.isAssignableFrom(clazzTarget) ||
                                 Instant.class.isAssignableFrom(clazzTarget) ||
                                 Number.class.isAssignableFrom(clazzTarget) ||
+                                LocalTime.class.isAssignableFrom(clazz) ||
+                                OffsetTime.class.isAssignableFrom(clazz) ||
                                 LocalDate.class.isAssignableFrom(clazzTarget) ||
                                 LocalDateTime.class.isAssignableFrom(clazzTarget) ||
                                 String.class.isAssignableFrom(clazzTarget)) {
@@ -404,6 +403,8 @@ public class StreamUtils {
                         if (Date.class.isAssignableFrom(clazzTarget) ||
                                 Instant.class.isAssignableFrom(clazzTarget) ||
                                 Number.class.isAssignableFrom(clazzTarget) ||
+                                LocalTime.class.isAssignableFrom(clazz) ||
+                                OffsetTime.class.isAssignableFrom(clazz) ||
                                 LocalDate.class.isAssignableFrom(clazzTarget) ||
                                 LocalDateTime.class.isAssignableFrom(clazzTarget) ||
                                 String.class.isAssignableFrom(clazzTarget)) {
@@ -419,6 +420,8 @@ public class StreamUtils {
                         if (Date.class.isAssignableFrom(clazzTarget) ||
                                 Instant.class.isAssignableFrom(clazzTarget) ||
                                 Number.class.isAssignableFrom(clazzTarget) ||
+                                LocalTime.class.isAssignableFrom(clazz) ||
+                                OffsetTime.class.isAssignableFrom(clazz) ||
                                 LocalDate.class.isAssignableFrom(clazzTarget) ||
                                 LocalDateTime.class.isAssignableFrom(clazzTarget) ||
                                 String.class.isAssignableFrom(clazzTarget)) {
@@ -434,6 +437,8 @@ public class StreamUtils {
                         if (Date.class.isAssignableFrom(clazzTarget) ||
                                 Instant.class.isAssignableFrom(clazzTarget) ||
                                 Number.class.isAssignableFrom(clazzTarget) ||
+                                LocalTime.class.isAssignableFrom(clazz) ||
+                                OffsetTime.class.isAssignableFrom(clazz) ||
                                 LocalDate.class.isAssignableFrom(clazzTarget) ||
                                 LocalDateTime.class.isAssignableFrom(clazzTarget) ||
                                 String.class.isAssignableFrom(clazzTarget)) {
@@ -560,6 +565,10 @@ public class StreamUtils {
                         return value.equals(fieldValue);
                     } else if (value instanceof BigDecimal) {
                         return value.equals(new BigDecimal((String) fieldValue));
+                    } else if (value instanceof LocalTime) {
+                        return value.equals((LocalTime) fieldValue);
+                    } else if (value instanceof OffsetTime) {
+                        return value.equals((OffsetTime) fieldValue);
                     } else if (value instanceof LocalDate) {
                         return value.equals((LocalDate) fieldValue);
                     } else if (value instanceof LocalDateTime) {
@@ -624,6 +633,10 @@ public class StreamUtils {
                         return !value.equals(Float.parseFloat((String) fieldValue));
                     } else if (value instanceof Long) {
                         return !value.equals(Long.parseLong((String) fieldValue));
+                    } else if (value instanceof LocalTime) {
+                        return !value.equals((LocalTime) fieldValue);
+                    } else if (value instanceof OffsetTime) {
+                        return !value.equals((OffsetTime) fieldValue);
                     } else if (value instanceof LocalDate) {
                         return !value.equals((LocalDate) fieldValue);
                     } else if (value instanceof LocalDateTime) {
@@ -771,6 +784,10 @@ public class StreamUtils {
                         return ((Long) value).compareTo(Long.parseLong((String) fieldValue)) > 0;
                     } else if (value instanceof Boolean) {
                         return ((Boolean) value).compareTo((Boolean) fieldValue) > 0;
+                    } else if (value instanceof LocalTime) {
+                        return ((LocalTime) value).compareTo((LocalTime) fieldValue) > 0;
+                    } else if (value instanceof OffsetTime) {
+                        return ((OffsetTime) value).compareTo((OffsetTime) fieldValue) > 0;
                     } else if (value instanceof LocalDate) {
                         return ((LocalDate) value).compareTo((LocalDate) fieldValue) > 0;
                     } else if (value instanceof LocalDateTime) {
@@ -806,6 +823,10 @@ public class StreamUtils {
                         return ((Long) value).compareTo(Long.parseLong((String) fieldValue)) >= 0;
                     } else if (value instanceof Boolean) {
                         return ((Boolean) value).compareTo((Boolean) fieldValue) >= 0;
+                    } else if (value instanceof LocalTime) {
+                        return ((LocalTime) value).compareTo((LocalTime) fieldValue) >= 0;
+                    } else if (value instanceof OffsetTime) {
+                        return ((OffsetTime) value).compareTo((OffsetTime) fieldValue) >= 0;
                     } else if (value instanceof LocalDate) {
                         return ((LocalDate) value).compareTo((LocalDate) fieldValue) >= 0;
                     } else if (value instanceof LocalDateTime) {
@@ -842,6 +863,10 @@ public class StreamUtils {
                         return ((Long) value).compareTo(Long.parseLong((String) fieldValue)) < 0;
                     } else if (value instanceof Boolean) {
                         return ((Boolean) value).compareTo((Boolean) fieldValue) < 0;
+                    } else if (value instanceof LocalTime) {
+                        return ((LocalTime) value).compareTo((LocalTime) fieldValue) >= 0;
+                    } else if (value instanceof OffsetTime) {
+                        return ((OffsetTime) value).compareTo((OffsetTime) fieldValue) >= 0;
                     } else if (value instanceof LocalDate) {
                         return ((LocalDate) value).compareTo((LocalDate) fieldValue) < 0;
                     } else if (value instanceof LocalDateTime) {
@@ -879,6 +904,10 @@ public class StreamUtils {
                         return ((Long) value).compareTo(Long.parseLong((String) fieldValue)) <= 0;
                     } else if (value instanceof Boolean) {
                         return ((Boolean) value).compareTo((Boolean) fieldValue) <= 0;
+                    } else if (value instanceof LocalTime) {
+                        return ((LocalTime) value).compareTo((LocalTime) fieldValue) >= 0;
+                    } else if (value instanceof OffsetTime) {
+                        return ((OffsetTime) value).compareTo((OffsetTime) fieldValue) >= 0;
                     } else if (value instanceof LocalDate) {
                         return ((LocalDate) value).compareTo((LocalDate) fieldValue) <= 0;
                     } else if (value instanceof LocalDateTime) {
