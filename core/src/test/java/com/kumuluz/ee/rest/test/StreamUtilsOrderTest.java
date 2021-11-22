@@ -53,7 +53,7 @@ public class StreamUtilsOrderTest {
         QueryParameters q = new QueryParameters();
         q.getOrder().add(qo);
 
-        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
 
         users = StreamUtils.queryEntities(users, q);
 
@@ -75,7 +75,7 @@ public class StreamUtilsOrderTest {
         QueryParameters q = new QueryParameters();
         q.getOrder().add(qo);
 
-        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
 
         users = StreamUtils.queryEntities(users, q);
 
@@ -97,14 +97,14 @@ public class StreamUtilsOrderTest {
         QueryParameters q = new QueryParameters();
         q.getOrder().add(qo);
 
-        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
 
         users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, users.size());
         Assert.assertNotNull(users.get(97).getFirstname());
-        Assert.assertEquals("Pamela", users.get(97).getFirstname());
+        Assert.assertEquals("Annie", users.get(97).getFirstname());
         Assert.assertNotNull(users.get(98).getFirstname());
         Assert.assertEquals("Susan", users.get(98).getFirstname());
         Assert.assertNotNull(users.get(99).getFirstname());
@@ -121,7 +121,7 @@ public class StreamUtilsOrderTest {
         QueryParameters q = new QueryParameters();
         q.getOrder().add(qo);
 
-        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
 
         users = StreamUtils.queryEntities(users, q);
 
@@ -145,7 +145,7 @@ public class StreamUtilsOrderTest {
         QueryParameters q = new QueryParameters();
         q.getOrder().add(qo);
 
-        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
 
         users = StreamUtils.queryEntities(users, q);
 
@@ -167,7 +167,7 @@ public class StreamUtilsOrderTest {
         QueryParameters q = new QueryParameters();
         q.getOrder().add(qo);
 
-        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
 
         users = StreamUtils.queryEntities(users, q);
 
@@ -199,7 +199,7 @@ public class StreamUtilsOrderTest {
         qo.setOrder(OrderDirection.DESC);
         q.getOrder().add(qo);
 
-        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
 
         users = StreamUtils.queryEntities(users, q);
 
@@ -224,7 +224,7 @@ public class StreamUtilsOrderTest {
         QueryParameters q = new QueryParameters();
         q.getOrder().add(qo);
 
-        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
 
         users = StreamUtils.queryEntities(users, q);
 
@@ -267,7 +267,7 @@ public class StreamUtilsOrderTest {
 
         try {
 
-            List<User> users = em.createNamedQuery("User.getAll").getResultList();
+            List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
             StreamUtils.queryEntities(users, q);
 
             Assert.fail("No exception was thrown");
@@ -289,7 +289,7 @@ public class StreamUtilsOrderTest {
 
         try {
 
-            List<User> users = em.createNamedQuery("User.getAll").getResultList();
+            List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
             StreamUtils.queryEntities(users, q);
 
             Assert.fail("No exception was thrown");
@@ -348,7 +348,7 @@ public class StreamUtilsOrderTest {
         QueryParameters q = new QueryParameters();
         q.getOrder().add(qo);
 
-        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
         StreamUtils.queryEntities(users, q);
 
         Assert.fail("No exception was thrown");
@@ -367,7 +367,7 @@ public class StreamUtilsOrderTest {
         o.setOrder(OrderDirection.ASC);
         q.getOrder().add(o);
 
-        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
         users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
@@ -386,7 +386,7 @@ public class StreamUtilsOrderTest {
         o.setOrder(OrderDirection.ASC);
         q.getOrder().add(o);
 
-        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
         users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
@@ -418,7 +418,7 @@ public class StreamUtilsOrderTest {
         QueryParameters q = new QueryParameters();
         q.getOrder().add(qo);
 
-        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
 
         users = StreamUtils.queryEntities(users, q);
 
@@ -445,7 +445,7 @@ public class StreamUtilsOrderTest {
         QueryParameters q = new QueryParameters();
         q.getOrder().add(qo);
 
-        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
 
         users = StreamUtils.queryEntities(users, q);
 
@@ -472,7 +472,7 @@ public class StreamUtilsOrderTest {
         QueryParameters q = new QueryParameters();
         q.getOrder().add(qo);
 
-        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
         users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);
@@ -499,7 +499,7 @@ public class StreamUtilsOrderTest {
         QueryParameters q = new QueryParameters();
         q.getOrder().add(qo);
 
-        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
 
         users = StreamUtils.queryEntities(users, q);
 
@@ -525,7 +525,7 @@ public class StreamUtilsOrderTest {
         QueryParameters q = new QueryParameters();
         q.getOrder().add(qo);
 
-        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
         users = StreamUtils.queryEntities(users, q);
 
         Assert.assertNotNull(users);

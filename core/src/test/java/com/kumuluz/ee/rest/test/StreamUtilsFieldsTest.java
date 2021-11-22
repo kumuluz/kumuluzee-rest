@@ -49,7 +49,7 @@ public class StreamUtilsFieldsTest {
         QueryParameters q = new QueryParameters();
         q.getFields().add("firstname");
 
-        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
         em.clear();
 
         users = StreamUtils.queryEntities(users, q);
@@ -68,7 +68,7 @@ public class StreamUtilsFieldsTest {
         QueryParameters q = new QueryParameters();
         q.getFields().add("birthDate");
 
-        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
         em.clear();
 
         users = StreamUtils.queryEntities(users, q);
@@ -86,7 +86,7 @@ public class StreamUtilsFieldsTest {
         QueryParameters q = new QueryParameters();
         q.getFields().add("registrationDate");
 
-        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
         em.clear();
 
         users = StreamUtils.queryEntities(users, q);
@@ -104,7 +104,7 @@ public class StreamUtilsFieldsTest {
         QueryParameters q = new QueryParameters();
         q.getFields().add("score");
 
-        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
         em.clear();
 
         users = StreamUtils.queryEntities(users, q);
@@ -125,7 +125,7 @@ public class StreamUtilsFieldsTest {
 
         q.getFields().add(ignoredFieldName);
 
-        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
         em.clear();
 
         users = StreamUtils.queryEntities(users, q);
@@ -143,7 +143,7 @@ public class StreamUtilsFieldsTest {
 
         q.getFields().add(ignoredFieldName);
 
-        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
         em.clear();
 
         users = StreamUtils.queryEntities(users, q);
@@ -161,7 +161,7 @@ public class StreamUtilsFieldsTest {
 
         q.getFields().add(ignoredFieldName);
 
-        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
         em.clear();
 
         users = StreamUtils.queryEntities(users, q);
@@ -179,7 +179,7 @@ public class StreamUtilsFieldsTest {
 
         q.getFields().add(ignoredFieldName);
 
-        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
         em.clear();
 
         StreamUtils.queryEntities(users, q);
@@ -191,7 +191,7 @@ public class StreamUtilsFieldsTest {
         QueryParameters q = new QueryParameters();
         q.getFields().add("firstnameChanged");
 
-        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
         em.clear();
 
         users = StreamUtils.queryEntities(users, q);
@@ -209,7 +209,7 @@ public class StreamUtilsFieldsTest {
         QueryParameters q = new QueryParameters();
         q.getFields().add("firstnameAndLastname");
 
-        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
         em.clear();
 
         users = StreamUtils.queryEntities(users, q);
@@ -229,7 +229,7 @@ public class StreamUtilsFieldsTest {
         q.getFields().add("career.experience");
         q.getFields().add("career.currentPosition");
 
-        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
         em.clear();
 
         users = StreamUtils.queryEntities(users, q);
@@ -248,7 +248,7 @@ public class StreamUtilsFieldsTest {
         q.getFilters().add(new QueryFilter("lastname", FilterOperation.EQ, "Torres"));
         q.getFields().add("emailAndCurrentPosition");
 
-        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
         em.clear();
 
         users = StreamUtils.queryEntities(users, q);
@@ -271,7 +271,7 @@ public class StreamUtilsFieldsTest {
         q.getFields().add("country");
         q.getFields().add("role");
 
-        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
         em.clear();
 
         users = StreamUtils.queryEntities(users, q);
@@ -294,7 +294,7 @@ public class StreamUtilsFieldsTest {
         QueryParameters q = new QueryParameters();
         q.getFields().add("lastname");
 
-        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
         em.clear();
 
         users = StreamUtils.queryEntities(users, q);
@@ -314,7 +314,7 @@ public class StreamUtilsFieldsTest {
         QueryParameters q = new QueryParameters();
         q.getFields().add("lastname");
 
-        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
         em.clear();
 
         List<User> result = StreamUtils.queryEntities(users.stream(), User.class, q).collect(Collectors.toList());
@@ -332,7 +332,7 @@ public class StreamUtilsFieldsTest {
         QueryParameters q = new QueryParameters();
         q.getFields().add("something");
 
-        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
         em.clear();
 
         StreamUtils.queryEntities(users, q);

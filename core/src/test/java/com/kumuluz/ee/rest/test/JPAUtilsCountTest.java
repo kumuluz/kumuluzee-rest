@@ -69,4 +69,21 @@ public class JPAUtilsCountTest {
         Assert.assertNotNull(count);
         Assert.assertEquals(2, count.longValue());
     }
+
+    @Test
+    public void testQueryCount2() {
+
+        QueryParameters q = new QueryParameters();
+
+        QueryFilter qf = new QueryFilter();
+        qf.setField("projects.status");
+        qf.setOperation(FilterOperation.EQ);
+        qf.setValue("ACTIVE");
+        q.getFilters().add(qf);
+
+        Long count = JPAUtils.queryEntitiesCount(em, User.class, q);
+
+        Assert.assertNotNull(count);
+        Assert.assertEquals(39, count.longValue());
+    }
 }

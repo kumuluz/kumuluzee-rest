@@ -39,7 +39,7 @@ public class StreamUtilsCountTest {
     @Test
     public void testEmptyQueryCount() {
 
-        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
 
         Long count = StreamUtils.queryEntitiesCount(users);
 
@@ -67,11 +67,30 @@ public class StreamUtilsCountTest {
         qf.setValue("%ina");
         q.getFilters().add(qf);
 
-        List<User> users = em.createNamedQuery("User.getAll").getResultList();
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
 
         Long count = StreamUtils.queryEntitiesCount(users, q);
 
         Assert.assertNotNull(count);
         Assert.assertEquals( 2L, count.longValue());
+    }
+
+    @Test
+    public void testQueryCount2() {
+
+        QueryParameters q = new QueryParameters();
+
+        QueryFilter qf = new QueryFilter();
+        qf.setField("projects.status");
+        qf.setOperation(FilterOperation.EQ);
+        qf.setValue("ACTIVE");
+        q.getFilters().add(qf);
+
+        List<User> users = em.createNamedQuery("User.getAll", User.class).getResultList();
+
+        Long count = StreamUtils.queryEntitiesCount(users, q);
+
+        Assert.assertNotNull(count);
+        Assert.assertEquals(39, count.longValue());
     }
 }

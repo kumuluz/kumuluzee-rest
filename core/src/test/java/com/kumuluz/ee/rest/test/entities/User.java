@@ -11,6 +11,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -54,7 +55,7 @@ public class User implements Comparable<User>, Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
     private List<Project> projects;
 
     private UserStatus status;
@@ -72,6 +73,9 @@ public class User implements Comparable<User>, Serializable {
 
     @Column(name = "registration_date")
     private LocalDateTime registrationDate;
+
+    @Column(name = "registration_time")
+    private LocalTime registrationTime;
 
     public Integer getId() {
         return id;
@@ -201,6 +205,14 @@ public class User implements Comparable<User>, Serializable {
         this.registrationDate = registrationDate;
     }
 
+    public LocalTime getRegistrationTime() {
+        return registrationTime;
+    }
+
+    public void setRegistrationTime(LocalTime registrationTime) {
+        this.registrationTime = registrationTime;
+    }
+
     @Override
     public int compareTo(User o) {
         return id.compareTo(o.getId());
@@ -210,8 +222,22 @@ public class User implements Comparable<User>, Serializable {
     public String toString() {
         return "User{" +
                 "id=" + id +
+                ", uuid=" + uuid +
                 ", firstname='" + firstname + '\'' +
                 ", lastname='" + lastname + '\'' +
+                ", email='" + email + '\'' +
+                ", country='" + country + '\'' +
+                ", ip_address='" + ip_address + '\'' +
+                ", role=" + role +
+                ", confirmed=" + confirmed +
+                ", createdAt=" + createdAt +
+                ", projects=" + projects +
+                ", status=" + status +
+                ", career=" + career +
+                ", score=" + score +
+                ", birthDate=" + birthDate +
+                ", registrationDate=" + registrationDate +
+                ", registrationTime=" + registrationTime +
                 '}';
     }
 }
