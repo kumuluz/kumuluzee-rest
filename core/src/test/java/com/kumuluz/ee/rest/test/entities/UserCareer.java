@@ -16,7 +16,6 @@ import java.io.Serializable;
 public class UserCareer implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @RestMapping("experience")

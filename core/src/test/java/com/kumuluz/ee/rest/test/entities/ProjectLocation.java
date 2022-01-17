@@ -12,7 +12,6 @@ import java.io.Serializable;
 public class ProjectLocation extends ExternalInfo implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Column(name = "location_name")

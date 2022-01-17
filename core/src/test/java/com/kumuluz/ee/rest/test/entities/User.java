@@ -27,7 +27,6 @@ import java.util.UUID;
 public class User implements Comparable<User>, Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Column(columnDefinition = "uuid")
@@ -74,7 +73,7 @@ public class User implements Comparable<User>, Serializable {
     @Column(name = "registration_date")
     private LocalDateTime registrationDate;
 
-    @Column(name = "registration_time")
+    @Column(name = "registration_time", columnDefinition = "TIME")
     private LocalTime registrationTime;
 
     public Integer getId() {

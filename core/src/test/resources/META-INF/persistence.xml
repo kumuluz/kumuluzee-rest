@@ -32,6 +32,7 @@
 
             <property name="javax.persistence.sql-load-script-source" value="db_init.sql"/>
 
+            <property name="eclipselink.target-database" value="com.kumuluz.ee.rest.test.eclipselink.H2Platform"/>
 <!--            <property name="eclipselink.logging.level.sql" value="FINE"/>-->
         </properties>
 
