@@ -906,6 +906,57 @@ public class JPAUtilsFiltersTest {
     }
 
     @Test
+    public void testBetweenFilter() {
+
+        QueryFilter qf = new QueryFilter();
+        qf.setField("birthDate");
+        qf.setOperation(FilterOperation.BETWEEN);
+        qf.setValues(Arrays.asList("2015-04-08", "2015-04-10"));
+
+        QueryParameters q = new QueryParameters();
+        q.getFilters().add(qf);
+
+        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(1, users.size());
+    }
+
+    @Test
+    public void testNBetweenFilter() {
+
+        QueryFilter qf = new QueryFilter();
+        qf.setField("birthDate");
+        qf.setOperation(FilterOperation.NBETWEEN);
+        qf.setValues(Arrays.asList("2015-04-08", "2015-04-10"));
+
+        QueryParameters q = new QueryParameters();
+        q.getFilters().add(qf);
+
+        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(99, users.size());
+    }
+
+    @Test
+    public void testLessThanEqualDateFilter() {
+
+        QueryFilter qf = new QueryFilter();
+        qf.setField("birthDate");
+        qf.setOperation(FilterOperation.LTE);
+        qf.setValue("2000-01-01");
+
+        QueryParameters q = new QueryParameters();
+        q.getFilters().add(qf);
+
+        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(0, users.size());
+    }
+
+    @Test
     public void ignoredFieldShouldReturnUnchangedResult() {
 
         String ignoredFieldName = "userIgnoredField";

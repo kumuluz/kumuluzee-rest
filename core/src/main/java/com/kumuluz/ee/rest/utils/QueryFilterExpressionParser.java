@@ -267,7 +267,9 @@ public class QueryFilterExpressionParser extends BaseParser<QueryFilterExpressio
                 (filterOperation == FilterOperation.IN ||
                         filterOperation == FilterOperation.NIN ||
                         filterOperation == FilterOperation.NINIC ||
-                        filterOperation == FilterOperation.INIC)) {
+                        filterOperation == FilterOperation.INIC ||
+                        filterOperation == FilterOperation.BETWEEN ||
+                        filterOperation == FilterOperation.NBETWEEN)) {
             String values = value.replaceAll("(^\\[)|(\\]$)", "");
 
             List<String> valuesList = Arrays.stream(values.split("[,]+(?=([^']*'[^']*')*[^']*$)"))
