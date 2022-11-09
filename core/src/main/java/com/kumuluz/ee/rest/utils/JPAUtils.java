@@ -25,9 +25,11 @@ import com.kumuluz.ee.rest.annotations.RestMapping;
 import com.kumuluz.ee.rest.beans.*;
 import com.kumuluz.ee.rest.enums.FilterExpressionOperation;
 import com.kumuluz.ee.rest.enums.OrderDirection;
+import com.kumuluz.ee.rest.enums.QueryFormatError;
 import com.kumuluz.ee.rest.exceptions.InvalidEntityFieldException;
 import com.kumuluz.ee.rest.exceptions.InvalidFieldValueException;
 import com.kumuluz.ee.rest.exceptions.NoSuchEntityFieldException;
+import com.kumuluz.ee.rest.exceptions.QueryFormatException;
 import com.kumuluz.ee.rest.interfaces.CriteriaFilter;
 
 import javax.persistence.EntityManager;
@@ -750,6 +752,31 @@ public class JPAUtils {
                         case ISNOTNULL:
                             np = cb.isNotNull(entityField);
                             break;
+                        case BETWEEN:
+                            if (!f.getValues().isEmpty()) {
+                                Object value1 = getValueForPath(entityField, f.getValues().get(0));
+                                Object value2 = getValueForPath(entityField, f.getValues().get(1));
+
+                                if (!value1.getClass().equals(value2.getClass())) {
+                                    throw new QueryFormatException("Incompatible values for BETWEEN filter", f.getField(), QueryFormatError.MALFORMED);
+                                }
+
+                                np = cb.between(compField, (Comparable) value1, (Comparable) value2);
+                            }
+                            break;
+                        case NBETWEEN:
+                            if (!f.getValues().isEmpty()) {
+                                Object value1 = getValueForPath(entityField, f.getValues().get(0));
+                                Object value2 = getValueForPath(entityField, f.getValues().get(1));
+
+                                if (!value1.getClass().equals(value2.getClass())) {
+                                    throw new QueryFormatException("Incompatible values for BETWEEN filter", f.getField(), QueryFormatError.MALFORMED);
+                                }
+
+                                np = cb.not(
+                                        cb.between(compField, (Comparable) value1, (Comparable) value2)
+                                );
+                            }
                     }
                 }  else if (isCollection) {
 
@@ -1244,6 +1271,8 @@ public class JPAUtils {
 
     private static boolean isAssignableToInstantHoldingTemporal(Class clazz) {
         return Instant.class.isAssignableFrom(clazz) ||
+                LocalDate.class.isAssignableFrom(clazz) ||
+                LocalDateTime.class.isAssignableFrom(clazz) ||
                 OffsetDateTime.class.isAssignableFrom(clazz) ||
                 ZonedDateTime.class.isAssignableFrom(clazz);
     }
