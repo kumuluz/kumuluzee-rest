@@ -30,7 +30,7 @@
         <parboiled-java.version>1.4.1</parboiled-java.version>
 
         <junit.version>4.13.1</junit.version>
-        <h2.version>2.1.214</h2.version>
+        <h2.version>2.2.220</h2.version>
         <eclipselink.version>2.7.10</eclipselink.version>
         <hibernate-core.version>5.5.7.Final</hibernate-core.version>
 
