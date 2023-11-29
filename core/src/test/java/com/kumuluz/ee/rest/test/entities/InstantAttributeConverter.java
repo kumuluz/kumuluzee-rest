@@ -1,7 +1,8 @@
 package com.kumuluz.ee.rest.test.entities;
 
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Converter;
+
 import java.sql.Timestamp;
 import java.time.Instant;
 

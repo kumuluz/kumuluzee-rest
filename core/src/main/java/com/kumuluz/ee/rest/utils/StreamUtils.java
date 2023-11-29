@@ -493,7 +493,8 @@ public class StreamUtils {
 
     private static StreamCriteriaField getStreamCriteriaField(Class<?> clazz, String fieldName) {
 
-        if (fieldName == null) throw new NoSuchEntityFieldException("No such entity field", fieldName, clazz.getSimpleName());
+        if (fieldName == null)
+            throw new NoSuchEntityFieldException("No such entity field", fieldName, clazz.getSimpleName());
 
         String[] fields = fieldName.split("\\.");
 

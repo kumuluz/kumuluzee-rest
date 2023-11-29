@@ -1,6 +1,10 @@
 package com.kumuluz.ee.rest.test.entities;
 
-import javax.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;

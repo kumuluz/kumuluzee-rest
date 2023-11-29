@@ -31,13 +31,13 @@ import com.kumuluz.ee.rest.exceptions.InvalidFieldValueException;
 import com.kumuluz.ee.rest.exceptions.NoSuchEntityFieldException;
 import com.kumuluz.ee.rest.exceptions.QueryFormatException;
 import com.kumuluz.ee.rest.interfaces.CriteriaFilter;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Tuple;
+import jakarta.persistence.TupleElement;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.*;
+import jakarta.persistence.metamodel.*;
 
-import javax.persistence.EntityManager;
-import javax.persistence.Tuple;
-import javax.persistence.TupleElement;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.*;
-import javax.persistence.metamodel.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -194,7 +194,7 @@ public class JPAUtils {
     }
 
     private static <T> Optional<TypedQuery<T>> buildQuery(EntityManager em, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter,
-                                                List<QueryHintPair> queryHints, String rootAlias, boolean forceDistinct) {
+                                                          List<QueryHintPair> queryHints, String rootAlias, boolean forceDistinct) {
         if (em == null || entity == null)
             throw new IllegalArgumentException("The entity manager and the entity cannot be null.");
 
@@ -384,17 +384,17 @@ public class JPAUtils {
     // Temporary methods to not break the public API
 
     private static <T> Optional<TypedQuery<T>> buildQuerySimple(EntityManager em, Class<T> entity, QueryParameters q,
-                                                      CriteriaFilter<T> customFilter,
-                                                      List<QueryHintPair> queryHints, String rootAlias,
-                                                      boolean forceDistinct) {
+                                                                CriteriaFilter<T> customFilter,
+                                                                List<QueryHintPair> queryHints, String rootAlias,
+                                                                boolean forceDistinct) {
         return buildQuerySimple(em, entity, q, customFilter, queryHints, rootAlias, forceDistinct, false);
     }
 
     @SuppressWarnings("unchecked")
     private static <T> Optional<TypedQuery<T>> buildQuerySimple(EntityManager em, Class<T> entity, QueryParameters q,
-                                                      CriteriaFilter<T> customFilter,
-                                                      List<QueryHintPair> queryHints, String rootAlias,
-                                                      boolean forceDistinct, boolean ignorePaging) {
+                                                                CriteriaFilter<T> customFilter,
+                                                                List<QueryHintPair> queryHints, String rootAlias,
+                                                                boolean forceDistinct, boolean ignorePaging) {
 
         LOG.finest("Querying entity: '" + entity.getSimpleName() + "' with parameters: " + q + "(simple)");
 
@@ -478,9 +478,9 @@ public class JPAUtils {
 
     @SuppressWarnings("unchecked")
     private static <T> Optional<TypedQuery<T>> buildQueryAdvanced(EntityManager em, Class<T> entity, QueryParameters q,
-                                                       CriteriaFilter<T> customFilter,
-                                                       List<QueryHintPair> queryHints, String rootAlias,
-                                                       boolean forceDistinct) {
+                                                                  CriteriaFilter<T> customFilter,
+                                                                  List<QueryHintPair> queryHints, String rootAlias,
+                                                                  boolean forceDistinct) {
 
         LOG.finest("Querying entity: '" + entity.getSimpleName() + "' with parameters: " + q + "(advanced)");
 
@@ -778,7 +778,7 @@ public class JPAUtils {
                                 );
                             }
                     }
-                }  else if (isCollection) {
+                } else if (isCollection) {
 
                     String idField;
 
@@ -840,7 +840,7 @@ public class JPAUtils {
             try {
                 el = entity.getConstructor().newInstance();
             } catch (InstantiationException | IllegalAccessException |
-                    NoSuchMethodException | InvocationTargetException e) {
+                     NoSuchMethodException | InvocationTargetException e) {
 
                 throw new AssertionError();
             }
@@ -864,7 +864,8 @@ public class JPAUtils {
                         String[] fName = te.getAlias().split("\\.");
 
                         createEntityFromTuple(fName, entity, el, o, i);
-                    } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException | InvocationTargetException | InstantiationException e) {
+                    } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException |
+                             InvocationTargetException | InstantiationException e) {
 
                         throw new NoSuchEntityFieldException(e.getMessage(), te.getAlias(), entity.getSimpleName());
                     }
@@ -1135,7 +1136,7 @@ public class JPAUtils {
             String mappedFieldName = mappedFieldOptional.get();
 
             String[] mappedFields = mappedFieldName.split("\\.");
-            for (String mappedField: mappedFields) {
+            for (String mappedField : mappedFields) {
                 fieldPath = fieldPath == null ? mappedField : fieldPath + "." + mappedField;
 
                 if (fieldJoins.containsKey(fieldPath)) {

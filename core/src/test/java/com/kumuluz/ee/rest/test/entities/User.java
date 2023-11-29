@@ -4,9 +4,9 @@ import com.kumuluz.ee.rest.annotations.RestIgnore;
 import com.kumuluz.ee.rest.annotations.RestMapping;
 import com.kumuluz.ee.rest.test.entities.enums.UserStatus;
 import com.kumuluz.ee.rest.test.utils.UUIDConverter;
+import jakarta.persistence.*;
 import org.eclipse.persistence.annotations.Converter;
 
-import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;

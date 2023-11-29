@@ -20,7 +20,8 @@
  */
 package com.kumuluz.ee.rest.beans;
 
-import javax.persistence.criteria.Path;
+import jakarta.persistence.criteria.Path;
+
 import java.io.Serializable;
 
 /**

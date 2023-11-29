@@ -1,6 +1,7 @@
 package com.kumuluz.ee.rest.test.entities;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+
 import java.io.Serializable;
 
 /**

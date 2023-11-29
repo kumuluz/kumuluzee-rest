@@ -20,13 +20,15 @@
  */
 package com.kumuluz.ee.rest.test.utils;
 
-import javax.persistence.AttributeConverter;
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Converter;
+
 import java.util.UUID;
 
 /**
  * @author gpor0
  */
-@javax.persistence.Converter
+@Converter
 public class UUIDConverter implements AttributeConverter<UUID, Object> {
 
     @Override

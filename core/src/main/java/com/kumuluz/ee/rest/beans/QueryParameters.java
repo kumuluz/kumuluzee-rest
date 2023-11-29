@@ -110,7 +110,7 @@ public class QueryParameters implements Serializable {
      * {@link #addFilterExpression(FilterExpressionOperation, QueryFilterExpression)} ()} instead.
      */
     public void addFilter(QueryFilter filter) {
-        if(filter != null) {
+        if (filter != null) {
             getFilters().add(filter);
         }
     }
