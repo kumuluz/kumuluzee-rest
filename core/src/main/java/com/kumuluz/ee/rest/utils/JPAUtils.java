@@ -42,6 +42,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
+import java.sql.Timestamp;
 import java.time.*;
 import java.time.format.DateTimeParseException;
 import java.util.*;
@@ -594,7 +595,7 @@ public class JPAUtils {
                     switch (f.getOperation()) {
 
                         case EQ:
-                            if (f.getDateValue() != null && entityField.getJavaType().equals(Date.class)) {
+                            if (f.getDateValue() != null && Date.class.isAssignableFrom(entityField.getJavaType())) {
                                 np = cb.equal(entityField, f.getDateValue());
                             } else if (f.getValue() != null) {
                                 np = cb.equal(entityField, getValueForPath(entityField, f.getValue()));
@@ -606,7 +607,7 @@ public class JPAUtils {
                             }
                             break;
                         case NEQ:
-                            if (f.getDateValue() != null && entityField.getJavaType().equals(Date.class)) {
+                            if (f.getDateValue() != null && Date.class.isAssignableFrom(entityField.getJavaType())) {
                                 np = cb.notEqual(entityField, f.getDateValue());
                             } else if (f.getValue() != null) {
                                 np = cb.notEqual(entityField, getValueForPath(entityField, f.getValue()));
@@ -671,7 +672,7 @@ public class JPAUtils {
                                     Number.class.isAssignableFrom(entityField.getJavaType()) ||
                                     String.class.isAssignableFrom(entityField.getJavaType())) {
 
-                                if (f.getDateValue() != null && entityField.getJavaType().equals(Date.class)) {
+                                if (f.getDateValue() != null && Date.class.isAssignableFrom(entityField.getJavaType())) {
                                     np = cb.greaterThan(dateField, f.getDateValue());
                                 } else if (f.getValue() != null) {
                                     np = cb.greaterThan(compField, (Comparable) getValueForPath(stringField, f.getValue()));
@@ -684,7 +685,7 @@ public class JPAUtils {
                                     Number.class.isAssignableFrom(entityField.getJavaType()) ||
                                     String.class.isAssignableFrom(entityField.getJavaType())) {
 
-                                if (f.getDateValue() != null && entityField.getJavaType().equals(Date.class)) {
+                                if (f.getDateValue() != null && Date.class.isAssignableFrom(entityField.getJavaType())) {
                                     np = cb.greaterThanOrEqualTo(dateField, f.getDateValue());
                                 } else if (f.getValue() != null) {
                                     np = cb.greaterThanOrEqualTo(compField, (Comparable) getValueForPath(stringField, f.getValue()));
@@ -697,7 +698,7 @@ public class JPAUtils {
                                     Number.class.isAssignableFrom(entityField.getJavaType()) ||
                                     String.class.isAssignableFrom(entityField.getJavaType())) {
 
-                                if (f.getDateValue() != null && entityField.getJavaType().equals(Date.class)) {
+                                if (f.getDateValue() != null && Date.class.isAssignableFrom(entityField.getJavaType())) {
                                     np = cb.lessThan(dateField, f.getDateValue());
                                 } else if (f.getValue() != null) {
                                     np = cb.lessThan(compField, (Comparable) getValueForPath(stringField, f.getValue()));
@@ -710,7 +711,7 @@ public class JPAUtils {
                                     Number.class.isAssignableFrom(entityField.getJavaType()) ||
                                     String.class.isAssignableFrom(entityField.getJavaType())) {
 
-                                if (f.getDateValue() != null && entityField.getJavaType().equals(Date.class)) {
+                                if (f.getDateValue() != null && Date.class.isAssignableFrom(entityField.getJavaType())) {
                                     np = cb.lessThanOrEqualTo(dateField, f.getDateValue());
                                 } else if (f.getValue() != null) {
                                     np = cb.lessThanOrEqualTo(compField, (Comparable) getValueForPath(stringField, f.getValue()));
@@ -1058,6 +1059,10 @@ public class JPAUtils {
 
             if (c.equals(Date.class)) {
                 return Date.from(ZonedDateTime.parse(value).toInstant());
+            }
+
+            if (c.equals(Timestamp.class)) {
+                return Timestamp.from(ZonedDateTime.parse(value).toInstant());
             }
 
             if (c.equals(Instant.class)) {
