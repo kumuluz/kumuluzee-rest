@@ -590,6 +590,8 @@ public class StreamUtils {
                         return (((Date) value).toInstant()).equals(((Date) fieldValue).toInstant());
                     } else if (value instanceof Enum) {
                         return value.equals(getValueForField(field, fieldValue.toString()));
+                    } else if (value instanceof UUID) {
+                        return value.equals(UUID.fromString(fieldValue.toString()));
                     } else if (Collection.class.isAssignableFrom(value.getClass())) {
 
                         Predicate newPredicate = filter(getGenericType(field), fieldName.substring(fieldNames[0].length() + 1),
@@ -652,6 +654,8 @@ public class StreamUtils {
                         return !(((Date) value).toInstant()).equals(((Date) fieldValue).toInstant());
                     } else if (value instanceof Enum) {
                         return !value.equals(getValueForField(field, fieldValue.toString()));
+                    } else if (value instanceof UUID) {
+                        return !value.equals(UUID.fromString(fieldValue.toString()));
                     } else if (Collection.class.isAssignableFrom(value.getClass())) {
 
                         Predicate newPredicate = filter(getGenericType(field), fieldName.substring(fieldNames[0].length() + 1),
@@ -934,7 +938,8 @@ public class StreamUtils {
                 } else if (operation.equals(FilterOperation.IN)) {
                     if (value != null) {
                         if (value instanceof String || value instanceof Double || value instanceof Float || value instanceof Long ||
-                                value instanceof Boolean || value instanceof Byte || value instanceof Short || value instanceof Date || value instanceof Enum) {
+                            value instanceof Boolean || value instanceof Byte || value instanceof Short || value instanceof Date ||
+                            value instanceof Enum || value instanceof UUID) {
 
                             return ((List<?>) fieldValue).stream()
                                     .filter(Objects::nonNull)
@@ -983,7 +988,8 @@ public class StreamUtils {
                 } else if (operation.equals(FilterOperation.NIN)) {
                     if (value != null) {
                         if (value instanceof String || value instanceof Double || value instanceof Float || value instanceof Long ||
-                                value instanceof Boolean || value instanceof Byte || value instanceof Short || value instanceof Date || value instanceof Enum) {
+                            value instanceof Boolean || value instanceof Byte || value instanceof Short || value instanceof Date ||
+                            value instanceof Enum || value instanceof UUID) {
 
                             return !((List<?>) fieldValue).stream()
                                     .filter(Objects::nonNull)
