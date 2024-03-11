@@ -5,6 +5,7 @@ import com.kumuluz.ee.rest.annotations.RestMapping;
 import com.kumuluz.ee.rest.test.entities.enums.UserStatus;
 import com.kumuluz.ee.rest.test.utils.UUIDConverter;
 import jakarta.persistence.*;
+import org.eclipse.persistence.annotations.Convert;
 import org.eclipse.persistence.annotations.Converter;
 
 import java.io.Serializable;
@@ -22,15 +23,14 @@ import java.util.UUID;
 @Entity
 @RestIgnore("userIgnoredField")
 @Table(name = "users")
-@Converter(name = "uuid", converterClass = UUIDConverter.class)
 @NamedQueries({@NamedQuery(name = "User.getAll", query = "SELECT u FROM User u")})
 public class User implements Comparable<User>, Serializable {
 
     @Id
     private Integer id;
 
-    @Column(columnDefinition = "uuid")
-    @Convert(converter = UUIDConverter.class)
+    @Converter(name = "uuidConverter", converterClass = UUIDConverter.class)
+    @Convert("uuidConverter")
     private UUID uuid;
 
     @RestMapping("firstnameChanged")

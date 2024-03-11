@@ -2,7 +2,10 @@ package com.kumuluz.ee.rest.test.entities;
 
 import com.kumuluz.ee.rest.annotations.RestIgnore;
 import com.kumuluz.ee.rest.test.entities.enums.ProjectStatus;
+import com.kumuluz.ee.rest.test.utils.UUIDConverter;
 import jakarta.persistence.*;
+import org.eclipse.persistence.annotations.Convert;
+import org.eclipse.persistence.annotations.Converter;
 
 import java.io.Serializable;
 import java.util.UUID;
@@ -20,6 +23,8 @@ public class Project implements Serializable {
     private Integer id;
 
     @Column(name = "public_id")
+    @Converter(name = "uuidConverter", converterClass = UUIDConverter.class)
+    @Convert("uuidConverter")
     private UUID publicId;
 
     private String name;

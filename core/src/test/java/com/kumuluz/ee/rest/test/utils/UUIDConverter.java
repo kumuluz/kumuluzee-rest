@@ -20,31 +20,37 @@
  */
 package com.kumuluz.ee.rest.test.utils;
 
-import jakarta.persistence.AttributeConverter;
-import jakarta.persistence.Converter;
+import org.eclipse.persistence.sessions.Session;
 
 import java.util.UUID;
 
 /**
  * @author gpor0
+ * @author terli00
+ *
+ * Implemented to override default Eclipse UUID Converter (EclipseLink version 4.0.2).
+ * Original converter does not have implemented null-check for objects.
  */
-@Converter
-public class UUIDConverter implements AttributeConverter<UUID, Object> {
-
+public class UUIDConverter extends org.eclipse.persistence.mappings.converters.UUIDConverter {
     @Override
-    public Object convertToDatabaseColumn(UUID uuid) {
-        return uuid;
+    public Object convertObjectValueToDataValue(Object o, Session session) {
+        if (o == null) {
+            return null;
+        }
+
+        if (o instanceof UUID) {
+            return o.toString();
+        } else {
+            throw new IllegalArgumentException("Source object is not an instance of java.util.UUID");
+        }
     }
 
     @Override
-    public UUID convertToEntityAttribute(Object dbData) {
-
-        if (dbData == null) {
+    public Object convertDataValueToObjectValue(Object o, Session session) {
+        if (o == null) {
             return null;
-        } else if (dbData instanceof UUID) {
-            return (UUID) dbData;
         }
 
-        return UUID.fromString(dbData.toString());
+        return UUID.fromString(o.toString());
     }
 }
