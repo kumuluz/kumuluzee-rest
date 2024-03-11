@@ -28,6 +28,7 @@
 
         <jakarta.persistence-api.version>3.1.0</jakarta.persistence-api.version>
         <parboiled-java.version>1.4.1</parboiled-java.version>
+        <asm.version>9.6</asm.version>
         <jakarta-xml-bind-api.version>4.0.1</jakarta-xml-bind-api.version>
         <jaxb-impl.version>4.0.4</jaxb-impl.version>
 
@@ -123,6 +124,28 @@
                 <artifactId>jaxb-impl</artifactId>
                 <version>${jaxb-impl.version}</version>
                 <scope>runtime</scope>
+            </dependency>
+
+            <!-- Parboiled 1.4.1 uses ASM 9.2, but Java 21 support was added in ASM 9.5-->
+            <dependency>
+                <groupId>org.ow2.asm</groupId>
+                <artifactId>asm</artifactId>
+                <version>${asm.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.ow2.asm</groupId>
+                <artifactId>asm-tree</artifactId>
+                <version>${asm.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.ow2.asm</groupId>
+                <artifactId>asm-analysis</artifactId>
+                <version>${asm.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.ow2.asm</groupId>
+                <artifactId>asm-util</artifactId>
+                <version>${asm.version}</version>
             </dependency>
 
             <dependency>
