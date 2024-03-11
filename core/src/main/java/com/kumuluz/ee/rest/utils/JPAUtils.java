@@ -57,7 +57,7 @@ public class JPAUtils {
 
     private static final Logger LOG = Logger.getLogger(JPAUtils.class.getSimpleName());
 
-    private static final String PROP_PERSISTENCE_JDBC_DRIVER = "javax.persistence.jdbc.driver";
+    private static final String PROP_PERSISTENCE_JDBC_DRIVER = "jakarta.persistence.jdbc.driver";
     private static final String POSTGRES_SQL_DRIVER = "org.postgresql.Driver";
 
     public static <T> Stream<T> getEntityStream(EntityManager em, Class<T> entity) {
