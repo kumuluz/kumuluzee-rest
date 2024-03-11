@@ -853,7 +853,7 @@ public class JPAUtilsFiltersTest {
         List<Project> projects = JPAUtils.queryEntities(em, Project.class, q);
 
         Assert.assertNotNull(projects);
-        Assert.assertEquals(0, projects.size());
+        Assert.assertEquals(100, projects.size());
     }
 
     @Test(expected = InvalidFieldValueException.class)

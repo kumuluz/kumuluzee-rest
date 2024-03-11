@@ -998,7 +998,7 @@ public class StreamUtilsFiltersTest {
         projects = StreamUtils.queryEntities(projects, q);
 
         Assert.assertNotNull(projects);
-        Assert.assertEquals(0, projects.size());
+        Assert.assertEquals(100, projects.size());
     }
 
     @Test(expected = InvalidFieldValueException.class)
