@@ -1,13 +1,11 @@
 package com.kumuluz.ee.rest.test.entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
+import java.util.Set;
 
 /**
  * @author cen1
@@ -27,6 +25,11 @@ public class Event {
 
     @Column(name = "ends_at")
     private ZonedDateTime endsAt;
+
+    @ElementCollection
+    @CollectionTable(name = "event_notes", joinColumns = @JoinColumn(name = "event_id"))
+    @Column(name = "event_note")
+    private Set<String> eventNotes;
 
     public Integer getId() {
         return id;
@@ -58,5 +61,13 @@ public class Event {
 
     public void setEndsAt(ZonedDateTime endsAt) {
         this.endsAt = endsAt;
+    }
+
+    public Set<String> getEventNotes() {
+        return eventNotes;
+    }
+
+    public void setEventNotes(Set<String> eventNotes) {
+        this.eventNotes = eventNotes;
     }
 }

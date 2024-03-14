@@ -581,6 +581,7 @@ public class JPAUtils {
                 Attribute attribute = (Attribute) entityField.getModel();
 
                 boolean isBasic = attribute.getPersistentAttributeType().equals(Attribute.PersistentAttributeType.BASIC);
+                boolean isAssociation = attribute.isAssociation();
                 boolean isCollection = attribute.isCollection();
 
                 @SuppressWarnings("unchecked")
@@ -779,7 +780,7 @@ public class JPAUtils {
                                 );
                             }
                     }
-                } else if (isCollection) {
+                } else if (isAssociation) {
 
                     String idField;
 
@@ -791,6 +792,16 @@ public class JPAUtils {
                         case ISNOTNULL:
                             idField = getManagedTypeIdField(attribute.getDeclaringType());
                             np = cb.isNotNull(entityField.get(idField));
+                            break;
+                    }
+                } else if (isCollection) {
+
+                    switch (f.getOperation()) {
+                        case ISNULL:
+                            np = cb.isEmpty(entityField);
+                            break;
+                        case ISNOTNULL:
+                            np = cb.isNotEmpty(entityField);
                             break;
                     }
                 }

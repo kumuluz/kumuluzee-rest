@@ -5,6 +5,7 @@ import com.kumuluz.ee.rest.beans.QueryParameters;
 import com.kumuluz.ee.rest.enums.FilterOperation;
 import com.kumuluz.ee.rest.exceptions.InvalidFieldValueException;
 import com.kumuluz.ee.rest.exceptions.NoSuchEntityFieldException;
+import com.kumuluz.ee.rest.test.entities.Event;
 import com.kumuluz.ee.rest.test.entities.Project;
 import com.kumuluz.ee.rest.test.entities.User;
 import com.kumuluz.ee.rest.test.utils.JpaUtil;
@@ -1058,6 +1059,28 @@ public class JPAUtilsFiltersTest {
 
         Assert.assertNotNull(users);
         Assert.assertEquals(9, users.size());
+    }
+
+    @Test
+    public void testIsNullFilterOnElementCollection() {
+
+        QueryParameters q = QueryParameters.query("filter=eventNotes:ISNULL").build();
+
+        List<Event> events = JPAUtils.queryEntities(em, Event.class, q);
+
+        Assert.assertNotNull(events);
+        Assert.assertEquals(1, events.size());
+    }
+
+    @Test
+    public void testIsNotNullFilterOnElementCollection() {
+
+        QueryParameters q = QueryParameters.query("filter=eventNotes:ISNOTNULL").build();
+
+        List<Event> events = JPAUtils.queryEntities(em, Event.class, q);
+
+        Assert.assertNotNull(events);
+        Assert.assertEquals(2, events.size());
     }
 
 }

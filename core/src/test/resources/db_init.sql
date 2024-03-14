@@ -206,6 +206,10 @@ insert into events (id, begins_at, intermission_at, ends_at) values (1, '2020-01
 insert into events (id, begins_at, intermission_at, ends_at) values (2, '2020-01-02T00:00:00.00Z', '2020-01-02T09:00:00.00Z', '2020-01-02T18:00:00.00Z');
 insert into events (id, begins_at, intermission_at, ends_at) values (3, '2020-01-03T00:00:00.00Z', '2020-01-03T09:00:00.00Z', '2020-01-03T18:00:00.00Z');
 
+insert into event_notes (event_id, event_note) values (1, 'Event 1 Note 1');
+insert into event_notes (event_id, event_note) values (1, 'Event 1 Note 2');
+insert into event_notes (event_id, event_note) values (3, 'Event 3 Note 1');
+
 insert into project_locations (id, external_id, location_name, project_id) values (1, 'z', 'Ljubljana', 16);
 insert into project_locations (id, external_id, location_name, project_id) values (2, 'y', 'Celje', 14);
 insert into project_locations (id, external_id, location_name, project_id) values (3, 'x', 'Maribor', 50);
