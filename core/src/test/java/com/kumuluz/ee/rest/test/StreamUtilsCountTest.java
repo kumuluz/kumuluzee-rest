@@ -6,12 +6,12 @@ import com.kumuluz.ee.rest.enums.FilterOperation;
 import com.kumuluz.ee.rest.test.entities.User;
 import com.kumuluz.ee.rest.test.utils.JpaUtil;
 import com.kumuluz.ee.rest.utils.StreamUtils;
+import jakarta.persistence.EntityManager;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import javax.persistence.EntityManager;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -72,7 +72,7 @@ public class StreamUtilsCountTest {
         Long count = StreamUtils.queryEntitiesCount(users, q);
 
         Assert.assertNotNull(count);
-        Assert.assertEquals( 2L, count.longValue());
+        Assert.assertEquals(2L, count.longValue());
     }
 
     @Test

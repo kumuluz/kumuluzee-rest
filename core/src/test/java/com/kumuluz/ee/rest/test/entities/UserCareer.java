@@ -2,8 +2,8 @@ package com.kumuluz.ee.rest.test.entities;
 
 import com.kumuluz.ee.rest.annotations.RestIgnore;
 import com.kumuluz.ee.rest.annotations.RestMapping;
+import jakarta.persistence.*;
 
-import javax.persistence.*;
 import java.io.Serializable;
 
 /**

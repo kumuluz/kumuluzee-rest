@@ -20,17 +20,17 @@
         <class>com.kumuluz.ee.rest.test.entities.ZonedDateTimeAttributeConverter</class>
 
         <properties>
-            <property name="javax.persistence.jdbc.driver" value="org.h2.Driver"/>
-            <property name="javax.persistence.jdbc.url"
+            <property name="jakarta.persistence.jdbc.driver" value="org.h2.Driver"/>
+            <property name="jakarta.persistence.jdbc.url"
                       value="jdbc:h2:mem:kumuluzee-rest-el;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE"/>
-            <property name="javax.persistence.jdbc.user" value="sa"/>
-            <property name="javax.persistence.jdbc.password" value="sa"/>
+            <property name="jakarta.persistence.jdbc.user" value="sa"/>
+            <property name="jakarta.persistence.jdbc.password" value="sa"/>
 
-            <property name="javax.persistence.schema-generation.database.action" value="drop-and-create"/>
-            <property name="javax.persistence.schema-generation.create-source" value="metadata"/>
-            <property name="javax.persistence.schema-generation.drop-source" value="metadata"/>
+            <property name="jakarta.persistence.schema-generation.database.action" value="drop-and-create"/>
+            <property name="jakarta.persistence.schema-generation.create-source" value="metadata"/>
+            <property name="jakarta.persistence.schema-generation.drop-source" value="metadata"/>
 
-            <property name="javax.persistence.sql-load-script-source" value="db_init.sql"/>
+            <property name="jakarta.persistence.sql-load-script-source" value="db_init.sql"/>
 
             <property name="eclipselink.target-database" value="com.kumuluz.ee.rest.test.eclipselink.H2Platform"/>
 <!--            <property name="eclipselink.logging.level.sql" value="FINE"/>-->
@@ -49,17 +49,17 @@
         <class>com.kumuluz.ee.rest.test.entities.ProjectLocation</class>
 
         <properties>
-            <property name="javax.persistence.jdbc.driver" value="org.h2.Driver"/>
-            <property name="javax.persistence.jdbc.url"
+            <property name="jakarta.persistence.jdbc.driver" value="org.h2.Driver"/>
+            <property name="jakarta.persistence.jdbc.url"
                       value="jdbc:h2:mem:kumuluzee-rest-hib;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE"/>
-            <property name="javax.persistence.jdbc.user" value="sa"/>
-            <property name="javax.persistence.jdbc.password" value="sa"/>
+            <property name="jakarta.persistence.jdbc.user" value="sa"/>
+            <property name="jakarta.persistence.jdbc.password" value="sa"/>
 
-            <property name="javax.persistence.schema-generation.database.action" value="drop-and-create"/>
-            <property name="javax.persistence.schema-generation.create-source" value="metadata"/>
-            <property name="javax.persistence.schema-generation.drop-source" value="metadata"/>
+            <property name="jakarta.persistence.schema-generation.database.action" value="drop-and-create"/>
+            <property name="jakarta.persistence.schema-generation.create-source" value="metadata"/>
+            <property name="jakarta.persistence.schema-generation.drop-source" value="metadata"/>
 
-            <property name="javax.persistence.sql-load-script-source" value="db_init.sql"/>
+            <property name="jakarta.persistence.sql-load-script-source" value="db_init.sql"/>
 
 <!--            <property name="hibernate.show_sql" value="true"/>-->
         </properties>

@@ -10,7 +10,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
+
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -52,11 +53,13 @@ public class QueriedTest {
         q.setOffset(10);
         q.setLimit(limit);
 
+        em.getTransaction().begin();
         Queried<User> queried = JPAUtils.getQueried(em, User.class, q);
 
         Assert.assertNotNull(queried);
         Assert.assertEquals(Long.valueOf(100L), queried.getTotalCount());
         Assert.assertEquals(limit, queried.stream().count());
+        em.getTransaction().commit();
     }
 
     @Test

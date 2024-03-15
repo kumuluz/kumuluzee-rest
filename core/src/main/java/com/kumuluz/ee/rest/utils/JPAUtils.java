@@ -31,17 +31,18 @@ import com.kumuluz.ee.rest.exceptions.InvalidFieldValueException;
 import com.kumuluz.ee.rest.exceptions.NoSuchEntityFieldException;
 import com.kumuluz.ee.rest.exceptions.QueryFormatException;
 import com.kumuluz.ee.rest.interfaces.CriteriaFilter;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Tuple;
+import jakarta.persistence.TupleElement;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.*;
+import jakarta.persistence.metamodel.*;
 
-import javax.persistence.EntityManager;
-import javax.persistence.Tuple;
-import javax.persistence.TupleElement;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.*;
-import javax.persistence.metamodel.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
+import java.sql.Timestamp;
 import java.time.*;
 import java.time.format.DateTimeParseException;
 import java.util.*;
@@ -57,7 +58,7 @@ public class JPAUtils {
 
     private static final Logger LOG = Logger.getLogger(JPAUtils.class.getSimpleName());
 
-    private static final String PROP_PERSISTENCE_JDBC_DRIVER = "javax.persistence.jdbc.driver";
+    private static final String PROP_PERSISTENCE_JDBC_DRIVER = "jakarta.persistence.jdbc.driver";
     private static final String POSTGRES_SQL_DRIVER = "org.postgresql.Driver";
 
     public static <T> Stream<T> getEntityStream(EntityManager em, Class<T> entity) {
@@ -194,7 +195,7 @@ public class JPAUtils {
     }
 
     private static <T> Optional<TypedQuery<T>> buildQuery(EntityManager em, Class<T> entity, QueryParameters q, CriteriaFilter<T> customFilter,
-                                                List<QueryHintPair> queryHints, String rootAlias, boolean forceDistinct) {
+                                                          List<QueryHintPair> queryHints, String rootAlias, boolean forceDistinct) {
         if (em == null || entity == null)
             throw new IllegalArgumentException("The entity manager and the entity cannot be null.");
 
@@ -384,17 +385,17 @@ public class JPAUtils {
     // Temporary methods to not break the public API
 
     private static <T> Optional<TypedQuery<T>> buildQuerySimple(EntityManager em, Class<T> entity, QueryParameters q,
-                                                      CriteriaFilter<T> customFilter,
-                                                      List<QueryHintPair> queryHints, String rootAlias,
-                                                      boolean forceDistinct) {
+                                                                CriteriaFilter<T> customFilter,
+                                                                List<QueryHintPair> queryHints, String rootAlias,
+                                                                boolean forceDistinct) {
         return buildQuerySimple(em, entity, q, customFilter, queryHints, rootAlias, forceDistinct, false);
     }
 
     @SuppressWarnings("unchecked")
     private static <T> Optional<TypedQuery<T>> buildQuerySimple(EntityManager em, Class<T> entity, QueryParameters q,
-                                                      CriteriaFilter<T> customFilter,
-                                                      List<QueryHintPair> queryHints, String rootAlias,
-                                                      boolean forceDistinct, boolean ignorePaging) {
+                                                                CriteriaFilter<T> customFilter,
+                                                                List<QueryHintPair> queryHints, String rootAlias,
+                                                                boolean forceDistinct, boolean ignorePaging) {
 
         LOG.finest("Querying entity: '" + entity.getSimpleName() + "' with parameters: " + q + "(simple)");
 
@@ -478,9 +479,9 @@ public class JPAUtils {
 
     @SuppressWarnings("unchecked")
     private static <T> Optional<TypedQuery<T>> buildQueryAdvanced(EntityManager em, Class<T> entity, QueryParameters q,
-                                                       CriteriaFilter<T> customFilter,
-                                                       List<QueryHintPair> queryHints, String rootAlias,
-                                                       boolean forceDistinct) {
+                                                                  CriteriaFilter<T> customFilter,
+                                                                  List<QueryHintPair> queryHints, String rootAlias,
+                                                                  boolean forceDistinct) {
 
         LOG.finest("Querying entity: '" + entity.getSimpleName() + "' with parameters: " + q + "(advanced)");
 
@@ -580,6 +581,7 @@ public class JPAUtils {
                 Attribute attribute = (Attribute) entityField.getModel();
 
                 boolean isBasic = attribute.getPersistentAttributeType().equals(Attribute.PersistentAttributeType.BASIC);
+                boolean isAssociation = attribute.isAssociation();
                 boolean isCollection = attribute.isCollection();
 
                 @SuppressWarnings("unchecked")
@@ -594,7 +596,7 @@ public class JPAUtils {
                     switch (f.getOperation()) {
 
                         case EQ:
-                            if (f.getDateValue() != null && entityField.getJavaType().equals(Date.class)) {
+                            if (f.getDateValue() != null && Date.class.isAssignableFrom(entityField.getJavaType())) {
                                 np = cb.equal(entityField, f.getDateValue());
                             } else if (f.getValue() != null) {
                                 np = cb.equal(entityField, getValueForPath(entityField, f.getValue()));
@@ -606,7 +608,7 @@ public class JPAUtils {
                             }
                             break;
                         case NEQ:
-                            if (f.getDateValue() != null && entityField.getJavaType().equals(Date.class)) {
+                            if (f.getDateValue() != null && Date.class.isAssignableFrom(entityField.getJavaType())) {
                                 np = cb.notEqual(entityField, f.getDateValue());
                             } else if (f.getValue() != null) {
                                 np = cb.notEqual(entityField, getValueForPath(entityField, f.getValue()));
@@ -671,7 +673,7 @@ public class JPAUtils {
                                     Number.class.isAssignableFrom(entityField.getJavaType()) ||
                                     String.class.isAssignableFrom(entityField.getJavaType())) {
 
-                                if (f.getDateValue() != null && entityField.getJavaType().equals(Date.class)) {
+                                if (f.getDateValue() != null && Date.class.isAssignableFrom(entityField.getJavaType())) {
                                     np = cb.greaterThan(dateField, f.getDateValue());
                                 } else if (f.getValue() != null) {
                                     np = cb.greaterThan(compField, (Comparable) getValueForPath(stringField, f.getValue()));
@@ -684,7 +686,7 @@ public class JPAUtils {
                                     Number.class.isAssignableFrom(entityField.getJavaType()) ||
                                     String.class.isAssignableFrom(entityField.getJavaType())) {
 
-                                if (f.getDateValue() != null && entityField.getJavaType().equals(Date.class)) {
+                                if (f.getDateValue() != null && Date.class.isAssignableFrom(entityField.getJavaType())) {
                                     np = cb.greaterThanOrEqualTo(dateField, f.getDateValue());
                                 } else if (f.getValue() != null) {
                                     np = cb.greaterThanOrEqualTo(compField, (Comparable) getValueForPath(stringField, f.getValue()));
@@ -697,7 +699,7 @@ public class JPAUtils {
                                     Number.class.isAssignableFrom(entityField.getJavaType()) ||
                                     String.class.isAssignableFrom(entityField.getJavaType())) {
 
-                                if (f.getDateValue() != null && entityField.getJavaType().equals(Date.class)) {
+                                if (f.getDateValue() != null && Date.class.isAssignableFrom(entityField.getJavaType())) {
                                     np = cb.lessThan(dateField, f.getDateValue());
                                 } else if (f.getValue() != null) {
                                     np = cb.lessThan(compField, (Comparable) getValueForPath(stringField, f.getValue()));
@@ -710,7 +712,7 @@ public class JPAUtils {
                                     Number.class.isAssignableFrom(entityField.getJavaType()) ||
                                     String.class.isAssignableFrom(entityField.getJavaType())) {
 
-                                if (f.getDateValue() != null && entityField.getJavaType().equals(Date.class)) {
+                                if (f.getDateValue() != null && Date.class.isAssignableFrom(entityField.getJavaType())) {
                                     np = cb.lessThanOrEqualTo(dateField, f.getDateValue());
                                 } else if (f.getValue() != null) {
                                     np = cb.lessThanOrEqualTo(compField, (Comparable) getValueForPath(stringField, f.getValue()));
@@ -778,7 +780,7 @@ public class JPAUtils {
                                 );
                             }
                     }
-                }  else if (isCollection) {
+                } else if (isAssociation) {
 
                     String idField;
 
@@ -790,6 +792,16 @@ public class JPAUtils {
                         case ISNOTNULL:
                             idField = getManagedTypeIdField(attribute.getDeclaringType());
                             np = cb.isNotNull(entityField.get(idField));
+                            break;
+                    }
+                } else if (isCollection) {
+
+                    switch (f.getOperation()) {
+                        case ISNULL:
+                            np = cb.isEmpty(entityField);
+                            break;
+                        case ISNOTNULL:
+                            np = cb.isNotEmpty(entityField);
                             break;
                     }
                 }
@@ -840,7 +852,7 @@ public class JPAUtils {
             try {
                 el = entity.getConstructor().newInstance();
             } catch (InstantiationException | IllegalAccessException |
-                    NoSuchMethodException | InvocationTargetException e) {
+                     NoSuchMethodException | InvocationTargetException e) {
 
                 throw new AssertionError();
             }
@@ -864,7 +876,8 @@ public class JPAUtils {
                         String[] fName = te.getAlias().split("\\.");
 
                         createEntityFromTuple(fName, entity, el, o, i);
-                    } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException | InvocationTargetException | InstantiationException e) {
+                    } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException |
+                             InvocationTargetException | InstantiationException e) {
 
                         throw new NoSuchEntityFieldException(e.getMessage(), te.getAlias(), entity.getSimpleName());
                     }
@@ -1059,6 +1072,10 @@ public class JPAUtils {
                 return Date.from(ZonedDateTime.parse(value).toInstant());
             }
 
+            if (c.equals(Timestamp.class)) {
+                return Timestamp.from(ZonedDateTime.parse(value).toInstant());
+            }
+
             if (c.equals(Instant.class)) {
                 return ZonedDateTime.parse(value).toInstant();
             }
@@ -1135,7 +1152,7 @@ public class JPAUtils {
             String mappedFieldName = mappedFieldOptional.get();
 
             String[] mappedFields = mappedFieldName.split("\\.");
-            for (String mappedField: mappedFields) {
+            for (String mappedField : mappedFields) {
                 fieldPath = fieldPath == null ? mappedField : fieldPath + "." + mappedField;
 
                 if (fieldJoins.containsKey(fieldPath)) {

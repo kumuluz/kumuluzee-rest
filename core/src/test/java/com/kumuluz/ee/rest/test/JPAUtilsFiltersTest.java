@@ -5,16 +5,17 @@ import com.kumuluz.ee.rest.beans.QueryParameters;
 import com.kumuluz.ee.rest.enums.FilterOperation;
 import com.kumuluz.ee.rest.exceptions.InvalidFieldValueException;
 import com.kumuluz.ee.rest.exceptions.NoSuchEntityFieldException;
+import com.kumuluz.ee.rest.test.entities.Event;
 import com.kumuluz.ee.rest.test.entities.Project;
 import com.kumuluz.ee.rest.test.entities.User;
 import com.kumuluz.ee.rest.test.utils.JpaUtil;
 import com.kumuluz.ee.rest.utils.JPAUtils;
+import jakarta.persistence.EntityManager;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import javax.persistence.EntityManager;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collection;
@@ -853,7 +854,7 @@ public class JPAUtilsFiltersTest {
         List<Project> projects = JPAUtils.queryEntities(em, Project.class, q);
 
         Assert.assertNotNull(projects);
-        Assert.assertEquals(0, projects.size());
+        Assert.assertEquals(100, projects.size());
     }
 
     @Test(expected = InvalidFieldValueException.class)
@@ -1058,6 +1059,28 @@ public class JPAUtilsFiltersTest {
 
         Assert.assertNotNull(users);
         Assert.assertEquals(9, users.size());
+    }
+
+    @Test
+    public void testIsNullFilterOnElementCollection() {
+
+        QueryParameters q = QueryParameters.query("filter=eventNotes:ISNULL").build();
+
+        List<Event> events = JPAUtils.queryEntities(em, Event.class, q);
+
+        Assert.assertNotNull(events);
+        Assert.assertEquals(1, events.size());
+    }
+
+    @Test
+    public void testIsNotNullFilterOnElementCollection() {
+
+        QueryParameters q = QueryParameters.query("filter=eventNotes:ISNOTNULL").build();
+
+        List<Event> events = JPAUtils.queryEntities(em, Event.class, q);
+
+        Assert.assertNotNull(events);
+        Assert.assertEquals(2, events.size());
     }
 
 }

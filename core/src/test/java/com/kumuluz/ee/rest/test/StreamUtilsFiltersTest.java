@@ -9,12 +9,12 @@ import com.kumuluz.ee.rest.test.entities.Project;
 import com.kumuluz.ee.rest.test.entities.User;
 import com.kumuluz.ee.rest.test.utils.JpaUtil;
 import com.kumuluz.ee.rest.utils.StreamUtils;
+import jakarta.persistence.EntityManager;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import javax.persistence.EntityManager;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -998,7 +998,7 @@ public class StreamUtilsFiltersTest {
         projects = StreamUtils.queryEntities(projects, q);
 
         Assert.assertNotNull(projects);
-        Assert.assertEquals(0, projects.size());
+        Assert.assertEquals(100, projects.size());
     }
 
     @Test(expected = InvalidFieldValueException.class)

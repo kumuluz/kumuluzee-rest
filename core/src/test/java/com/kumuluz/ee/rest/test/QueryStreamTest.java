@@ -4,12 +4,12 @@ import com.kumuluz.ee.rest.beans.QueryParameters;
 import com.kumuluz.ee.rest.test.entities.User;
 import com.kumuluz.ee.rest.test.utils.JpaUtil;
 import com.kumuluz.ee.rest.utils.JPAUtils;
+import jakarta.persistence.EntityManager;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import javax.persistence.EntityManager;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
@@ -61,13 +61,14 @@ public class QueryStreamTest {
     public void testStreamCollect() {
         QueryParameters q = new QueryParameters();
 
+        em.getTransaction().begin();
         Stream<User> users = JPAUtils.getEntityStream(em, User.class, q);
 
         int size = (int) users.count();
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, size);
-
+        em.getTransaction().commit();
     }
 
     @Test
@@ -85,7 +86,7 @@ public class QueryStreamTest {
         Assert.assertNotNull(users);
         Assert.assertEquals(100, size);
         Assert.assertEquals(totalCount.intValue(), size);
-
+        em.getTransaction().commit();
     }
 
     @Test(expected = IllegalStateException.class)
