@@ -64,7 +64,7 @@ jobs:
 
       - name: Publish to OSSRH
         env:
-          OSSRH_USERNAME: Kumuluz
+          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
           GPG_PASSPHRASE: ${{ secrets.OSSRH_GPG_PASSPHRASE }}
         run: mvn --batch-mode source:jar javadoc:jar deploy -Pdeploy -DskipTests=true --settings ./settings.xml;
