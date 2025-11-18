@@ -28,13 +28,13 @@
 
         <jakarta.persistence-api.version>3.1.0</jakarta.persistence-api.version>
         <parboiled-java.version>1.4.1</parboiled-java.version>
-        <asm.version>9.6</asm.version>
+        <asm.version>9.7</asm.version>
         <jakarta-xml-bind-api.version>4.0.1</jakarta-xml-bind-api.version>
         <jaxb-impl.version>4.0.4</jaxb-impl.version>
 
         <junit.version>4.13.2</junit.version>
         <h2.version>2.2.224</h2.version>
-        <eclipselink.version>4.0.2</eclipselink.version>
+        <eclipselink.version>4.0.4</eclipselink.version>
         <hibernate-core.version>6.3.1.Final</hibernate-core.version>
 
         <nexus.staging.plugin.version>1.6.13</nexus.staging.plugin.version>
@@ -113,6 +113,26 @@
                 <groupId>org.parboiled</groupId>
                 <artifactId>parboiled-java</artifactId>
                 <version>${parboiled-java.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.ow2.asm</groupId>
+                <artifactId>asm</artifactId>
+                <version>${asm.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.ow2.asm</groupId>
+                <artifactId>asm-tree</artifactId>
+                <version>${asm.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.ow2.asm</groupId>
+                <artifactId>asm-analysis</artifactId>
+                <version>${asm.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.ow2.asm</groupId>
+                <artifactId>asm-util</artifactId>
+                <version>${asm.version}</version>
             </dependency>
             <dependency>
                 <groupId>jakarta.xml.bind</groupId>

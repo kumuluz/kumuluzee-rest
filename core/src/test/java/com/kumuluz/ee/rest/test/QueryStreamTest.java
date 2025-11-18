@@ -65,6 +65,7 @@ public class QueryStreamTest {
         Stream<User> users = JPAUtils.getEntityStream(em, User.class, q);
 
         int size = (int) users.count();
+        em.getTransaction().commit();
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, size);

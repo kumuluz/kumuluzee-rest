@@ -1068,7 +1068,7 @@ public class JPAUtils {
 
         try {
 
-            if (c.equals(Date.class)) {
+            if (Date.class.isAssignableFrom(c)) {
                 return Date.from(ZonedDateTime.parse(value).toInstant());
             }
 
