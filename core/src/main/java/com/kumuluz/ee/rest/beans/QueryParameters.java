@@ -116,6 +116,17 @@ public class QueryParameters implements Serializable {
     }
 
     /**
+     * Removes all filter parameters with the specified field name.
+     *
+     * @param field the field name of the filters to remove
+     */
+    public void removeFilterParameter(String field) {
+        if (field != null && filters != null) {
+            filters.removeIf(filter -> field.equals(filter.getField()));
+        }
+    }
+
+    /**
      * @deprecated Will be removed in future releases. Use {@link #setFilterExpression(QueryFilterExpression)} ()}
      * instead.
      */
@@ -143,6 +154,19 @@ public class QueryParameters implements Serializable {
 
     public QueryFilterExpression getFilterExpression() {
         return filterExpression;
+    }
+
+    /**
+     * Safely returns all filter values from the filter expression.
+     * Returns an empty list if filterExpression is null.
+     *
+     * @return list of QueryFilter values, never null
+     */
+    public List<QueryFilter> getFilterValues() {
+        if (filterExpression == null) {
+            return new ArrayList<>();
+        }
+        return filterExpression.getAllValues();
     }
 
     public void setFilterExpression(QueryFilterExpression filterExpression) {
