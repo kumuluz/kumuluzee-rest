@@ -69,7 +69,6 @@ public class QueryStreamTest {
 
         Assert.assertNotNull(users);
         Assert.assertEquals(100, size);
-        em.getTransaction().commit();
     }
 
     @Test
