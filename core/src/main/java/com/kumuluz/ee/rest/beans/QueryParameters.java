@@ -109,6 +109,7 @@ public class QueryParameters implements Serializable {
      * @deprecated Will be removed in future releases. Use
      * {@link #addFilterExpression(FilterExpressionOperation, QueryFilterExpression)} ()} instead.
      */
+    @Deprecated
     public void addFilter(QueryFilter filter) {
         if (filter != null) {
             getFilters().add(filter);
@@ -116,14 +117,62 @@ public class QueryParameters implements Serializable {
     }
 
     /**
-     * Removes all filter parameters with the specified field name.
+     * Removes all filter parameters with the specified field name from the filter expression tree.
+     * This method rebuilds the filter expression tree, excluding any filters that match the given field.
+     * If all filters are removed, the filter expression is set to null.
      *
      * @param field the field name of the filters to remove
      */
     public void removeFilterParameter(String field) {
-        if (field != null && filters != null) {
-            filters.removeIf(filter -> field.equals(filter.getField()));
+        if (field == null) {
+            return;
         }
+
+        if (filterExpression != null) {
+            filterExpression = removeFromExpression(filterExpression, field);
+        }
+    }
+
+    /**
+     * Recursively removes all filters with the specified field name from the expression tree.
+     * Returns null if the entire subtree should be removed.
+     *
+     * @param expression the expression to process
+     * @param field the field name to remove
+     * @return the rebuilt expression without the specified field, or null if removed
+     */
+    private QueryFilterExpression removeFromExpression(QueryFilterExpression expression, String field) {
+        if (expression == null) {
+            return null;
+        }
+
+        // If this is a leaf node with the matching field, remove it
+        if (expression.isLeaf()) {
+            if (expression.value() != null && field.equals(expression.value().getField())) {
+                return null;  // Remove this node
+            }
+            return expression;  // Keep this node
+        }
+
+        // If this is a branch node, recursively process left and right
+        QueryFilterExpression newLeft = removeFromExpression(expression.left(), field);
+        QueryFilterExpression newRight = removeFromExpression(expression.right(), field);
+
+        // If both sides are removed, remove this entire branch
+        if (newLeft == null && newRight == null) {
+            return null;
+        }
+
+        // If one side is removed, return the other side (collapse the tree)
+        if (newLeft == null) {
+            return newRight;
+        }
+        if (newRight == null) {
+            return newLeft;
+        }
+
+        // Both sides still exist, reconstruct the branch with the same operation
+        return new QueryFilterExpression(expression.operation(), newLeft, newRight);
     }
 
     /**

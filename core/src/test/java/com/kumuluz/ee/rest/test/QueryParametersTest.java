@@ -19,35 +19,34 @@ public class QueryParametersTest {
 
     @Test
     public void testRemoveFilterParameterSingleFilter() {
-        // Create query with a single filter
-        QueryParameters query = new QueryParameters();
-        query.addFilter(new QueryFilter("username", FilterOperation.EQ, "test"));
+        // Create query with a single filter using new API
+        QueryParameters query = QueryParameters.query("filter=username:eq:test").build();
 
-        Assert.assertEquals(1, query.getFilters().size());
+        Assert.assertEquals(1, query.getFilterValues().size());
 
         // Remove the filter
         query.removeFilterParameter("username");
 
         // Verify filter is removed
-        Assert.assertEquals(0, query.getFilters().size());
+        Assert.assertEquals(0, query.getFilterValues().size());
+        Assert.assertNull(query.getFilterExpression());
     }
 
     @Test
     public void testRemoveFilterParameterMultipleFilters() {
-        // Create query with multiple filters on different fields
-        QueryParameters query = new QueryParameters();
-        query.addFilter(new QueryFilter("username", FilterOperation.EQ, "test"));
-        query.addFilter(new QueryFilter("email", FilterOperation.LIKE, "test@example.com"));
-        query.addFilter(new QueryFilter("age", FilterOperation.GT, "18"));
+        // Create query with multiple filters on different fields using new API
+        QueryParameters query = QueryParameters
+                .query("filter=username:eq:test AND email:like:test@example.com AND age:gt:18")
+                .build();
 
-        Assert.assertEquals(3, query.getFilters().size());
+        Assert.assertEquals(3, query.getFilterValues().size());
 
         // Remove one filter
         query.removeFilterParameter("username");
 
         // Verify only the specified filter is removed
-        Assert.assertEquals(2, query.getFilters().size());
-        List<QueryFilter> remainingFilters = query.getFilters();
+        Assert.assertEquals(2, query.getFilterValues().size());
+        List<QueryFilter> remainingFilters = query.getFilterValues();
         Assert.assertTrue(remainingFilters.stream().noneMatch(f -> "username".equals(f.getField())));
         Assert.assertTrue(remainingFilters.stream().anyMatch(f -> "email".equals(f.getField())));
         Assert.assertTrue(remainingFilters.stream().anyMatch(f -> "age".equals(f.getField())));
@@ -55,49 +54,48 @@ public class QueryParametersTest {
 
     @Test
     public void testRemoveFilterParameterMultipleSameField() {
-        // Create query with multiple filters on the same field using deprecated API
-        QueryParameters query = new QueryParameters();
-        query.addFilter(new QueryFilter("status", FilterOperation.EQ, "active"));
-        query.addFilter(new QueryFilter("status", FilterOperation.EQ, "pending"));
+        // Create query with multiple filters on the same field using new API
+        QueryParameters query = QueryParameters
+                .query("filter=status:eq:active OR status:eq:pending")
+                .build();
 
-        Assert.assertEquals(2, query.getFilters().size());
+        Assert.assertEquals(2, query.getFilterValues().size());
 
         // Remove all filters for this field
         query.removeFilterParameter("status");
 
         // Verify all filters for the field are removed
-        Assert.assertEquals(0, query.getFilters().size());
+        Assert.assertEquals(0, query.getFilterValues().size());
+        Assert.assertNull(query.getFilterExpression());
     }
 
     @Test
     public void testRemoveFilterParameterNonExistentField() {
-        // Create query with a filter using deprecated API
-        QueryParameters query = new QueryParameters();
-        query.addFilter(new QueryFilter("username", FilterOperation.EQ, "test"));
+        // Create query with a filter using new API
+        QueryParameters query = QueryParameters.query("filter=username:eq:test").build();
 
-        Assert.assertEquals(1, query.getFilters().size());
+        Assert.assertEquals(1, query.getFilterValues().size());
 
         // Try to remove a non-existent filter
         query.removeFilterParameter("nonexistent");
 
         // Verify original filter remains
-        Assert.assertEquals(1, query.getFilters().size());
-        Assert.assertEquals("username", query.getFilters().get(0).getField());
+        Assert.assertEquals(1, query.getFilterValues().size());
+        Assert.assertEquals("username", query.getFilterValues().get(0).getField());
     }
 
     @Test
     public void testRemoveFilterParameterNullField() {
-        // Create query with a filter using deprecated API
-        QueryParameters query = new QueryParameters();
-        query.addFilter(new QueryFilter("username", FilterOperation.EQ, "test"));
+        // Create query with a filter using new API
+        QueryParameters query = QueryParameters.query("filter=username:eq:test").build();
 
-        Assert.assertEquals(1, query.getFilters().size());
+        Assert.assertEquals(1, query.getFilterValues().size());
 
         // Try to remove with null field (should not throw exception)
         query.removeFilterParameter(null);
 
         // Verify original filter remains
-        Assert.assertEquals(1, query.getFilters().size());
+        Assert.assertEquals(1, query.getFilterValues().size());
     }
 
     @Test
@@ -110,6 +108,45 @@ public class QueryParametersTest {
 
         // Verify still no filters
         Assert.assertEquals(0, query.getFilterValues().size());
+    }
+
+    @Test
+    public void testRemoveFilterParameterFromComplexExpression() {
+        // Create query with complex nested expression: (username AND email) OR age
+        QueryParameters query = QueryParameters
+                .query("filter=(username:eq:test AND email:like:@example.com) OR age:gt:18")
+                .build();
+
+        Assert.assertEquals(3, query.getFilterValues().size());
+
+        // Remove username - should leave "email OR age"
+        query.removeFilterParameter("username");
+
+        List<QueryFilter> remainingFilters = query.getFilterValues();
+        Assert.assertEquals(2, remainingFilters.size());
+        Assert.assertTrue(remainingFilters.stream().anyMatch(f -> "email".equals(f.getField())));
+        Assert.assertTrue(remainingFilters.stream().anyMatch(f -> "age".equals(f.getField())));
+        Assert.assertFalse(remainingFilters.stream().anyMatch(f -> "username".equals(f.getField())));
+    }
+
+    @Test
+    public void testRemoveFilterParameterCollapseTree() {
+        // Create query: username AND email
+        QueryParameters query = QueryParameters
+                .query("filter=username:eq:test AND email:like:@example.com")
+                .build();
+
+        Assert.assertEquals(2, query.getFilterValues().size());
+
+        // Remove username - should collapse to just email (no AND needed)
+        query.removeFilterParameter("username");
+
+        Assert.assertEquals(1, query.getFilterValues().size());
+        Assert.assertEquals("email", query.getFilterValues().get(0).getField());
+
+        // The tree should be collapsed to a single leaf node
+        Assert.assertNotNull(query.getFilterExpression());
+        Assert.assertTrue(query.getFilterExpression().isLeaf());
     }
 
     @Test
@@ -170,21 +207,18 @@ public class QueryParametersTest {
 
     @Test
     public void testGetFilterValuesAfterRemove() {
-        // Create query with filters using deprecated API
-        QueryParameters query = new QueryParameters();
-        QueryFilter filter1 = new QueryFilter("username", FilterOperation.EQ, "test");
-        QueryFilter filter2 = new QueryFilter("email", FilterOperation.LIKE, "test@example.com");
+        // Create query with filters using new API
+        QueryParameters query = QueryParameters
+                .query("filter=username:eq:test AND email:like:test@example.com")
+                .build();
 
-        query.addFilter(filter1);
-        query.addFilter(filter2);
-
-        Assert.assertEquals(2, query.getFilters().size());
+        Assert.assertEquals(2, query.getFilterValues().size());
 
         // Remove a filter
         query.removeFilterParameter("username");
 
         // Get filters again
-        List<QueryFilter> filters = query.getFilters();
+        List<QueryFilter> filters = query.getFilterValues();
 
         Assert.assertNotNull(filters);
         Assert.assertEquals(1, filters.size());
