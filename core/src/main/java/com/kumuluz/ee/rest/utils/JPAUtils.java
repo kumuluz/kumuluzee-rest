@@ -555,6 +555,10 @@ public class JPAUtils {
 
     private static Predicate createWhereQueryInternal(EntityManager em, CriteriaBuilder cb, Root<?> r, AtomicBoolean containsToManyAtomic, QueryFilterExpression filterExpression, Map<String, From> fieldJoins) {
 
+        if (filterExpression == null) {
+            return null;
+        }
+
         if (filterExpression.isLeaf()) {
             QueryFilter f = filterExpression.value();
 
@@ -1068,7 +1072,7 @@ public class JPAUtils {
 
         try {
 
-            if (c.equals(Date.class)) {
+            if (Date.class.isAssignableFrom(c)) {
                 return Date.from(ZonedDateTime.parse(value).toInstant());
             }
 

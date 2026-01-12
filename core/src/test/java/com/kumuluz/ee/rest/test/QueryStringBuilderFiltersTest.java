@@ -1,5 +1,6 @@
 package com.kumuluz.ee.rest.test;
 
+import com.kumuluz.ee.rest.beans.QueryFilter;
 import com.kumuluz.ee.rest.beans.QueryParameters;
 import com.kumuluz.ee.rest.enums.FilterExpressionOperation;
 import com.kumuluz.ee.rest.enums.FilterOperation;
@@ -10,6 +11,7 @@ import org.junit.Test;
 
 import java.time.ZonedDateTime;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author Tilen Faganel
@@ -638,5 +640,67 @@ public class QueryStringBuilderFiltersTest {
 
         Assert.assertNotNull(query);
         Assert.assertNull(query.getFilterExpression());
+    }
+
+    @Test
+    public void testEmptyFilterValueSkipped() {
+        // Test that filters with empty values are skipped
+        QueryParameters query = QueryParameters.query("filter=").build();
+
+        Assert.assertNotNull(query);
+        Assert.assertNull(query.getFilterExpression());
+    }
+
+    @Test
+    public void testFilterWithOnlyOperatorSkipped() {
+        // Test that filters ending with operator and no value are skipped (e.g., "field:like:")
+        QueryParameters query = QueryParameters.query("filter=username:like:").build();
+
+        Assert.assertNotNull(query);
+        Assert.assertNull(query.getFilterExpression());
+    }
+
+    @Test
+    public void testMultipleFiltersWithEmptyValuesMixed() {
+        // Test that filters with empty values embedded in AND expression are handled properly
+        // While a complete empty filter is skipped, this tests the valid use case
+        QueryParameters query = QueryParameters
+                .query("filter=username:eq:test AND age:gt:18")
+                .build();
+
+        Assert.assertNotNull(query);
+        Assert.assertNotNull(query.getFilterExpression());
+
+        // Both valid filters should be present
+        List<QueryFilter> filters = query.getFilterValues();
+        Assert.assertEquals(2, filters.size());
+        Assert.assertTrue(filters.stream().anyMatch(f -> "username".equals(f.getField())));
+        Assert.assertTrue(filters.stream().anyMatch(f -> "age".equals(f.getField())));
+    }
+
+    @Test
+    public void testFilterWithValidValueNotSkipped() {
+        // Test that filters with valid values are not skipped
+        QueryParameters query = QueryParameters.query("filter=username:like:test%").build();
+
+        Assert.assertNotNull(query);
+        Assert.assertNotNull(query.getFilterExpression());
+        Assert.assertEquals(1, query.getFilterExpression().getAllValues().size());
+        Assert.assertEquals("username", query.getFilterExpression().value().getField());
+        Assert.assertEquals(FilterOperation.LIKE, query.getFilterExpression().value().getOperation());
+        Assert.assertEquals("test%", query.getFilterExpression().value().getValue());
+    }
+
+    @Test
+    public void testFilterWithZeroValueNotSkipped() {
+        // Test that filters with "0" value are not skipped (0 is a valid value)
+        QueryParameters query = QueryParameters.query("filter=count:eq:0").build();
+
+        Assert.assertNotNull(query);
+        Assert.assertNotNull(query.getFilterExpression());
+        Assert.assertEquals(1, query.getFilterExpression().getAllValues().size());
+        Assert.assertEquals("count", query.getFilterExpression().value().getField());
+        Assert.assertEquals(FilterOperation.EQ, query.getFilterExpression().value().getOperation());
+        Assert.assertEquals("0", query.getFilterExpression().value().getValue());
     }
 }

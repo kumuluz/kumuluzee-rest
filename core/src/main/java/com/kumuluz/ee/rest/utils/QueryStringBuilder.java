@@ -497,6 +497,11 @@ public class QueryStringBuilder {
     private QueryFilterExpression buildFilterExpression(String key, String value) {
         log.finest("Building filter string: " + value);
 
+        // Skip filters with empty values (e.g., "field:like:" with no value after operator)
+        if (value == null || value.isEmpty() || value.matches(".*:\\s*$")) {
+            return null;
+        }
+
         QueryFilterExpressionParser parser = Parboiled.createParser(QueryFilterExpressionParser.class, key);
 
         QueryFilterExpression filterExpression;
