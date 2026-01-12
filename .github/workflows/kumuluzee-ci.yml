@@ -34,7 +34,7 @@ jobs:
         run: mvn --batch-mode test
 
   publish:
-    name: Publish to OSSRH
+    name: Publish to Maven Central
     runs-on: 'ubuntu-latest'
 
     needs: test
@@ -62,9 +62,9 @@ jobs:
           GPG_PUB: ${{ secrets.OSSRH_GPG_PUB }}
         run: 'printf "$GPG_KEY" | base64 --decode > "$GITHUB_WORKSPACE/gpg.key" && printf "$GPG_PUB" | base64 --decode > "$GITHUB_WORKSPACE/gpg.pub" && gpg --batch --import "$GITHUB_WORKSPACE/gpg.pub" "$GITHUB_WORKSPACE/gpg.key"'
 
-      - name: Publish to OSSRH
+      - name: Publish to Maven Central
         env:
-          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          MAVEN_CENTRAL_USER: ${{ secrets.MAVEN_CENTRAL_USER }}
+          MAVEN_CENTRAL_TOKEN: ${{ secrets.MAVEN_CENTRAL_TOKEN }}
           GPG_PASSPHRASE: ${{ secrets.OSSRH_GPG_PASSPHRASE }}
         run: mvn --batch-mode source:jar javadoc:jar deploy -Pdeploy -DskipTests=true --settings ./settings.xml;
