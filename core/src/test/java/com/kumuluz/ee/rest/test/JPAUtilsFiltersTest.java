@@ -822,6 +822,76 @@ public class JPAUtilsFiltersTest {
     }
 
     @Test
+    public void testUuidLikeIgnoreCaseFilter() {
+
+        QueryFilter qf = new QueryFilter();
+        qf.setField("uuid");
+        qf.setOperation(FilterOperation.LIKEIC);
+        qf.setValue("7932EFDD-067B-4418-3AE9-72%");
+
+        QueryParameters q = new QueryParameters();
+        q.getFilters().add(qf);
+
+        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(1, users.size());
+        Assert.assertEquals(Integer.valueOf(3), users.get(0).getId());
+    }
+
+    @Test
+    public void testUuidNotLikeFilter() {
+
+        QueryFilter qf = new QueryFilter();
+        qf.setField("uuid");
+        qf.setOperation(FilterOperation.NLIKE);
+        qf.setValue("7932efdd-067b-4418-3ae9-72%");
+
+        QueryParameters q = new QueryParameters();
+        q.getFilters().add(qf);
+
+        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(99, users.size());
+    }
+
+    @Test
+    public void testUuidNotLikeIgnoreCaseFilter() {
+
+        QueryFilter qf = new QueryFilter();
+        qf.setField("uuid");
+        qf.setOperation(FilterOperation.NLIKEIC);
+        qf.setValue("7932EFDD-067B-4418-3AE9-72%");
+
+        QueryParameters q = new QueryParameters();
+        q.getFilters().add(qf);
+
+        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+
+        Assert.assertNotNull(users);
+        Assert.assertEquals(99, users.size());
+    }
+
+    @Test
+    public void testUuidLikeFilterOnNestedField() {
+
+        QueryFilter qf = new QueryFilter();
+        qf.setField("user.uuid");
+        qf.setOperation(FilterOperation.LIKE);
+        qf.setValue("7932efdd-067b-4418-15e9-%");
+
+        QueryParameters q = new QueryParameters();
+        q.getFilters().add(qf);
+
+        List<Project> projects = JPAUtils.queryEntities(em, Project.class, q);
+
+        Assert.assertNotNull(projects);
+        Assert.assertEquals(2, projects.size());
+        projects.forEach(p -> Assert.assertEquals(Integer.valueOf(15), p.getUser().getId()));
+    }
+
+    @Test
     public void testUuidInFilter() {
 
         QueryFilter qf = new QueryFilter();

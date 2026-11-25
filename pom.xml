@@ -6,7 +6,7 @@
 
     <groupId>com.kumuluz.ee.rest</groupId>
     <artifactId>kumuluzee-rest</artifactId>
-    <version>3.1.0</version>
+    <version>4.0.0</version>
     <modules>
         <module>core</module>
     </modules>
@@ -22,22 +22,18 @@
     <url>https://ee.kumuluz.com</url>
 
     <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-        <jakarta.persistence-api.version>3.1.0</jakarta.persistence-api.version>
+        <jakarta.persistence-api.version>3.2.0</jakarta.persistence-api.version>
         <parboiled-java.version>1.4.1</parboiled-java.version>
-        <asm.version>9.7</asm.version>
-        <jakarta-xml-bind-api.version>4.0.1</jakarta-xml-bind-api.version>
-        <jaxb-impl.version>4.0.4</jaxb-impl.version>
-
+        <asm.version>9.10.1</asm.version> <!-- Keep aligned with the Quarkus platform BOM -->
+        <hibernate-core.version>7.4.9.Final</hibernate-core.version>  <!-- Keep Aligned with the Quarkus platform BOM -->
         <junit.version>4.13.2</junit.version>
-        <h2.version>2.2.224</h2.version>
-        <eclipselink.version>4.0.4</eclipselink.version>
-        <hibernate-core.version>6.3.1.Final</hibernate-core.version>
-
-        <nexus.staging.plugin.version>1.6.13</nexus.staging.plugin.version>
+        <h2.version>2.4.240</h2.version> <!-- Keep aligned with the Quarkus platform BOM -->
+        <eclipselink.version>4.0.10</eclipselink.version>
+        <compiler.plugin.version>3.15.0</compiler.plugin.version>
+        <surefire.plugin.version>3.6.1</surefire.plugin.version>
+        <jandex.plugin.version>3.6.1</jandex.plugin.version>
         <gpg.plugin.version>3.1.0</gpg.plugin.version>
     </properties>
 
@@ -114,17 +110,6 @@
                 <artifactId>parboiled-java</artifactId>
                 <version>${parboiled-java.version}</version>
             </dependency>
-            <dependency>
-                <groupId>jakarta.xml.bind</groupId>
-                <artifactId>jakarta.xml.bind-api</artifactId>
-                <version>${jakarta-xml-bind-api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.sun.xml.bind</groupId>
-                <artifactId>jaxb-impl</artifactId>
-                <version>${jaxb-impl.version}</version>
-                <scope>runtime</scope>
-            </dependency>
 
             <!-- Parboiled 1.4.1 uses ASM 9.2, but Java 21 support was added in ASM 9.5-->
             <dependency>
@@ -167,7 +152,7 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>org.hibernate</groupId>
+                <groupId>org.hibernate.orm</groupId>
                 <artifactId>hibernate-core</artifactId>
                 <version>${hibernate-core.version}</version>
                 <scope>test</scope>
@@ -176,6 +161,25 @@
     </dependencyManagement>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${compiler.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${surefire.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>io.smallrye</groupId>
+                    <artifactId>jandex-maven-plugin</artifactId>
+                    <version>${jandex.plugin.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.sonatype.central</groupId>
@@ -190,6 +194,12 @@
     </build>
 
     <profiles>
+        <profile>
+            <id>quarkus-smoke-test</id>
+            <modules>
+                <module>quarkus-smoke-test</module>
+            </modules>
+        </profile>
         <profile>
             <id>deploy</id>
             <build>

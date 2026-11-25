@@ -59,7 +59,14 @@ public class JPAUtils {
     private static final Logger LOG = Logger.getLogger(JPAUtils.class.getSimpleName());
 
     private static final String PROP_PERSISTENCE_JDBC_DRIVER = "jakarta.persistence.jdbc.driver";
+    private static final String PROP_PERSISTENCE_JDBC_DRIVER_LEGACY = "javax.persistence.jdbc.driver";
     private static final String POSTGRES_SQL_DRIVER = "org.postgresql.Driver";
+
+    /**
+     * Per {@link CriteriaBuilder} implementation: whether the provider supports {@code Expression.cast(Class)}
+     * (Jakarta Persistence 3.2+, e.g. Hibernate 7, EclipseLink 5).
+     */
+    private static final Map<Class<?>, Boolean> CAST_SUPPORT = new java.util.concurrent.ConcurrentHashMap<>();
 
     public static <T> Stream<T> getEntityStream(EntityManager em, Class<T> entity) {
 
@@ -627,48 +634,28 @@ public class JPAUtils {
                             if (entityField.getJavaType().equals(String.class) && f.getValue() != null) {
                                 np = cb.like(stringField, f.getValue());
                             } else if (entityField.getJavaType().equals(UUID.class) && f.getValue() != null) {
-                                String driver = (null == em ? null : (String) em.getProperties().get(PROP_PERSISTENCE_JDBC_DRIVER));
-                                if (POSTGRES_SQL_DRIVER.equalsIgnoreCase(driver)) {
-                                    np = cb.like(cb.function("text", String.class, r.get(f.getField()).as(String.class)), f.getValue());
-                                } else {
-                                    np = cb.like(r.get(f.getField()).as(String.class), f.getValue());
-                                }
+                                np = cb.like(uuidAsString(cb, entityField, em), f.getValue());
                             }
                             break;
                         case LIKEIC:
                             if (entityField.getJavaType().equals(String.class) && f.getValue() != null) {
                                 np = cb.like(cb.lower(stringField), f.getValue().toLowerCase());
                             } else if (entityField.getJavaType().equals(UUID.class) && f.getValue() != null) {
-                                String driver = (null == em ? null : (String) em.getProperties().get(PROP_PERSISTENCE_JDBC_DRIVER));
-                                if (POSTGRES_SQL_DRIVER.equalsIgnoreCase(driver)) {
-                                    np = cb.like(cb.lower(cb.function("text", String.class, r.get(f.getField()).as(String.class))), f.getValue());
-                                } else {
-                                    np = cb.like(cb.lower(r.get(f.getField()).as(String.class)), f.getValue());
-                                }
+                                np = cb.like(cb.lower(uuidAsString(cb, entityField, em)), f.getValue().toLowerCase());
                             }
                             break;
                         case NLIKE:
                             if (entityField.getJavaType().equals(String.class) && f.getValue() != null) {
                                 np = cb.notLike(stringField, f.getValue());
                             } else if (entityField.getJavaType().equals(UUID.class) && f.getValue() != null) {
-                                String driver = (null == em ? null : (String) em.getProperties().get(PROP_PERSISTENCE_JDBC_DRIVER));
-                                if (POSTGRES_SQL_DRIVER.equalsIgnoreCase(driver)) {
-                                    np = cb.notLike(cb.function("text", String.class, r.get(f.getField()).as(String.class)), f.getValue());
-                                } else {
-                                    np = cb.notLike(r.get(f.getField()).as(String.class), f.getValue());
-                                }
+                                np = cb.notLike(uuidAsString(cb, entityField, em), f.getValue());
                             }
                             break;
                         case NLIKEIC:
                             if (entityField.getJavaType().equals(String.class) && f.getValue() != null) {
                                 np = cb.notLike(cb.lower(stringField), f.getValue().toLowerCase());
                             } else if (entityField.getJavaType().equals(UUID.class) && f.getValue() != null) {
-                                String driver = (null == em ? null : (String) em.getProperties().get(PROP_PERSISTENCE_JDBC_DRIVER));
-                                if (POSTGRES_SQL_DRIVER.equalsIgnoreCase(driver)) {
-                                    np = cb.notLike(cb.lower(cb.function("text", String.class, r.get(f.getField()).as(String.class))), f.getValue());
-                                } else {
-                                    np = cb.notLike(cb.lower(r.get(f.getField()).as(String.class)), f.getValue());
-                                }
+                                np = cb.notLike(cb.lower(uuidAsString(cb, entityField, em)), f.getValue().toLowerCase());
                             }
                             break;
                         case GT:
@@ -1296,5 +1283,70 @@ public class JPAUtils {
                 LocalDateTime.class.isAssignableFrom(clazz) ||
                 OffsetDateTime.class.isAssignableFrom(clazz) ||
                 ZonedDateTime.class.isAssignableFrom(clazz);
+    }
+
+    /**
+     * Converts a {@link UUID} attribute to a string expression so it can be used with {@code LIKE}.
+     * <p>
+     * {@link Expression#as(Class)} is only a type hint and does not produce a SQL cast, which fails on databases with a
+     * native UUID type (PostgreSQL: {@code operator does not exist: uuid ~~ text}). Therefore:
+     * <ol>
+     *     <li>providers implementing Jakarta Persistence 3.2 get a real {@code CAST(... AS VARCHAR)} via
+     *     {@code Expression.cast(String.class)}, which works on every database;</li>
+     *     <li>older providers (Jakarta Persistence 3.1, e.g. EclipseLink 4) on PostgreSQL use the {@code text()}
+     *     function, as before;</li>
+     *     <li>otherwise the previous {@code as(String.class)} behaviour is kept.</li>
+     * </ol>
+     */
+    private static Expression<String> uuidAsString(CriteriaBuilder cb, Path<?> path, EntityManager em) {
+
+        Class<?> provider = cb.getClass();
+
+        if (!Boolean.FALSE.equals(CAST_SUPPORT.get(provider))) {
+            try {
+                Expression<String> cast = path.cast(String.class);
+                CAST_SUPPORT.putIfAbsent(provider, Boolean.TRUE);
+                return cast;
+            } catch (AbstractMethodError | NoSuchMethodError | UnsupportedOperationException e) {
+                // Jakarta Persistence 3.1 provider (or 3.1 API at runtime)
+                CAST_SUPPORT.put(provider, Boolean.FALSE);
+            }
+        }
+
+        if (isPostgreSql(em)) {
+            return cb.function("text", String.class, path.as(String.class));
+        }
+
+        return path.as(String.class);
+    }
+
+    private static boolean isPostgreSql(EntityManager em) {
+
+        if (em == null) {
+            return false;
+        }
+
+        List<Map<String, Object>> sources = new ArrayList<>();
+        sources.add(em.getProperties());
+        try {
+            sources.add(em.getEntityManagerFactory().getProperties());
+        } catch (RuntimeException e) {
+            // closed factory or provider not exposing it
+        }
+
+        for (Map<String, Object> props : sources) {
+            if (props == null) {
+                continue;
+            }
+            Object driver = props.get(PROP_PERSISTENCE_JDBC_DRIVER);
+            if (driver == null) {
+                driver = props.get(PROP_PERSISTENCE_JDBC_DRIVER_LEGACY);
+            }
+            if (driver != null && POSTGRES_SQL_DRIVER.equalsIgnoreCase(driver.toString())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

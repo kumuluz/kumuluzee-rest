@@ -11,6 +11,7 @@ import org.parboiled.Rule;
 import org.parboiled.annotations.BuildParseTree;
 import org.parboiled.support.Var;
 
+import java.lang.invoke.MethodHandles;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.Arrays;
@@ -28,6 +29,24 @@ public class QueryFilterExpressionParser extends BaseParser<QueryFilterExpressio
 
     public QueryFilterExpressionParser(String key) {
         this.key = key;
+    }
+
+    /**
+     * Supplies the {@link MethodHandles.Lookup} that parboiled uses to define the classes it generates for this
+     * parser ({@code QueryFilterExpressionParser$$parboiled} and the {@code Action$...} classes) in this package.
+     * <p>
+     * Parboiled looks for this method before falling back to the JDK-internal trusted lookup obtained via
+     * {@code sun.misc.Unsafe}, and then to reflective access to {@code ClassLoader.defineClass} (which requires
+     * {@code --add-opens java.base/java.lang=ALL-UNNAMED}). Providing it keeps the parser working regardless of
+     * {@code --sun-misc-unsafe-memory-access} settings and without any {@code --add-opens} flags, including under
+     * custom class loaders such as Quarkus'.
+     * <p>
+     * Not part of the public API; it exists only for parboiled.
+     *
+     * @return a full-privilege lookup on this class
+     */
+    public static MethodHandles.Lookup lookup() {
+        return MethodHandles.lookup();
     }
 
     public Rule InputLine() {

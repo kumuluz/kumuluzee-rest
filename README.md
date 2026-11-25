@@ -16,6 +16,17 @@ You can enable the KumuluzEE REST by adding the following dependency:
 </dependency>
 ```
 
+Requirements (4.x): Java 17 or newer and a Jakarta Persistence 3.1+ provider (tested with EclipseLink 4.0 and
+Hibernate ORM 7). The `jakarta.persistence-api` dependency is `provided`, so the application supplies it.
+
+### Quarkus support
+
+The library works in Quarkus applications (JVM mode). Add the following to `application.properties`:
+
+```properties
+quarkus.class-loading.reloadable-artifacts=com.kumuluz.ee.rest:kumuluzee-rest-core,org.parboiled:parboiled-java,org.parboiled:parboiled-core
+```
+
 ### JAX-RS implementation
 
 When implementing REST services the URI context information is needed. The URI can be obtained by adding `UriInfo` context to selected Resource:
@@ -302,7 +313,7 @@ With this, programmer has the full power of Criteria API to further manipulate t
 
 ## Building
 
-Ensure you have JDK 8 (or newer), Maven 3.2.1 (or newer) and Git installed
+Ensure you have JDK 17 (or newer), Maven 3.9 (or newer) and Git installed
 
 ```bash
     java -version
@@ -324,6 +335,12 @@ To build run:
 ```
 
 This will build all modules and run the testsuite. 
+
+To also verify the library inside a Quarkus application (test mode and the packaged jar), run:
+
+```bash
+    mvn verify -Pquarkus-smoke-test
+```
     
 Once completed you will find the build archives in the modules respected `target` folder and local `.m2` repository.
 
