@@ -30,7 +30,7 @@ import com.kumuluz.ee.rest.enums.OrderNulls;
 import com.kumuluz.ee.rest.enums.QueryFormatError;
 import com.kumuluz.ee.rest.exceptions.QueryFormatException;
 import org.parboiled.Parboiled;
-import org.parboiled.parserunners.RecoveringParseRunner;
+import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;
 
 import java.io.UnsupportedEncodingException;
@@ -497,27 +497,40 @@ public class QueryStringBuilder {
     private QueryFilterExpression buildFilterExpression(String key, String value) {
         log.finest("Building filter string: " + value);
 
-        // Skip filters with empty values (e.g., "field:like:" with no value after operator)
-        if (value == null || value.isEmpty() || value.matches(".*:\\s*$")) {
+        if (value == null || value.trim().isEmpty()) {
             return null;
         }
 
         QueryFilterExpressionParser parser = Parboiled.createParser(QueryFilterExpressionParser.class, key);
 
-        QueryFilterExpression filterExpression;
+        ParsingResult<QueryFilterExpression> parseResult;
         try {
-            RecoveringParseRunner<QueryFilterExpression> parseRunner = new RecoveringParseRunner<>(parser.InputLine());
-            ParsingResult<QueryFilterExpression> parseResult = parseRunner.run(value);
-            filterExpression = parseResult.resultValue;
+            // No error recovery: a recovering runner silently drops or inserts characters, which turns malformed
+            // input into a different (usually broader) filter than the client asked for.
+            parseResult = new ReportingParseRunner<QueryFilterExpression>(parser.InputLine()).run(value);
         } catch (Exception e) {
-            if (e.getCause() != null && e.getCause() instanceof QueryFormatException) {
+            if (e.getCause() instanceof QueryFormatException) {
                 throw (QueryFormatException) e.getCause();
             }
 
-            throw new QueryFormatException("One of the filters is malformed or has too many arguments.", key, QueryFormatError.MALFORMED);
+            throw new QueryFormatException("One of the filters is malformed or has too many arguments.", key, value,
+                    QueryFormatError.MALFORMED, e);
         }
 
-        return filterExpression;
+        if (parseResult.hasErrors() || !parseResult.matched) {
+            String position = parseResult.parseErrors.isEmpty()
+                    ? ""
+                    : " (at position " + (parseResult.parseErrors.get(0).getStartIndex() + 1) + ")";
+
+            throw new QueryFormatException("Filter is malformed" + position + ": " + value
+                    + ". Values containing spaces or any of ,;:()[] must be quoted ('a(b)'), quotes inside quoted "
+                    + "values are escaped by doubling them ('O''Brien').", key, value, QueryFormatError.MALFORMED);
+        }
+
+        // Empty clauses ("field:like:" without a value, e.g. an empty form input) are left out by the parser; a
+        // filter made only of empty clauses means "no filter".
+        QueryFilterExpression filterExpression = parseResult.resultValue;
+        return filterExpression == null || filterExpression.isEmptyLeaf() ? null : filterExpression;
     }
 
     private void addDefaultFilters(QueryParameters params) {

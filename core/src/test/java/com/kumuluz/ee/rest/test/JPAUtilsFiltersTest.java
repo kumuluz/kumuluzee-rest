@@ -3,8 +3,10 @@ package com.kumuluz.ee.rest.test;
 import com.kumuluz.ee.rest.beans.QueryFilter;
 import com.kumuluz.ee.rest.beans.QueryParameters;
 import com.kumuluz.ee.rest.enums.FilterOperation;
+import com.kumuluz.ee.rest.enums.QueryFormatError;
 import com.kumuluz.ee.rest.exceptions.InvalidFieldValueException;
 import com.kumuluz.ee.rest.exceptions.NoSuchEntityFieldException;
+import com.kumuluz.ee.rest.exceptions.QueryFormatException;
 import com.kumuluz.ee.rest.test.entities.Event;
 import com.kumuluz.ee.rest.test.entities.Project;
 import com.kumuluz.ee.rest.test.entities.User;
@@ -198,10 +200,8 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<User> users = JPAUtils.queryEntities(em, User.class, q);
-
-        Assert.assertNotNull(users);
-        Assert.assertEquals(100, users.size());
+        // a filter that cannot be applied is rejected (it used to be dropped, returning all 100 users)
+        assertRejected(q, User.class, "lastname", QueryFormatError.UNSUPPORTED_OPERATION);
     }
 
     @Test
@@ -234,10 +234,19 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<User> users = JPAUtils.queryEntities(em, User.class, q);
+        // a binary filter without a value is rejected (it used to be dropped, returning all 100 users).
+        // Empty values in a query string ("firstname:eq:") are still skipped by the QueryStringBuilder.
+        assertRejected(q, User.class, "firstname", QueryFormatError.MALFORMED);
+    }
 
-        Assert.assertNotNull(users);
-        Assert.assertEquals(100, users.size());
+    private void assertRejected(QueryParameters q, Class<?> entity, String field, QueryFormatError reason) {
+        try {
+            List<?> result = JPAUtils.queryEntities(em, entity, q);
+            Assert.fail("Expected QueryFormatException, got " + result.size() + " rows");
+        } catch (QueryFormatException e) {
+            Assert.assertEquals(field, e.getField());
+            Assert.assertEquals(reason, e.getReason());
+        }
     }
 
     @Test
@@ -595,10 +604,8 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<Project> projects = JPAUtils.queryEntities(em, Project.class, q);
-
-        Assert.assertNotNull(projects);
-        Assert.assertEquals(100, projects.size());
+        // only isnull/isnotnull apply to a relation itself (it used to be dropped, returning all 100 projects)
+        assertRejected(q, Project.class, "user", QueryFormatError.UNSUPPORTED_OPERATION);
     }
 
     @Test
@@ -677,10 +684,8 @@ public class JPAUtilsFiltersTest {
         QueryParameters q = new QueryParameters();
         q.getFilters().add(qf);
 
-        List<User> users = JPAUtils.queryEntities(em, User.class, q);
-
-        Assert.assertNotNull(users);
-        Assert.assertEquals(100, users.size());
+        // only isnull/isnotnull apply to a relation itself (it used to be dropped, returning all 100 users)
+        assertRejected(q, User.class, "projects", QueryFormatError.UNSUPPORTED_OPERATION);
     }
 
     @Test

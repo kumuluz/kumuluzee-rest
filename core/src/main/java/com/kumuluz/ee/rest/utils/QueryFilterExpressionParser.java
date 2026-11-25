@@ -16,14 +16,21 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @BuildParseTree
 public class QueryFilterExpressionParser extends BaseParser<QueryFilterExpression> {
 
     private static final Logger log = Logger.getLogger(QueryFilterExpressionParser.class.getSimpleName());
+
+    private static final Set<FilterOperation> LIST_OPERATIONS = EnumSet.of(
+            FilterOperation.IN, FilterOperation.NIN, FilterOperation.INIC, FilterOperation.NINIC,
+            FilterOperation.BETWEEN, FilterOperation.NBETWEEN);
 
     private final String key;
 
@@ -50,7 +57,9 @@ public class QueryFilterExpressionParser extends BaseParser<QueryFilterExpressio
     }
 
     public Rule InputLine() {
-        return Sequence(OrExpression(), EMPTY);
+        // EOI: the whole filter must be consumed. Previously trailing input that did not match (e.g. the "(b)" in
+        // an unquoted "name:eq:a(b)") was silently dropped.
+        return Sequence(WhiteSpace(), OrExpression(), WhiteSpace(), EOI);
     }
 
     Rule OrExpression() {
@@ -65,7 +74,7 @@ public class QueryFilterExpressionParser extends BaseParser<QueryFilterExpressio
                                 ),
                                 WhiteSpace(),
                                 AndExpression(),
-                                swap() && push(new QueryFilterExpression(FilterExpressionOperation.OR, pop(), pop()))
+                                swap() && push(combine(FilterExpressionOperation.OR, pop(), pop()))
                         )
                 )
         );
@@ -88,7 +97,7 @@ public class QueryFilterExpressionParser extends BaseParser<QueryFilterExpressio
                                         WhiteSpace()
                                 ),
                                 Expression(),
-                                swap() && push(new QueryFilterExpression(FilterExpressionOperation.AND, pop(), pop()))
+                                swap() && push(combine(FilterExpressionOperation.AND, pop(), pop()))
                         )
                 )
         );
@@ -142,9 +151,15 @@ public class QueryFilterExpressionParser extends BaseParser<QueryFilterExpressio
                 FilterOperator(),
                 operator.set(match()),
                 ':',
-                FilterValue(),
-                value.set(match()),
-                push(new QueryFilterExpression(buildQueryFilter(field.get(), operator.get(), value.get())))
+                FirstOf(
+                        Sequence(
+                                FilterValue(),
+                                value.set(match()),
+                                push(new QueryFilterExpression(buildQueryFilter(field.get(), operator.get(), value.get())))
+                        ),
+                        // "field:op:" without a value (e.g. an empty form input): no condition
+                        push(emptyClause(field.get(), operator.get()))
+                )
         );
     }
 
@@ -237,19 +252,37 @@ public class QueryFilterExpressionParser extends BaseParser<QueryFilterExpressio
         );
     }
 
+    /**
+     * A single-quoted string. A single quote inside the value is escaped by doubling it, as in SQL:
+     * {@code 'O''Brien'} is the value {@code O'Brien}.
+     */
     Rule QuotedString() {
         return Sequence(
                 '\'',
                 ZeroOrMore(
-                        Sequence(
-                                TestNot(
-                                        AnyOf("\r\n'")
-                                ),
-                                ANY
+                        FirstOf(
+                                "''",
+                                Sequence(
+                                        TestNot(
+                                                AnyOf("\r\n'")
+                                        ),
+                                        ANY
+                                )
                         )
                 ).suppressSubnodes(),
                 '\''
         );
+    }
+
+    /**
+     * Removes the surrounding quotes of a {@link #QuotedString()} match and un-escapes doubled quotes. Unquoted values
+     * are returned unchanged (they cannot contain quotes).
+     */
+    static String unquote(String value) {
+        if (value.length() >= 2 && value.startsWith("'") && value.endsWith("'")) {
+            return value.substring(1, value.length() - 1).replace("''", "'");
+        }
+        return value;
     }
 
     Rule String() {
@@ -269,6 +302,34 @@ public class QueryFilterExpressionParser extends BaseParser<QueryFilterExpressio
         );
     }
 
+    /**
+     * An empty clause ({@code field:op:}) means "no condition". It becomes an empty leaf, which {@link #combine}
+     * leaves out of the surrounding expression. A trailing colon after a unary operator is tolerated.
+     */
+    protected QueryFilterExpression emptyClause(String field, String operation) {
+        FilterOperation filterOperation = buildQueryFilterOperation(operation);
+
+        if (filterOperation == FilterOperation.ISNULL || filterOperation == FilterOperation.ISNOTNULL) {
+            return new QueryFilterExpression(new QueryFilter(field, filterOperation));
+        }
+
+        return new QueryFilterExpression((QueryFilter) null);
+    }
+
+    /**
+     * Combines two sub-expressions; empty clauses are left out instead of widening or narrowing the expression.
+     */
+    protected QueryFilterExpression combine(FilterExpressionOperation operation, QueryFilterExpression left,
+                                            QueryFilterExpression right) {
+        if (left.isEmptyLeaf()) {
+            return right;
+        }
+        if (right.isEmptyLeaf()) {
+            return left;
+        }
+        return new QueryFilterExpression(operation, left, right);
+    }
+
     protected QueryFilter buildQueryFilter(String field, String operation) {
         FilterOperation filterOperation = buildQueryFilterOperation(operation);
 
@@ -282,19 +343,46 @@ public class QueryFilterExpressionParser extends BaseParser<QueryFilterExpressio
     protected QueryFilter buildQueryFilter(String field, String operation, String value) {
         FilterOperation filterOperation = buildQueryFilterOperation(operation);
 
-        if (value.matches("^\\[.*\\]$") &&
-                (filterOperation == FilterOperation.IN ||
-                        filterOperation == FilterOperation.NIN ||
-                        filterOperation == FilterOperation.NINIC ||
-                        filterOperation == FilterOperation.INIC ||
-                        filterOperation == FilterOperation.BETWEEN ||
-                        filterOperation == FilterOperation.NBETWEEN)) {
+        boolean listValue = value.matches("^\\[.*\\]$");
+        boolean listOperation = LIST_OPERATIONS.contains(filterOperation);
+
+        // A list operation needs a list. (A list literal for any other operation is just text and used as is.)
+        if (listOperation && !listValue) {
+            String msg = "Operation '" + operation + "' in '" + key + "' requires a list value, e.g. " + field + ":"
+                    + operation + ":[a,b]: '" + value + "'";
+
+            log.finest(msg);
+
+            throw new QueryFormatException(msg, key, QueryFormatError.MALFORMED);
+        }
+
+        if (listOperation) {
             String values = value.replaceAll("(^\\[)|(\\]$)", "");
 
-            List<String> valuesList = Arrays.stream(values.split("[,]+(?=([^']*'[^']*')*[^']*$)"))
-                    .filter(e -> !e.isEmpty()).distinct()
-                    .map(e -> e.replaceAll("(^')|('$)", ""))
-                    .collect(Collectors.toList());
+            Stream<String> elements = Arrays.stream(values.split("[,](?=([^']*'[^']*')*[^']*$)", -1));
+
+            List<String> valuesList;
+            if (filterOperation == FilterOperation.BETWEEN || filterOperation == FilterOperation.NBETWEEN) {
+                // keep both bounds, also when they are equal; check for missing bounds before unquoting, so that a
+                // quoted empty string ('') is a valid bound
+                List<String> rawBounds = elements.collect(Collectors.toList());
+
+                if (rawBounds.size() != 2 || rawBounds.stream().anyMatch(String::isEmpty)) {
+                    String msg = "Operation '" + operation + "' in '" + key + "' requires exactly two values, e.g. "
+                            + field + ":" + operation + ":[1,5]: '" + value + "'";
+
+                    log.finest(msg);
+
+                    throw new QueryFormatException(msg, key, QueryFormatError.MALFORMED);
+                }
+
+                valuesList = rawBounds.stream().map(QueryFilterExpressionParser::unquote).collect(Collectors.toList());
+            } else {
+                valuesList = elements
+                        .filter(e -> !e.isEmpty()).distinct()
+                        .map(QueryFilterExpressionParser::unquote)
+                        .collect(Collectors.toList());
+            }
 
             return new QueryFilter(field, filterOperation, valuesList);
         } else if (value.matches("^dt'.*'$")) {
@@ -310,7 +398,7 @@ public class QueryFilterExpressionParser extends BaseParser<QueryFilterExpressio
 
             return new QueryFilter(field, filterOperation, dateValue);
         } else {
-            String stringValue = value.replaceAll("(^')|('$)", "").trim();
+            String stringValue = unquote(value).trim();
 
             return new QueryFilter(field, filterOperation, stringValue);
         }
@@ -330,7 +418,8 @@ public class QueryFilterExpressionParser extends BaseParser<QueryFilterExpressio
 
     protected Date parseDate(String date) {
         try {
-            return Date.from(ZonedDateTime.parse(date).toInstant());
+            // keeps sub-millisecond digits, so that the field validation in JPAUtils can see them
+            return JPAUtils.toDate(ZonedDateTime.parse(date).toInstant());
         } catch (DateTimeParseException e) {
             return null;
         }

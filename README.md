@@ -215,6 +215,58 @@ GET v1/customers?filter=age:GT:10 id:IN:[1,2,3] lastName:ISNOTNULL
 
 By default, filters are chained together with an `AND` operator (represented by an empty space). 
 
+`GT`, `GTE`, `LT`, `LTE` and `BETWEEN` work on numbers (including primitives), strings, `java.util.Date` and the
+`java.time` types (`Instant`, `LocalDate`, `LocalDateTime`, `LocalTime`, `OffsetDateTime`, `OffsetTime`,
+`ZonedDateTime`):
+
+```
+GET v1/customers?filter=openingTime:GTE:'08:30:00'
+GET v1/customers?filter=createdAt:GT:'2017-06-12T11:57:00Z'
+```
+
+`java.util.Date` fields take a full date-time with offset (`'2017-06-12T11:57:00Z'`). Fields mapped with
+`@Temporal(TemporalType.TIME)` (or `java.sql.Time`) also take a time-only value (`'10:00:00'`), and
+`@Temporal(TemporalType.DATE)` (or `java.sql.Date`) fields a date-only value (`'2015-04-29'`). For a full date-time on
+such a field only the time of day or the date counts, taken in the JVM's default time zone. Time fields do not support
+fractional seconds. Other values throw an `InvalidFieldValueException`. The same applies to `dt'...'` values.
+
+List operations (`IN`, `INIC`, `NIN`, `NINIC`, `BETWEEN`, `NBETWEEN`) take a list in square brackets, `BETWEEN` and
+`NBETWEEN` exactly two values (`age:BETWEEN:[18,65]`, equal bounds allowed).
+`IN` with an empty list (`[]`) matches nothing, `NIN` with an empty list matches everything.
+
+##### Empty values
+
+A filter without a value (`lastName:EQ:`) means "no condition". It is
+left out of the expression and the other filters still apply:
+
+```
+GET v1/customers?filter=firstName:EQIC: lastName:EQIC:Doe     ->  lastName:EQIC:Doe
+GET v1/customers?filter=firstName:EQIC: lastName:EQIC:        ->  no filter, all customers
+```
+
+To filter on an empty string, quote it: `lastName:EQ:''`.
+
+##### Quoting and escaping
+
+Values containing spaces or any of `, ; : ( ) [ ]` must be quoted with single quotes. A single quote inside a quoted
+value is escaped by doubling it:
+
+```
+GET v1/customers?filter=lastName:EQ:'O''Brien'
+GET v1/customers?filter=name:EQ:'Smith, John (Jr.)'
+GET v1/customers?filter=lastName:IN:['O''Brien','D''Arcy']
+```
+
+When the query string is URL-encoded (`QueryParameters.queryEncoded(...)` / `uriInfo.getRequestUri().getRawQuery()`),
+encode `+` as `%2B` (e.g. in time-zone offsets, `'2017-06-12T11:57:00%2B02:00'`): a literal `+` is decoded as a
+space.
+
+##### Invalid filters are rejected
+
+A filter that cannot be parsed completely, or whose operation does not apply to the field (e.g. `LIKE` on a number,
+`EQ` on a relation), throws a `QueryFormatException` (reason `MALFORMED` or `UNSUPPORTED_OPERATION`) instead of being
+ignored. This change was introduced in v4.0.0.
+
 #### Complex queries
 It is possible to write more complex queries by using `OR` and `AND` operators and by grouping them together with 
 __parentheses__. Both `OR` and `AND` operator can be written in several different ways:
@@ -284,6 +336,15 @@ private String email;
 private UserCareer career;
 ```
 where result will return only email and current position within career relation.
+
+Mapped names may contain dots:
+```java
+@RestMapping("publish.version")
+private Integer publishVersion;
+```
+```
+GET /v1/customers?filter=publish.version:EQ:1
+```
 
 #### Ignoring REST fields
 By default, REST library returns field not found exception for non-existing entity fields. For some cases we may want to omit field check with annotation:

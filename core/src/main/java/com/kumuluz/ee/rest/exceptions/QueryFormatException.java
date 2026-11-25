@@ -36,7 +36,11 @@ public class QueryFormatException extends RuntimeException {
     }
 
     public QueryFormatException(String msg, String field, String source, QueryFormatError reason) {
-        super(msg);
+        this(msg, field, source, reason, null);
+    }
+
+    public QueryFormatException(String msg, String field, String source, QueryFormatError reason, Throwable cause) {
+        super(msg, cause);
 
         this.field = field;
         this.source = source;

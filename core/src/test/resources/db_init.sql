@@ -213,3 +213,8 @@ insert into event_notes (event_id, event_note) values (3, 'Event 3 Note 1');
 insert into project_locations (id, external_id, location_name, project_id) values (1, 'z', 'Ljubljana', 16);
 insert into project_locations (id, external_id, location_name, project_id) values (2, 'y', 'Celje', 14);
 insert into project_locations (id, external_id, location_name, project_id) values (3, 'x', 'Maribor', 50);
+insert into legacy_temporals (id, start_time, start_date) values (1, '04:20:11', '2015-04-09');
+insert into legacy_temporals (id, start_time, start_date) values (2, '05:20:11', '2015-04-19');
+insert into legacy_temporals (id, start_time, start_date) values (3, '06:20:11', '2015-04-29');
+insert into legacy_temporals (id, start_time, start_date) values (4, '10:20:11', '2015-04-29');
+insert into legacy_temporals (id, start_time, start_date) values (5, '12:20:11', '2015-04-30');

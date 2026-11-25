@@ -14,6 +14,7 @@
         <class>com.kumuluz.ee.rest.test.entities.UserCareer</class>
         <class>com.kumuluz.ee.rest.test.entities.Event</class>
         <class>com.kumuluz.ee.rest.test.entities.ProjectLocation</class>
+        <class>com.kumuluz.ee.rest.test.entities.LegacyTemporal</class>
 
         <class>com.kumuluz.ee.rest.test.utils.UUIDConverter</class>
         <class>com.kumuluz.ee.rest.test.entities.InstantAttributeConverter</class>
@@ -47,6 +48,7 @@
         <class>com.kumuluz.ee.rest.test.entities.UserCareer</class>
         <class>com.kumuluz.ee.rest.test.entities.Event</class>
         <class>com.kumuluz.ee.rest.test.entities.ProjectLocation</class>
+        <class>com.kumuluz.ee.rest.test.entities.LegacyTemporal</class>
 
         <properties>
             <property name="jakarta.persistence.jdbc.driver" value="org.h2.Driver"/>

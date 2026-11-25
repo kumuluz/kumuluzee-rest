@@ -1,6 +1,7 @@
 package com.kumuluz.ee.rest.test.entities;
 
 import com.kumuluz.ee.rest.annotations.RestIgnore;
+import com.kumuluz.ee.rest.annotations.RestMapping;
 import com.kumuluz.ee.rest.test.entities.enums.ProjectStatus;
 import com.kumuluz.ee.rest.test.utils.UUIDConverter;
 import jakarta.persistence.*;
@@ -20,6 +21,8 @@ public class Project implements Serializable {
     @Id
     private Integer id;
 
+    /** Dotted REST name on a basic field, see https://github.com/kumuluz/kumuluzee-rest/issues/16 */
+    @RestMapping("public.id")
     @Column(name = "public_id")
     @Convert(converter = UUIDConverter.class)
     private UUID publicId;

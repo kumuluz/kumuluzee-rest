@@ -32,14 +32,18 @@ import com.kumuluz.ee.rest.exceptions.NoSuchEntityFieldException;
 import com.kumuluz.ee.rest.exceptions.QueryFormatException;
 import com.kumuluz.ee.rest.interfaces.CriteriaFilter;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import jakarta.persistence.Tuple;
 import jakarta.persistence.TupleElement;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
 import jakarta.persistence.metamodel.*;
 
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.sql.Timestamp;
@@ -365,7 +369,9 @@ public class JPAUtils {
                                         throw new NoSuchEntityFieldException(e.getMessage(), restField, r.getJavaType().getSimpleName());
                                     }
 
-                                    return Optional.<Selection<?>>of(cfc.getPath().alias(alias));
+                                    // the resolved Java field path (e.g. projects.publicId for projects.public.id) is
+                                    // what the entity is rebuilt from
+                                    return Optional.<Selection<?>>of(cfc.getPath().alias(cfc.getAlias()));
                                 })
                                 .filter(Optional::isPresent)
                                 .map(Optional::get)
@@ -604,11 +610,18 @@ public class JPAUtils {
 
                 if (isBasic) {
 
+                    requireListOperand(f);
+
+                    // dt'...' values get the same temporal validation and normalisation as plain values
+                    Date dateValue = f.getDateValue() != null && Date.class.isAssignableFrom(entityField.getJavaType())
+                            ? normalizeDateValue(f.getDateValue(), getTemporalType(entityField, entityField.getJavaType()), f.getField())
+                            : f.getDateValue();
+
                     switch (f.getOperation()) {
 
                         case EQ:
                             if (f.getDateValue() != null && Date.class.isAssignableFrom(entityField.getJavaType())) {
-                                np = cb.equal(entityField, f.getDateValue());
+                                np = cb.equal(entityField, dateValue);
                             } else if (f.getValue() != null) {
                                 np = cb.equal(entityField, getValueForPath(entityField, f.getValue()));
                             }
@@ -620,7 +633,7 @@ public class JPAUtils {
                             break;
                         case NEQ:
                             if (f.getDateValue() != null && Date.class.isAssignableFrom(entityField.getJavaType())) {
-                                np = cb.notEqual(entityField, f.getDateValue());
+                                np = cb.notEqual(entityField, dateValue);
                             } else if (f.getValue() != null) {
                                 np = cb.notEqual(entityField, getValueForPath(entityField, f.getValue()));
                             }
@@ -659,84 +672,77 @@ public class JPAUtils {
                             }
                             break;
                         case GT:
-                            if (Date.class.isAssignableFrom(entityField.getJavaType()) ||
-                                    isAssignableToInstantHoldingTemporal(entityField.getJavaType()) ||
-                                    Number.class.isAssignableFrom(entityField.getJavaType()) ||
-                                    String.class.isAssignableFrom(entityField.getJavaType())) {
+                            if (isRangeComparable(entityField.getJavaType())) {
 
                                 if (f.getDateValue() != null && Date.class.isAssignableFrom(entityField.getJavaType())) {
-                                    np = cb.greaterThan(dateField, f.getDateValue());
+                                    np = cb.greaterThan(dateField, dateValue);
                                 } else if (f.getValue() != null) {
                                     np = cb.greaterThan(compField, (Comparable) getValueForPath(stringField, f.getValue()));
                                 }
                             }
                             break;
                         case GTE:
-                            if (Date.class.isAssignableFrom(entityField.getJavaType()) ||
-                                    isAssignableToInstantHoldingTemporal(entityField.getJavaType()) ||
-                                    Number.class.isAssignableFrom(entityField.getJavaType()) ||
-                                    String.class.isAssignableFrom(entityField.getJavaType())) {
+                            if (isRangeComparable(entityField.getJavaType())) {
 
                                 if (f.getDateValue() != null && Date.class.isAssignableFrom(entityField.getJavaType())) {
-                                    np = cb.greaterThanOrEqualTo(dateField, f.getDateValue());
+                                    np = cb.greaterThanOrEqualTo(dateField, dateValue);
                                 } else if (f.getValue() != null) {
                                     np = cb.greaterThanOrEqualTo(compField, (Comparable) getValueForPath(stringField, f.getValue()));
                                 }
                             }
                             break;
                         case LT:
-                            if (Date.class.isAssignableFrom(entityField.getJavaType()) ||
-                                    isAssignableToInstantHoldingTemporal(entityField.getJavaType()) ||
-                                    Number.class.isAssignableFrom(entityField.getJavaType()) ||
-                                    String.class.isAssignableFrom(entityField.getJavaType())) {
+                            if (isRangeComparable(entityField.getJavaType())) {
 
                                 if (f.getDateValue() != null && Date.class.isAssignableFrom(entityField.getJavaType())) {
-                                    np = cb.lessThan(dateField, f.getDateValue());
+                                    np = cb.lessThan(dateField, dateValue);
                                 } else if (f.getValue() != null) {
                                     np = cb.lessThan(compField, (Comparable) getValueForPath(stringField, f.getValue()));
                                 }
                             }
                             break;
                         case LTE:
-                            if (Date.class.isAssignableFrom(entityField.getJavaType()) ||
-                                    isAssignableToInstantHoldingTemporal(entityField.getJavaType()) ||
-                                    Number.class.isAssignableFrom(entityField.getJavaType()) ||
-                                    String.class.isAssignableFrom(entityField.getJavaType())) {
+                            if (isRangeComparable(entityField.getJavaType())) {
 
                                 if (f.getDateValue() != null && Date.class.isAssignableFrom(entityField.getJavaType())) {
-                                    np = cb.lessThanOrEqualTo(dateField, f.getDateValue());
+                                    np = cb.lessThanOrEqualTo(dateField, dateValue);
                                 } else if (f.getValue() != null) {
                                     np = cb.lessThanOrEqualTo(compField, (Comparable) getValueForPath(stringField, f.getValue()));
                                 }
                             }
                             break;
-                        case IN:
-                            np = stringField.in(f.getValues().stream()
+                        case IN: {
+                            List<Object> inValues = f.getValues().stream()
                                     .filter(Objects::nonNull)
-                                    .map(s -> getValueForPath(entityField, s)).collect(Collectors
-                                            .toList()));
+                                    .map(s -> getValueForPath(entityField, s)).collect(Collectors.toList());
+                            // "in" an empty list matches nothing (providers differ on an empty IN clause)
+                            np = inValues.isEmpty() ? cb.disjunction() : stringField.in(inValues);
                             break;
+                        }
                         case INIC:
                             if (entityField.getJavaType().equals(String.class)) {
-                                np = cb.lower(stringField)
-                                        .in(f.getValues().stream()
-                                                .filter(Objects::nonNull)
-                                                .map(String::toLowerCase)
-                                                .collect(Collectors.toList()));
+                                List<String> inicValues = f.getValues().stream()
+                                        .filter(Objects::nonNull)
+                                        .map(String::toLowerCase)
+                                        .collect(Collectors.toList());
+                                np = inicValues.isEmpty() ? cb.disjunction() : cb.lower(stringField).in(inicValues);
                             }
                             break;
-                        case NIN:
-                            np = cb.not(stringField.in(f.getValues().stream()
+                        case NIN: {
+                            List<Object> ninValues = f.getValues().stream()
                                     .filter(Objects::nonNull)
-                                    .map(s -> getValueForPath(entityField, s)).collect(Collectors.toList())));
+                                    .map(s -> getValueForPath(entityField, s)).collect(Collectors.toList());
+                            // "not in" an empty list matches everything
+                            np = ninValues.isEmpty() ? cb.conjunction() : cb.not(stringField.in(ninValues));
                             break;
+                        }
                         case NINIC:
                             if (entityField.getJavaType().equals(String.class)) {
-                                np = cb.not(cb.lower(stringField)
-                                        .in(f.getValues().stream()
-                                                .filter(Objects::nonNull)
-                                                .map(String::toLowerCase)
-                                                .collect(Collectors.toList())));
+                                List<String> ninicValues = f.getValues().stream()
+                                        .filter(Objects::nonNull)
+                                        .map(String::toLowerCase)
+                                        .collect(Collectors.toList());
+                                np = ninicValues.isEmpty() ? cb.conjunction() : cb.not(cb.lower(stringField).in(ninicValues));
                             }
                             break;
                         case ISNULL:
@@ -745,31 +751,38 @@ public class JPAUtils {
                         case ISNOTNULL:
                             np = cb.isNotNull(entityField);
                             break;
-                        case BETWEEN:
-                            if (!f.getValues().isEmpty()) {
-                                Object value1 = getValueForPath(entityField, f.getValues().get(0));
-                                Object value2 = getValueForPath(entityField, f.getValues().get(1));
+                        case BETWEEN: {
+                            requireTwoBounds(f);
 
-                                if (!value1.getClass().equals(value2.getClass())) {
-                                    throw new QueryFormatException("Incompatible values for BETWEEN filter", f.getField(), QueryFormatError.MALFORMED);
-                                }
+                            Object[] bounds = alignRangeBounds(
+                                    getValueForPath(entityField, f.getValues().get(0)),
+                                    getValueForPath(entityField, f.getValues().get(1)));
+                            Object value1 = bounds[0];
+                            Object value2 = bounds[1];
 
-                                np = cb.between(compField, (Comparable) value1, (Comparable) value2);
+                            if (!value1.getClass().equals(value2.getClass())) {
+                                throw new QueryFormatException("Incompatible values for BETWEEN filter", f.getField(), QueryFormatError.MALFORMED);
                             }
+
+                            np = cb.between(compField, (Comparable) value1, (Comparable) value2);
                             break;
-                        case NBETWEEN:
-                            if (!f.getValues().isEmpty()) {
-                                Object value1 = getValueForPath(entityField, f.getValues().get(0));
-                                Object value2 = getValueForPath(entityField, f.getValues().get(1));
+                        }
+                        case NBETWEEN: {
+                            requireTwoBounds(f);
 
-                                if (!value1.getClass().equals(value2.getClass())) {
-                                    throw new QueryFormatException("Incompatible values for BETWEEN filter", f.getField(), QueryFormatError.MALFORMED);
-                                }
+                            Object[] bounds = alignRangeBounds(
+                                    getValueForPath(entityField, f.getValues().get(0)),
+                                    getValueForPath(entityField, f.getValues().get(1)));
+                            Object value1 = bounds[0];
+                            Object value2 = bounds[1];
 
-                                np = cb.not(
-                                        cb.between(compField, (Comparable) value1, (Comparable) value2)
-                                );
+                            if (!value1.getClass().equals(value2.getClass())) {
+                                throw new QueryFormatException("Incompatible values for BETWEEN filter", f.getField(), QueryFormatError.MALFORMED);
                             }
+
+                            np = cb.not(cb.between(compField, (Comparable) value1, (Comparable) value2));
+                            break;
+                        }
                     }
                 } else if (isAssociation) {
 
@@ -796,29 +809,32 @@ public class JPAUtils {
                             break;
                     }
                 }
+
+                if (np == null) {
+                    throw unsupportedOperation(f, entityField.getJavaType());
+                }
             } catch (IllegalArgumentException e) {
                 throw new NoSuchEntityFieldException(e.getMessage(), f.getField(), r.getJavaType().getSimpleName());
             }
 
             return np;
         } else if (filterExpression.isEmptyLeaf()) {
-            return cb.conjunction();
+            // nothing to filter on; left out of the surrounding expression (see below)
+            return null;
         } else {
             FilterExpressionOperation operation = filterExpression.operation();
 
             Predicate leftPredicate = createWhereQueryInternal(em, cb, r, containsToManyAtomic, filterExpression.left(), fieldJoins);
             Predicate rightPredicate = createWhereQueryInternal(em, cb, r, containsToManyAtomic, filterExpression.right(), fieldJoins);
 
-            if (leftPredicate == null && rightPredicate == null) {
-                return cb.conjunction();
-            }
-
+            // A null side (a @RestIgnore'd field or an empty expression) is left out of the expression. Replacing it
+            // with TRUE would turn "a or <ignored>" into a filter that matches every row.
             if (leftPredicate == null) {
-                leftPredicate = cb.conjunction();
+                return rightPredicate;
             }
 
             if (rightPredicate == null) {
-                rightPredicate = cb.conjunction();
+                return leftPredicate;
             }
 
             if (operation.equals(FilterExpressionOperation.AND)) {
@@ -1051,6 +1067,136 @@ public class JPAUtils {
         }
     }
 
+    /**
+     * Parses a value for a {@code java.util.Date} attribute and normalises it to the attribute's temporal type, so
+     * that every provider compares the same thing and both bounds of a {@code between} have the same type:
+     * <ul>
+     *     <li>{@code TIME} ({@code @Temporal(TIME)} / {@code java.sql.Time}): a time ({@code 10:00:00}) or a full
+     *     date-time, of which only the time of day counts; fractional seconds are rejected, since
+     *     {@code java.sql.Time} cannot carry them through JDBC</li>
+     *     <li>{@code DATE} ({@code @Temporal(DATE)} / {@code java.sql.Date}): a date ({@code 2015-04-29}) or a full
+     *     date-time, of which only the date counts</li>
+     *     <li>{@code TIMESTAMP}: a full date-time with offset ({@code 2017-06-12T11:57:00Z})</li>
+     * </ul>
+     * The time of day and the date of a full date-time are taken in the JVM's default time zone, which is what JPA
+     * providers do when binding a {@code java.util.Date} to a time or date column.
+     */
+    private static Date parseDateValue(String value, TemporalType temporalType) {
+
+        ZonedDateTime dateTime = null;
+        DateTimeParseException dateTimeException = null;
+        try {
+            dateTime = ZonedDateTime.parse(value);
+        } catch (DateTimeParseException e) {
+            dateTimeException = e;
+        }
+
+        switch (temporalType) {
+            case TIME: {
+                LocalTime time;
+                if (dateTime != null) {
+                    time = dateTime.withZoneSameInstant(ZoneId.systemDefault()).toLocalTime();
+                } else {
+                    try {
+                        time = LocalTime.parse(value);
+                    } catch (DateTimeParseException ignored) {
+                        throw dateTimeException;
+                    }
+                }
+                if (time.getNano() != 0) {
+                    throw new IllegalArgumentException("Fractional seconds are not supported for a time field: " + value);
+                }
+                return java.sql.Time.valueOf(time);
+            }
+            case DATE: {
+                LocalDate date;
+                if (dateTime != null) {
+                    date = dateTime.withZoneSameInstant(ZoneId.systemDefault()).toLocalDate();
+                } else {
+                    try {
+                        date = LocalDate.parse(value);
+                    } catch (DateTimeParseException ignored) {
+                        throw dateTimeException;
+                    }
+                }
+                return java.sql.Date.valueOf(date);
+            }
+            default:
+                if (dateTime == null) {
+                    throw dateTimeException;
+                }
+                return toDate(dateTime.toInstant());
+        }
+    }
+
+    /**
+     * Converts an instant to a {@code java.util.Date} without losing precision: a {@code java.sql.Timestamp} (a
+     * {@code Date} that keeps nanoseconds) when it has sub-millisecond digits, a plain {@code Date} otherwise.
+     */
+    static Date toDate(Instant instant) {
+        return instant.getNano() % 1_000_000 == 0 ? Date.from(instant) : Timestamp.from(instant);
+    }
+
+    /**
+     * Normalises an already parsed {@code java.util.Date} (a {@code dt'...'} value) to the attribute's temporal type,
+     * with the same rules as {@link #parseDateValue(String, TemporalType)}.
+     */
+    private static Date normalizeDateValue(Date dateValue, TemporalType temporalType, String field) {
+
+        // java.sql.Date and java.sql.Time do not support toInstant(); Timestamp keeps its nanoseconds
+        Instant instant = dateValue instanceof Timestamp
+                ? ((Timestamp) dateValue).toInstant()
+                : Instant.ofEpochMilli(dateValue.getTime());
+        ZonedDateTime dateTime = instant.atZone(ZoneId.systemDefault());
+
+        switch (temporalType) {
+            case TIME: {
+                LocalTime time = dateTime.toLocalTime();
+                if (time.getNano() != 0) {
+                    throw new InvalidFieldValueException("Fractional seconds are not supported for a time field",
+                            field, instant.toString());
+                }
+                return java.sql.Time.valueOf(time);
+            }
+            case DATE:
+                return java.sql.Date.valueOf(dateTime.toLocalDate());
+            default:
+                return dateValue;
+        }
+    }
+
+    /**
+     * The temporal type of a {@code java.util.Date} attribute: from its {@code java.sql} subtype or its
+     * {@code @Temporal} annotation, {@code TIMESTAMP} otherwise.
+     */
+    private static TemporalType getTemporalType(Path<?> path, Class<?> javaType) {
+
+        if (java.sql.Time.class.isAssignableFrom(javaType)) return TemporalType.TIME;
+        if (java.sql.Date.class.isAssignableFrom(javaType)) return TemporalType.DATE;
+        if (Timestamp.class.isAssignableFrom(javaType)) return TemporalType.TIMESTAMP;
+
+        if (path.getModel() instanceof Attribute) {
+            Attribute<?, ?> attribute = (Attribute<?, ?>) path.getModel();
+
+            Member member = attribute.getJavaMember();
+            if (member instanceof AnnotatedElement && ((AnnotatedElement) member).isAnnotationPresent(Temporal.class)) {
+                return ((AnnotatedElement) member).getAnnotation(Temporal.class).value();
+            }
+
+            // property access: the annotation may be on the field while the member is the getter
+            try {
+                Field field = getFieldFromEntity(attribute.getDeclaringType().getJavaType(), attribute.getName());
+                if (field != null && field.isAnnotationPresent(Temporal.class)) {
+                    return field.getAnnotation(Temporal.class).value();
+                }
+            } catch (NoSuchFieldException ignored) {
+                // no such field
+            }
+        }
+
+        return TemporalType.TIMESTAMP;
+    }
+
     private static Object getValueForPath(Path path, String value) {
 
         if (value == null) return null;
@@ -1060,7 +1206,7 @@ public class JPAUtils {
         try {
 
             if (Date.class.isAssignableFrom(c)) {
-                return Date.from(ZonedDateTime.parse(value).toInstant());
+                return parseDateValue(value, getTemporalType(path, c));
             }
 
             if (c.equals(Timestamp.class)) {
@@ -1126,7 +1272,20 @@ public class JPAUtils {
 
         String fieldPath = null;
         final Set<From> currentFieldJoins = new HashSet<>();
-        for (String field : fields) {
+        for (int i = 0; i < fields.length; i++) {
+
+            String field = fields[i];
+
+            // A @RestMapping name may itself contain dots (e.g. @RestMapping("public.id") on publicId): consume the
+            // longest run of segments that is exactly such a name before falling back to a single segment.
+            for (int j = fields.length - 1; j > i; j--) {
+                String candidate = String.join(".", Arrays.copyOfRange(fields, i, j + 1));
+                if (hasRestMapping(from.getJavaType(), candidate)) {
+                    field = candidate;
+                    i = j;
+                    break;
+                }
+            }
 
             // only first since multiple field operations are not supported
             final Optional<String> mappedFieldOptional = getRestFieldMappings(from, field).findFirst();
@@ -1190,6 +1349,19 @@ public class JPAUtils {
         }
 
         return new CriteriaField(path != null ? path : from, fieldPath, containsToMany);
+    }
+
+    private static boolean hasRestMapping(Class<?> type, String restField) {
+        for (Class<?> c = type; c != null && c != Object.class; c = c.getSuperclass()) {
+            for (Field entityField : c.getDeclaredFields()) {
+                for (RestMapping mapping : entityField.getAnnotationsByType(RestMapping.class)) {
+                    if (restField.equals(mapping.value())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private static Stream<String> getRestFieldMappings(final Path path, final String restField) {
@@ -1275,6 +1447,87 @@ public class JPAUtils {
 
     private static boolean isObjectField(Field f) {
         return !f.getType().isPrimitive() && !f.getType().isAssignableFrom(String.class);
+    }
+
+    /**
+     * Types that support {@code gt}, {@code gte}, {@code lt} and {@code lte}.
+     */
+    private static boolean isRangeComparable(Class<?> clazz) {
+        return Date.class.isAssignableFrom(clazz) ||
+                isAssignableToInstantHoldingTemporal(clazz) ||
+                LocalTime.class.isAssignableFrom(clazz) ||
+                OffsetTime.class.isAssignableFrom(clazz) ||
+                Number.class.isAssignableFrom(clazz) ||
+                isPrimitiveNumber(clazz) ||
+                String.class.isAssignableFrom(clazz);
+    }
+
+    private static boolean isPrimitiveNumber(Class<?> clazz) {
+        return clazz.isPrimitive() && clazz != boolean.class && clazz != char.class && clazz != void.class;
+    }
+
+    /**
+     * IN, NIN, INIC and NINIC need a list. A scalar (e.g. {@code new QueryFilter("id", NIN, "7")}) or no operand at all
+     * would otherwise reach the query as an empty list and match everything (NIN) or nothing (IN). An explicitly
+     * supplied empty list keeps its meaning.
+     */
+    private static void requireListOperand(QueryFilter f) {
+        switch (f.getOperation()) {
+            case IN:
+            case NIN:
+            case INIC:
+            case NINIC:
+                if (!f.hasValues() || f.getValue() != null || f.getDateValue() != null) {
+                    throw new QueryFormatException("Filter '" + f.getField() + ":" + f.getOperation().name().toLowerCase()
+                            + "' requires a list of values", f.getField(), QueryFormatError.MALFORMED);
+                }
+                break;
+            default:
+        }
+    }
+
+    /**
+     * Timestamp bounds of different precision come out as a {@code java.util.Date} and a {@code java.sql.Timestamp}
+     * (see {@link #toDate(Instant)}); both become a {@code Timestamp}, which keeps nanoseconds.
+     */
+    private static Object[] alignRangeBounds(Object value1, Object value2) {
+        if (value1 instanceof Date && value2 instanceof Date && !value1.getClass().equals(value2.getClass())
+                && (value1 instanceof Timestamp || value2 instanceof Timestamp)) {
+            return new Object[]{toTimestamp((Date) value1), toTimestamp((Date) value2)};
+        }
+        return new Object[]{value1, value2};
+    }
+
+    private static Timestamp toTimestamp(Date date) {
+        return date instanceof Timestamp ? (Timestamp) date : new Timestamp(date.getTime());
+    }
+
+    private static void requireTwoBounds(QueryFilter f) {
+        if (f.getValues() == null || f.getValues().size() != 2
+                || f.getValues().get(0) == null || f.getValues().get(1) == null) {
+            throw new QueryFormatException("Filter '" + f.getField() + ":" + f.getOperation().name().toLowerCase()
+                    + "' requires exactly two values", f.getField(), QueryFormatError.MALFORMED);
+        }
+    }
+
+    private static QueryFormatException unsupportedOperation(QueryFilter f, Class<?> fieldType) {
+        String operation = f.getOperation() == null ? "null" : f.getOperation().name().toLowerCase();
+        String type = fieldType == null ? "unknown" : fieldType.getSimpleName();
+
+        boolean missingValue = f.getValue() == null && f.getDateValue() == null
+                && (f.getValues() == null || f.getValues().isEmpty());
+
+        String msg;
+        if (missingValue) {
+            msg = "Filter '" + f.getField() + ":" + operation + "' has no value";
+        } else if (f.getDateValue() != null && (fieldType == null || !Date.class.isAssignableFrom(fieldType))) {
+            msg = "A dt'...' date value is not supported for field '" + f.getField() + "' of type " + type;
+        } else {
+            msg = "Filter operation '" + operation + "' is not supported for field '" + f.getField() + "' of type " + type;
+        }
+
+        return new QueryFormatException(msg, f.getField(),
+                missingValue ? QueryFormatError.MALFORMED : QueryFormatError.UNSUPPORTED_OPERATION);
     }
 
     private static boolean isAssignableToInstantHoldingTemporal(Class clazz) {

@@ -44,6 +44,9 @@ public class QueryFilter implements Serializable {
 
     private List<String> values;
 
+    /** Set when a list was explicitly supplied (constructor or setter), see {@link #hasValues()}. */
+    private boolean valuesSupplied;
+
     public QueryFilter() {
     }
 
@@ -68,6 +71,7 @@ public class QueryFilter implements Serializable {
         this.field = field;
         this.operation = operation;
         this.values = values;
+        this.valuesSupplied = values != null;
     }
 
     public String getField() {
@@ -105,6 +109,17 @@ public class QueryFilter implements Serializable {
     public void setValues(List<String> values) {
 
         this.values = values;
+        this.valuesSupplied = values != null;
+    }
+
+    /**
+     * Whether a list of values was supplied (possibly empty, as in {@code [ ]}), as opposed to a single value or none:
+     * a list passed to the constructor or to {@link #setValues(List)}, or values added to {@link #getValues()}.
+     * Merely reading {@link #getValues()} (which creates an empty list on demand) does not count.
+     */
+    public boolean hasValues() {
+
+        return valuesSupplied || (values != null && !values.isEmpty());
     }
 
     public Date getDateValue() {

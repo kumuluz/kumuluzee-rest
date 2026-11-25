@@ -49,6 +49,10 @@ public class User implements Comparable<User>, Serializable {
 
     private Boolean confirmed = false;
 
+    /** Primitive numeric field (the seed data leaves it at the column default 0). */
+    @Column(name = "login_count", columnDefinition = "integer default 0 not null")
+    private int loginCount;
+
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
 

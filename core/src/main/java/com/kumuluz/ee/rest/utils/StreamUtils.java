@@ -1211,9 +1211,12 @@ public class StreamUtils {
                     }
 
                     for (Field fi : clazzTarget.getDeclaredFields()) {
-                        if (!values.contains(fi.getName())) {
+                        if (!values.contains(fi.getName()) && !java.lang.reflect.Modifier.isStatic(fi.getModifiers())) {
                             fi.setAccessible(true);
-                            fi.set(value1, null);
+                            // primitives cannot be null: reset them to their default value instead
+                            fi.set(value1, fi.getType().isPrimitive()
+                                    ? java.lang.reflect.Array.get(java.lang.reflect.Array.newInstance(fi.getType(), 1), 0)
+                                    : null);
                         }
                     }
 

@@ -29,5 +29,7 @@ public enum QueryFormatError {
     NOT_A_NUMBER,
     NEGATIVE,
     NO_SUCH_CONSTANT,
-    NOT_A_BOOLEAN
+    NOT_A_BOOLEAN,
+    /** The filter operation cannot be applied to the type of the field (e.g. {@code like} on a number). */
+    UNSUPPORTED_OPERATION
 }
